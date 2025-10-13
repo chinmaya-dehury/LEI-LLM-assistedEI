@@ -1,0 +1,12 @@
+This sample dataset represents environmental conditions inside a smart building’s office room.
+The IoT edge device collects temperature and humidity readings every 5 minutes.
+The purpose is to monitor human comfort and detect any abnormal variations that may indicate cooling system malfunction, humidity rise, or poor ventilation.
+Typical insights could include (but not limited to):
+- Estimating comfort index using temperature and humidity
+- Detecting sudden changes or anomalies
+- Calculating hourly averages
+- Predicting next-hour conditions
+- Triggering alerts if comfort thresholds are exceeded
+
+The LLM should generate small, efficient Python programs suitable for execution on the edge device.
+Each program should focus on one insight at a time and be optimized for limited computational resources.

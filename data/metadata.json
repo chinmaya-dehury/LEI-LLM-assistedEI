@@ -1,0 +1,32 @@
+{
+  "data_source": "IoT Environmental Sensor - Room A1",
+  "sampling_interval": "5 minutes",
+  "data_format": "CSV",
+  "columns": {
+    "timestamp": {
+      "type": "datetime",
+      "description": "Time at which the reading was recorded (local time)."
+    },
+    "temperature_c": {
+      "type": "float",
+      "unit": "degree Celsius",
+      "range": [15, 40],
+      "description": "Ambient temperature in degrees Celsius."
+    },
+    "humidity_percent": {
+      "type": "float",
+      "unit": "percent",
+      "range": [20, 100],
+      "description": "Relative humidity of air in percentage."
+    }
+  },
+  "data_quality": {
+    "missing_values": "none",
+    "sensor_accuracy": "±0.2°C, ±2% RH"
+  },
+  "device_specs": {
+    "edge_device_model": "Raspberry Pi 4",
+    "compute_capability": "Quad-core 1.5GHz, 4GB RAM"
+  },
+  "storage": "Local SQLite DB with periodic upload to cloud"
+}
