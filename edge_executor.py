@@ -3,7 +3,7 @@ edge_executor.py
 ----------------
 This script simulates the behavior of an Edge Device in an LLM-assisted
 Edge Intelligence architecture. It automatically executes all generated
-Python programs in the `generated_tasks/` directory and logs the output,
+Python programs in the `generated_tasks/{DATA_TYPE}` directory and logs the output,
 errors, and execution times in a timestamped log file.
 
 Author: Dr. Bivas Panigrahi
@@ -16,7 +16,8 @@ import time
 from datetime import datetime
 
 # === Configuration ===
-TASKS_DIR = "generated_tasks"
+DATA_TYPE = "temp_humidity"
+TASKS_DIR = "generated_tasks/"+DATA_TYPE
 LOG_DIR = "logs"
 os.makedirs(LOG_DIR, exist_ok=True)
 

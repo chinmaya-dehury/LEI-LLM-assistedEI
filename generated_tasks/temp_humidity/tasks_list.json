@@ -1,0 +1,84 @@
+{
+  "tasks": [
+    {
+      "task_name": "parse_csv_validate_schema",
+      "description": "Load the CSV, parse timestamps to datetime, enforce float types for temperature and humidity, and verify 5-minute sampling intervals."
+    },
+    {
+      "task_name": "comfort_index_humidex",
+      "description": "Compute Humidex from temperature and relative humidity and assign comfort categories (e.g., comfortable, some discomfort, great discomfort)."
+    },
+    {
+      "task_name": "discomfort_index_thom",
+      "description": "Calculate Thom\u2019s Discomfort Index (DI) using temperature and humidity and label comfort risk levels."
+    },
+    {
+      "task_name": "dew_point_estimation",
+      "description": "Estimate dew point temperature using the Magnus formula based on temperature and relative humidity."
+    },
+    {
+      "task_name": "absolute_humidity_estimation",
+      "description": "Compute absolute humidity (g/m^3) from temperature and relative humidity to assess moisture load."
+    },
+    {
+      "task_name": "comfort_threshold_alerts",
+      "description": "Trigger alerts when comfort indices or raw metrics exceed thresholds (e.g., Humidex > 30, DI > 27, RH > 65%)."
+    },
+    {
+      "task_name": "rolling_zscore_anomaly_detection",
+      "description": "Detect anomalies in temperature and humidity using rolling mean and standard deviation (e.g., 6-sample window) and z-score thresholds."
+    },
+    {
+      "task_name": "cusum_step_change_detection",
+      "description": "Apply CUSUM to identify sudden step changes in temperature or humidity indicative of system events or faults."
+    },
+    {
+      "task_name": "rate_of_change_monitor",
+      "description": "Flag readings where the 5-minute change in temperature or humidity exceeds predefined limits."
+    },
+    {
+      "task_name": "rolling_trend_slope",
+      "description": "Estimate short-term linear trend (slope) of temperature and humidity over a sliding window to capture warming/cooling rates."
+    },
+    {
+      "task_name": "hourly_aggregation_stats",
+      "description": "Aggregate readings into hourly mean, min, max, and standard deviation for temperature, humidity, and comfort indices."
+    },
+    {
+      "task_name": "next_hour_forecast_ewma",
+      "description": "Forecast the next hour of temperature and humidity using simple exponential smoothing (EWMA) with tunable alpha."
+    },
+    {
+      "task_name": "persistence_baseline_forecast",
+      "description": "Generate a baseline forecast using persistence (last value) and compare accuracy against EWMA."
+    },
+    {
+      "task_name": "cooling_malfunction_detector",
+      "description": "Detect potential cooling failures by identifying sustained positive temperature trend with rising humidity over \u226530 minutes."
+    },
+    {
+      "task_name": "ventilation_risk_flag",
+      "description": "Flag poor ventilation conditions when dew point or absolute humidity exceeds set thresholds (e.g., dew point > 18\u00b0C, AH > 12 g/m^3)."
+    },
+    {
+      "task_name": "moving_average_smoothing",
+      "description": "Apply a lightweight 3\u20135 point moving average to smooth temperature and humidity signals before analysis."
+    },
+    {
+      "task_name": "data_quality_monitor",
+      "description": "Check for missing values, out-of-range readings, timestamp ordering, and duplicates; log issues for maintenance."
+    },
+    {
+      "task_name": "timestamp_gaps_and_alignment_check",
+      "description": "Verify that timestamps are strictly 5 minutes apart and align to expected schedule; flag gaps or drifts."
+    },
+    {
+      "task_name": "comfort_exceedance_duration",
+      "description": "Compute the total minutes per hour where readings are outside comfort band (e.g., 22\u201326\u00b0C and 30\u201360% RH or index-based)."
+    },
+    {
+      "task_name": "storage_ready_payload_builder",
+      "description": "Construct compact dictionaries/rows with raw and derived features for efficient SQLite insertion and periodic cloud upload."
+    }
+  ]
+}
