@@ -10,7 +10,7 @@ import os
 import json
 from openai import OpenAI
 from string import Template
-from prompts.get_tasks_list import SYSTEM_PROMPT
+from prompts.get_tasks_list_basic import SYSTEM_PROMPT
 
 # Initialize the LLM client
 client = OpenAI()
@@ -32,38 +32,6 @@ with open(META_PATH, "r") as f:
 
 with open(CONTEXT_PATH, "r") as f:
     context = f.read()
-
-# System prompt to guide the LLM
-# system_prompt = Template("""
-# You are an expert AI orchestration agent.
-# You receive (1) sample data, (2) metadata, and (3) contextual information
-# from an edge device. Your goal is to generate multiple *small* Python
-# programs that can each perform one insight or task related to the data.
-
-# Your response should be in JSON format like this:
-
-# {
-#   "tasks": [
-#     {
-#       "task_name": "comfort_index_estimation",
-#       "description": "Estimate human comfort index using temperature and humidity.",
-#       "code": "<python code here>"
-#     },
-#     {
-#       "task_name": "anomaly_detection",
-#       "description": "Detect anomalies in temperature readings using rolling z-score.",
-#       "code": "<python code here>"
-#     }
-#   ]
-# }
-
-# Each task should be:
-# - Self-contained
-# - Lightweight (runnable on Raspberry Pi)
-# - Use standard Python libraries (pandas, numpy, matplotlib optional)
-# - Should read actual data from 'data/$DATA_TYPE/raw_data.csv' as input when executed
-# - Should print or save the output (no heavy dependencies)
-# """).substitute(DATA_TYPE=DATA_TYPE)
 
 system_prompt = Template(SYSTEM_PROMPT).substitute(DATA_TYPE=DATA_TYPE)
 # User prompt with data, metadata, and context

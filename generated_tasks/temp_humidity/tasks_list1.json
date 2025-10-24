@@ -1,12 +1,16 @@
 {
   "tasks": [
     {
-      "task_name": "comfort_index_estimation",
-      "description": "Compute a simplified heat index from temperature_c and humidity_percent (in Celsius) and classify comfort bands to assess human comfort."
+      "task_name": "parse_csv_validate_schema",
+      "description": "Load the CSV, parse timestamps to datetime, enforce float types for temperature and humidity, and verify 5-minute sampling intervals."
     },
     {
-      "task_name": "anomaly_detection",
-      "description": "Detect anomalies in temperature and humidity using a rolling z-score (e.g., window=5) and sudden change rules based on 5-minute deltas."
+      "task_name": "comfort_index_humidex",
+      "description": "Compute Humidex from temperature and relative humidity and assign comfort categories (e.g., comfortable, some discomfort, great discomfort)."
+    },
+    {
+      "task_name": "discomfort_index_thom",
+      "description": "Calculate Thom\u2019s Discomfort Index (DI) using temperature and humidity and label comfort risk levels."
     }
   ]
 }

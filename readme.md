@@ -53,17 +53,22 @@ __The LLM replies with:__
 
 # How to execute?
 * `export OPENAI_API_KEY="your_api_key_here"`
-* Step 1 – Generate Tasks (Cloud Simulation)
-`python llm_orchestrator.py`
-* Step 2 – Execute Tasks (Edge Simulation) `python edge_executor.py`
-* Step 3 – Visualize Results (Dashboard)  `streamlit run edge_dashboard.py`
+* Step 1 – Generate Tasks list only (Cloud Simulation)
+`python llm_orchestrator_basic.py`    
+OR    
+look at the existing tasks, and if required or if possible generate a list of new tasks
+`python llm_orchestrator_adaptive.py`    
+* Step 2 - Generate the code for each task
+`python task_code_generator.py`
+* Step 3 – Execute Tasks (Edge Simulation) `python edge_executor.py`
+* Step 4 – Visualize Results (Dashboard)  `streamlit run edge_dashboard.py`
 
 ### for setting up virtual environment
 * `python -m venv venv`
 * in windows: `venv\Scripts\activate`
 * in Linux: `source venv/Scripts/activate`
 `python -m pip install --upgrade pip`
-`pip install openai streamlit pandas numpy`
+`pip install -r requirements.txt`
 
 
 

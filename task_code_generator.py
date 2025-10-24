@@ -25,8 +25,66 @@ DATA_PATH = BASE_PATH+"sample_data.csv"
 META_PATH = BASE_PATH+"metadata.json"
 CONTEXT_PATH = BASE_PATH+"context.txt"
 OUTPUT_DIR = "generated_tasks/"+DATA_TYPE
-TASK_LIST_PATH = OUTPUT_DIR+"/tasks_list.json"
+TASK_LIST_PATH = OUTPUT_DIR+"/tasks_list1.json"
 NO_OF_TASKS = 2  # Number of tasks to generate code for
+
+
+def call_llm_for_task_code(task_list):
+    system_prompt = Template(SYSTEM_PROMPT).substitute(DATA_TYPE=DATA_TYPE)
+
+    user_prompt = f"""
+    Sample Data:
+    {sample_data}
+
+    Metadata:
+    {json.dumps(metadata, indent=2)}
+
+    Context:
+    {context}
+
+    Tasks List:
+    {task_list}
+    """
+
+    # # Call the LLM
+    response = client.chat.completions.create(
+        model="gpt-5",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]    
+    )
+    # Extract the response content
+    raw_output = response.choices[0].message.content
+
+    # Parse JSON safely
+    try:
+        tasks_data = json.loads(raw_output) 
+        
+    except json.JSONDecodeError:
+        print("⚠️ The LLM response was not valid JSON. Saving raw output for review.")    
+        exit()
+    return tasks_data # return python code for two tasks
+    
+    
+
+def save_task_code(tasks_data):
+    # # Save each generated task as a separate .py file
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+    for task in tasks_data["tasks"]:   
+        filename = f"{task['task_name']}.py"
+        filepath = os.path.join(OUTPUT_DIR, filename)
+
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(task["code"])
+        print(f"✅ Saved: {filename}")
+        print(f"   → Description: {task['description']}\n")
+
+    print("🎯 All tasks generated successfully and saved in {} folder.",OUTPUT_DIR)
+
+
+
 
 # Read all inputs
 with open(DATA_PATH, "r") as f:
@@ -52,7 +110,10 @@ with open(TASK_LIST_PATH, "r") as f:
 for i in range(0, len(json_task_list), NO_OF_TASKS):    
     group = {"tasks": json_task_list[i:i+2]}
     print(json.dumps(group, ensure_ascii=False, indent=2))
-exit()
+    task_data = call_llm_for_task_code(json.dumps(group, ensure_ascii=False))
+    if task_data:
+        save_task_code(task_data)
+    
 
 
 
@@ -62,57 +123,10 @@ exit()
 
 
 
-system_prompt = Template(SYSTEM_PROMPT).substitute(DATA_TYPE=DATA_TYPE)
-
-user_prompt = f"""
-Sample Data:
-{sample_data}
-
-Metadata:
-{json.dumps(metadata, indent=2)}
-
-Context:
-{context}
-
-Tasks List:
-{task_list}
-"""
-
-# Call the LLM
-response = client.chat.completions.create(
-    model="gpt-5",
-    messages=[
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_prompt}
-    ]    
-)
-
-# Extract response content
-raw_output = response.choices[0].message.content
-
-# Parse JSON safely
-try:
-    tasks_data = json.loads(raw_output)
-    print(tasks_data)
-    print("Type of the tasks_data:", type(tasks_data))
-    exit()
-except json.JSONDecodeError:
-    print("⚠️ The LLM response was not valid JSON. Saving raw output for review.")    
-    exit()
-
-
-# Save each generated task as a separate .py file
-os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
 
-for task in tasks_data["tasks"]:   
-    filename = f"{task['task_name']}.py"
-    filepath = os.path.join(OUTPUT_DIR, filename)
 
-    with open(filepath, "w", encoding="utf-8") as f:
-        f.write(task["code"])
-    print(f"✅ Saved: {filename}")
-    print(f"   → Description: {task['description']}\n")
 
-print("🎯 All tasks generated successfully and saved in {} folder.",OUTPUT_DIR)
+
+

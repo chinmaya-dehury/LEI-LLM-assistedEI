@@ -1,84 +1,88 @@
 {
   "tasks": [
     {
-      "task_name": "parse_csv_validate_schema",
-      "description": "Load the CSV, parse timestamps to datetime, enforce float types for temperature and humidity, and verify 5-minute sampling intervals."
+      "task_name": "heat_index_rothfusz_celsius",
+      "description": "Compute heat index (Rothfusz/Steadman approximation adapted for Celsius) from temperature_c and humidity_percent; output per-reading index and classify risk bands (e.g., Caution, Extreme)."
     },
     {
-      "task_name": "comfort_index_humidex",
-      "description": "Compute Humidex from temperature and relative humidity and assign comfort categories (e.g., comfortable, some discomfort, great discomfort)."
+      "task_name": "vapor_pressure_deficit_calc",
+      "description": "Compute saturation vapor pressure es (kPa) via Tetens from temperature_c, actual vapor pressure ea = es*(RH/100), and VPD = es - ea; flag dryness/humidity risk levels."
     },
     {
-      "task_name": "discomfort_index_thom",
-      "description": "Calculate Thom\u2019s Discomfort Index (DI) using temperature and humidity and label comfort risk levels."
+      "task_name": "wet_bulb_temperature_stull",
+      "description": "Estimate wet-bulb temperature (\u00b0C) using Stull\u2019s 2011 approximation from temperature_c and humidity_percent; return Tw and T\u2013Tw spread as a ventilation/cooling cue."
     },
     {
-      "task_name": "dew_point_estimation",
-      "description": "Estimate dew point temperature using the Magnus formula based on temperature and relative humidity."
+      "task_name": "comfort_exceedance_minutes",
+      "description": "Count minutes inside/outside a configurable comfort envelope (e.g., 22\u201326\u00b0C and 30\u201360% RH) per hour and overall; return totals and percent time comfortable."
     },
     {
-      "task_name": "absolute_humidity_estimation",
-      "description": "Compute absolute humidity (g/m^3) from temperature and relative humidity to assess moisture load."
+      "task_name": "data_integrity_checks",
+      "description": "Validate readings against metadata ranges; detect out-of-range values, duplicate timestamps, and missing 5-minute intervals; report issues and optionally clip or forward-fill."
     },
     {
-      "task_name": "comfort_threshold_alerts",
-      "description": "Trigger alerts when comfort indices or raw metrics exceed thresholds (e.g., Humidex > 30, DI > 27, RH > 65%)."
+      "task_name": "rolling_temp_humidity_correlation",
+      "description": "Compute rolling Pearson correlation between temperature_c and humidity_percent over the last N readings (e.g., N=12) to gauge coupling; classify as strong/weak/neutral."
     },
     {
-      "task_name": "rolling_zscore_anomaly_detection",
-      "description": "Detect anomalies in temperature and humidity using rolling mean and standard deviation (e.g., 6-sample window) and z-score thresholds."
+      "task_name": "hourly_summary_stats",
+      "description": "Aggregate readings into hourly bins; compute mean, min, max, and sample count for temperature_c and humidity_percent; handle partial hours."
     },
     {
-      "task_name": "cusum_step_change_detection",
-      "description": "Apply CUSUM to identify sudden step changes in temperature or humidity indicative of system events or faults."
+      "task_name": "delta_spike_detector",
+      "description": "Flag sudden spikes using absolute 5-minute deltas exceeding configurable thresholds (e.g., temp > 0.8\u00b0C, RH > 3%); return indices with pre/post values."
     },
     {
-      "task_name": "rate_of_change_monitor",
-      "description": "Flag readings where the 5-minute change in temperature or humidity exceeds predefined limits."
+      "task_name": "dew_point_magnus_formula",
+      "description": "Compute dew point temperature (\u00b0C) from temperature_c and humidity_percent using the Magnus\u2013Tetens approximation; also output dew point depression (T \u2212 Td)."
     },
     {
-      "task_name": "rolling_trend_slope",
-      "description": "Estimate short-term linear trend (slope) of temperature and humidity over a sliding window to capture warming/cooling rates."
+      "task_name": "absolute_humidity_gm3",
+      "description": "Compute absolute humidity (g/m\u00b3) from temperature_c and humidity_percent via vapor pressure; include optional short-window rolling mean for smoothing."
     },
     {
-      "task_name": "hourly_aggregation_stats",
-      "description": "Aggregate readings into hourly mean, min, max, and standard deviation for temperature, humidity, and comfort indices."
+      "task_name": "moist_air_enthalpy_estimate",
+      "description": "Estimate moist air specific enthalpy (kJ/kg dry air) assuming sea-level pressure using mixing ratio from RH; output enthalpy and its 5-minute change rate."
     },
     {
-      "task_name": "next_hour_forecast_ewma",
-      "description": "Forecast the next hour of temperature and humidity using simple exponential smoothing (EWMA) with tunable alpha."
+      "task_name": "comfort_degree_minutes",
+      "description": "Accumulate degree-minutes beyond a comfort band (e.g., T>26\u00b0C or RH>60%); quantify exposure as magnitude \u00d7 time per hour and total."
     },
     {
-      "task_name": "persistence_baseline_forecast",
-      "description": "Generate a baseline forecast using persistence (last value) and compare accuracy against EWMA."
+      "task_name": "comfort_hysteresis_alerts",
+      "description": "Generate on/off alerts when temperature or humidity cross thresholds with configurable hysteresis margins and minimum dwell times to avoid alert chatter."
     },
     {
-      "task_name": "cooling_malfunction_detector",
-      "description": "Detect potential cooling failures by identifying sustained positive temperature trend with rising humidity over \u226530 minutes."
+      "task_name": "ewma_next_hour_forecast",
+      "description": "Forecast the next 12 readings (next hour at 5-minute steps) for temperature and humidity using exponential smoothing (EWMA) with configurable alpha."
     },
     {
-      "task_name": "ventilation_risk_flag",
-      "description": "Flag poor ventilation conditions when dew point or absolute humidity exceeds set thresholds (e.g., dew point > 18\u00b0C, AH > 12 g/m^3)."
+      "task_name": "rolling_variability_monitor",
+      "description": "Compute rolling standard deviation over a short window (e.g., N=6) for temperature_c and humidity_percent; flag intervals of elevated variability."
     },
     {
-      "task_name": "moving_average_smoothing",
-      "description": "Apply a lightweight 3\u20135 point moving average to smooth temperature and humidity signals before analysis."
+      "task_name": "rolling_trend_slope_estimator",
+      "description": "Fit a simple linear regression over the last N readings (e.g., N=6) to estimate slope (per hour) for temperature_c and humidity_percent; classify trends as rising/stable/falling using small configurable slope thresholds."
     },
     {
-      "task_name": "data_quality_monitor",
-      "description": "Check for missing values, out-of-range readings, timestamp ordering, and duplicates; log issues for maintenance."
+      "task_name": "cusum_mean_shift_detector",
+      "description": "Apply a two-sided CUSUM on temperature_c and humidity_percent to detect sustained mean shifts; return change points with direction, start/end indices, and estimated shift magnitude; parameters k and h configurable."
     },
     {
-      "task_name": "timestamp_gaps_and_alignment_check",
-      "description": "Verify that timestamps are strictly 5 minutes apart and align to expected schedule; flag gaps or drifts."
+      "task_name": "hvac_cycle_autocorr_monitor",
+      "description": "Compute autocorrelation at small lags (e.g., 2\u20136 samples = 10\u201330 minutes) for temperature_c to identify oscillatory HVAC cycling; report dominant lag period if correlation exceeds a threshold; optionally evaluate humidity_percent."
     },
     {
-      "task_name": "comfort_exceedance_duration",
-      "description": "Compute the total minutes per hour where readings are outside comfort band (e.g., 22\u201326\u00b0C and 30\u201360% RH or index-based)."
+      "task_name": "mold_risk_monitor",
+      "description": "Estimate mold risk by accumulating minutes where RH \u2265 65% and dew point depression (T \u2212 Td) \u2264 2\u20133\u00b0C (Td via Magnus); output rolling/daily risk score and flag when exposure exceeds configurable durations."
     },
     {
-      "task_name": "storage_ready_payload_builder",
-      "description": "Construct compact dictionaries/rows with raw and derived features for efficient SQLite insertion and periodic cloud upload."
+      "task_name": "mixing_ratio_g_per_kg",
+      "description": "Compute water vapor mixing ratio (g/kg dry air) from temperature_c and humidity_percent assuming sea-level pressure; return per-reading values and an optional short-window rolling mean."
+    },
+    {
+      "task_name": "measurement_uncertainty_bands",
+      "description": "Use sensor accuracy (\u00b10.2\u00b0C, \u00b12% RH) to compute lower/upper bounds for each reading; indicate definite vs possible comfort threshold violations by comparing uncertainty bands to configured limits."
     }
   ]
 }
