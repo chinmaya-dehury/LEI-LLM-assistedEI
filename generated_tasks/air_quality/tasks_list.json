@@ -1,0 +1,40 @@
+{
+  "tasks": [
+    {
+      "task_name": "aqi_band_classification",
+      "description": "Map aqi_uk (1\u201310) to UK DAQI bands (Low:1\u20133, Moderate:4\u20136, High:7\u20139, Very High:10) and attach a simple risk label."
+    },
+    {
+      "task_name": "aqi_short_term_trend",
+      "description": "Compute a short-term trend on aqi_uk using a lightweight 3-point slope or last-value vs previous-mean comparison and label as rising/falling/steady."
+    },
+    {
+      "task_name": "dominant_pollutant_exceedance",
+      "description": "Calculate exceedance ratios against WHO 2021 short-term guidelines (e.g., PM2.5:15, PM10:45, NO2:25, SO2:40, O3:100, CO:4000 \u00b5g/m3) and identify the dominant pollutant per timestamp."
+    },
+    {
+      "task_name": "pm_fine_coarse_ratio_indicator",
+      "description": "Compute PM2.5/PM10 ratio and classify likely particle source mix: >0.6 (fine/combustion), 0.3\u20130.6 (mixed), <0.3 (coarse dust)."
+    },
+    {
+      "task_name": "diurnal_peak_pollution_hours",
+      "description": "Aggregate by hour-of-day over the last 24\u201348 hours and report the peak hour for PM2.5 and O3 (handles sparse data gracefully)."
+    },
+    {
+      "task_name": "duplicate_and_stuck_reading_check",
+      "description": "Detect duplicate rows (identical timestamps/components) and stuck sensors (unchanged readings across N intervals) and report counts and percentages."
+    },
+    {
+      "task_name": "sampling_interval_monitor",
+      "description": "Verify actual sampling gaps against the expected 10\u201315 minute interval; flag missing/late data and compute basic uptime metrics."
+    },
+    {
+      "task_name": "sudden_spike_alert_pm25",
+      "description": "Trigger a lightweight alert when PM2.5 exhibits a sudden spike between consecutive readings (e.g., >10 \u00b5g/m3 absolute or >25% relative increase)."
+    },
+    {
+      "task_name": "health_advisory_generator",
+      "description": "Generate brief, on-device health advisories for general and sensitive groups based on DAQI band and the identified dominant pollutant."
+    }
+  ]
+}

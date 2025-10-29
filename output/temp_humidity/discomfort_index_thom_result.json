@@ -1,0 +1,65 @@
+{
+  "task_name": "discomfort_index_thom",
+  "description": "Calculate Thom’s Discomfort Index (DI) using temperature and humidity and label comfort risk levels.",
+  "result_summary": [
+    {
+      "name": "latest_di",
+      "value": {
+        "di": 23.26,
+        "label": "Mild discomfort"
+      },
+      "description": "Most recent Thom DI and risk label.",
+      "tiemstamp": "2025-10-09T23:55:00"
+    },
+    {
+      "name": "max_di",
+      "value": {
+        "di": 29.02,
+        "label": "Very severe discomfort"
+      },
+      "description": "Maximum Thom DI observed and its risk label.",
+      "tiemstamp": "2025-10-09T14:55:00"
+    },
+    {
+      "name": "min_di",
+      "value": {
+        "di": 21.7,
+        "label": "Mild discomfort"
+      },
+      "description": "Minimum Thom DI observed and its risk label.",
+      "tiemstamp": "2025-10-09T03:05:00"
+    },
+    {
+      "name": "mean_di",
+      "value": 25.51,
+      "description": "Average Thom DI across the dataset.",
+      "tiemstamp": "2025-10-28T10:33:28.186992+00:00"
+    },
+    {
+      "name": "band_distribution_percent",
+      "value": {
+        "Comfortable": 0.0,
+        "Mild discomfort": 34.03,
+        "Moderate discomfort": 28.82,
+        "Severe discomfort": 36.81,
+        "Very severe discomfort": 0.35,
+        "Medical emergency risk": 0.0
+      },
+      "description": "Percentage of readings in each Thom DI risk band.",
+      "tiemstamp": "2025-10-28T10:33:28.186992+00:00"
+    },
+    {
+      "name": "high_risk_count",
+      "value": 107,
+      "description": "Number of readings with DI >= 27 (Severe discomfort or worse).",
+      "tiemstamp": "2025-10-28T10:33:28.186992+00:00"
+    },
+    {
+      "name": "latest_recommendation",
+      "value": "Consider increasing air circulation.",
+      "description": "Action suggestion based on latest risk band: Mild discomfort.",
+      "tiemstamp": "2025-10-09T23:55:00"
+    }
+  ],
+  "result_generated_at": "2025-10-28T10:33:28.186992+00:00"
+}

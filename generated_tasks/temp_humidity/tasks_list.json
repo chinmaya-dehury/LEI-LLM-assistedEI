@@ -83,6 +83,26 @@
     {
       "task_name": "measurement_uncertainty_bands",
       "description": "Use sensor accuracy (\u00b10.2\u00b0C, \u00b12% RH) to compute lower/upper bounds for each reading; indicate definite vs possible comfort threshold violations by comparing uncertainty bands to configured limits."
+    },
+    {
+      "task_name": "condensation_risk_estimator",
+      "description": "Estimate surface condensation risk by computing indoor dew point (Magnus formula) and comparing it to assumed surface temperatures (e.g., 16\u201318\u00b0C for window glass). Output surface_margin = surface_temp \u2212 dew_point per reading and flag risk when margin \u2264 0\u00b0C; support multiple surface presets."
+    },
+    {
+      "task_name": "occupancy_event_detector_from_rh",
+      "description": "Detect likely occupancy events using the short-window rate of change in humidity_percent (e.g., \u22650.6\u20131.0% RH per 5 min sustained for 2\u20133 samples). Optionally require small concurrent temperature change confirmation and include debounce to avoid chatter; output event start/end and peak RH rate."
+    },
+    {
+      "task_name": "hvac_mode_inference_from_abs_humidity",
+      "description": "Infer HVAC mode by combining short-window slopes of temperature_c and absolute humidity (g/m\u00b3). Classify intervals as: sensible_cooling (T\u2193, AH ~ flat), cooling_dehumidifying (T\u2193, AH\u2193), heating (T\u2191, AH ~ flat), humidifying (AH\u2191), passive_drying (AH\u2193 with T ~ flat). Return per-interval labels and simple confidence."
+    },
+    {
+      "task_name": "time_to_comfort_linear_projection",
+      "description": "Estimate time to enter (or exit) a configurable comfort envelope (e.g., 22\u201326\u00b0C and 30\u201360% RH) using recent linear trends over N samples. Compute separate projections for temperature and humidity and report the max time as the joint estimate; cap at a set horizon (e.g., 2 hours)."
+    },
+    {
+      "task_name": "impending_threshold_breach_predictor",
+      "description": "Predict whether temperature_c or humidity_percent will breach configured thresholds within the next 30 minutes using simple slope-based extrapolation (optionally widened by sensor accuracy). Return predicted breach variable, estimated breach time, and a confidence flag based on slope stability."
     }
   ]
 }

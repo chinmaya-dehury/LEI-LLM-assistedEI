@@ -1,0 +1,43 @@
+{
+  "task_name": "sudden_spike_alert_pm25",
+  "description": "Trigger a lightweight alert when PM2.5 exhibits a sudden spike between consecutive readings (e.g., >10 \u00b5g/m3 absolute or >25% relative increase).",
+  "result_summary": [
+    {
+      "name": "spike_count",
+      "value": 1,
+      "description": "Number of PM2.5 spike events detected.",
+      "tiemstamp": "2025-10-29T05:20:01.954676+00:00"
+    },
+    {
+      "name": "max_abs_increase_ugm3",
+      "value": 10.74,
+      "description": "Maximum absolute PM2.5 increase between consecutive readings (\u00b5g/m3).",
+      "tiemstamp": "2025-10-29T05:20:01.954676+00:00"
+    },
+    {
+      "name": "max_rel_increase_pct",
+      "value": 19.06,
+      "description": "Maximum relative PM2.5 increase between consecutive readings (%).",
+      "tiemstamp": "2025-10-29T05:20:01.954676+00:00"
+    },
+    {
+      "name": "first_spike_at",
+      "value": "2025-10-29T10:04:44+00:00",
+      "description": "Timestamp of first detected spike (UTC).",
+      "tiemstamp": "2025-10-29T05:20:01.954676+00:00"
+    },
+    {
+      "name": "last_spike_at",
+      "value": "2025-10-29T10:04:44+00:00",
+      "description": "Timestamp of last detected spike (UTC).",
+      "tiemstamp": "2025-10-29T05:20:01.954676+00:00"
+    },
+    {
+      "name": "spike_events_preview",
+      "value": "[{\"t\": \"2025-10-29T10:04:44+00:00\", \"prev\": 56.36, \"curr\": 67.1, \"abs_inc\": 10.74, \"rel_inc_pct\": 19.06}]",
+      "description": "Up to 5 spike events with previous/current PM2.5 and increases.",
+      "tiemstamp": "2025-10-29T05:20:01.954676+00:00"
+    }
+  ],
+  "result_generated_at": "2025-10-29T05:20:01.954676+00:00"
+}

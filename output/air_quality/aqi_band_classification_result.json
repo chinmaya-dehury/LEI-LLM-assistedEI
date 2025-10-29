@@ -1,0 +1,94 @@
+{
+  "task_name": "aqi_band_classification",
+  "description": "Map aqi_uk (1\u201310) to UK DAQI bands (Low:1\u20133, Moderate:4\u20136, High:7\u20139, Very High:10) and attach a simple risk label.",
+  "result_summary": [
+    {
+      "name": "total_records",
+      "value": 8,
+      "description": "Number of valid aqi_uk readings.",
+      "tiemstamp": "2025-10-29T05:19:19.393038+00:00"
+    },
+    {
+      "name": "count_low",
+      "value": 0,
+      "description": "Number of readings in Low band.",
+      "tiemstamp": "2025-10-29T05:19:19.393038+00:00"
+    },
+    {
+      "name": "count_moderate",
+      "value": 8,
+      "description": "Number of readings in Moderate band.",
+      "tiemstamp": "2025-10-29T05:19:19.393038+00:00"
+    },
+    {
+      "name": "count_high",
+      "value": 0,
+      "description": "Number of readings in High band.",
+      "tiemstamp": "2025-10-29T05:19:19.393038+00:00"
+    },
+    {
+      "name": "count_very_high",
+      "value": 0,
+      "description": "Number of readings in Very High band.",
+      "tiemstamp": "2025-10-29T05:19:19.393038+00:00"
+    },
+    {
+      "name": "count_unknown",
+      "value": 0,
+      "description": "Number of readings in Unknown band.",
+      "tiemstamp": "2025-10-29T05:19:19.393038+00:00"
+    },
+    {
+      "name": "percent_low",
+      "value": 0.0,
+      "description": "Percentage of valid readings in Low band.",
+      "tiemstamp": "2025-10-29T05:19:19.393038+00:00"
+    },
+    {
+      "name": "percent_moderate",
+      "value": 100.0,
+      "description": "Percentage of valid readings in Moderate band.",
+      "tiemstamp": "2025-10-29T05:19:19.393038+00:00"
+    },
+    {
+      "name": "percent_high",
+      "value": 0.0,
+      "description": "Percentage of valid readings in High band.",
+      "tiemstamp": "2025-10-29T05:19:19.393038+00:00"
+    },
+    {
+      "name": "percent_very_high",
+      "value": 0.0,
+      "description": "Percentage of valid readings in Very High band.",
+      "tiemstamp": "2025-10-29T05:19:19.393038+00:00"
+    },
+    {
+      "name": "worst_observed_band",
+      "value": "Moderate",
+      "description": "Worst DAQI band observed in the dataset.",
+      "tiemstamp": "2025-10-29T05:19:19.393038+00:00"
+    },
+    {
+      "name": "last_observation_band",
+      "value": "Moderate",
+      "description": "Band at last timestamp. Risk: Moderate risk: Sensitive groups reduce prolonged exertion.",
+      "tiemstamp": "2025-10-29T10:04:44+00:00"
+    },
+    {
+      "name": "last_observation_aqi_uk",
+      "value": 4.0,
+      "description": "Latest aqi_uk value.",
+      "tiemstamp": "2025-10-29T10:04:44+00:00"
+    },
+    {
+      "name": "time_range_utc",
+      "value": {
+        "start_utc": "2025-10-28T17:24:12+00:00",
+        "end_utc": "2025-10-29T10:04:44+00:00"
+      },
+      "description": "Time coverage of the dataset.",
+      "tiemstamp": "2025-10-29T05:19:19.393038+00:00"
+    }
+  ],
+  "result_generated_at": "2025-10-29T05:19:19.393038+00:00"
+}

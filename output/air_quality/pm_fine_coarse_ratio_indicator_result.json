@@ -1,0 +1,63 @@
+{
+  "task_name": "pm_fine_coarse_ratio_indicator",
+  "description": "Compute PM2.5/PM10 ratio and classify likely particle source mix: >0.6 (fine/combustion), 0.3–0.6 (mixed), <0.3 (coarse dust).",
+  "result_summary": [
+    {
+      "name": "pm_fine_coarse_ratio",
+      "value": 0.9223644324688447,
+      "description": "Source mix classification: fine/combustion",
+      "tiemstamp": "2025-10-28T17:24:12Z"
+    },
+    {
+      "name": "pm_fine_coarse_ratio",
+      "value": 0.9223644324688447,
+      "description": "Source mix classification: fine/combustion",
+      "tiemstamp": "2025-10-28T17:38:26Z"
+    },
+    {
+      "name": "pm_fine_coarse_ratio",
+      "value": 0.8339745486830423,
+      "description": "Source mix classification: fine/combustion",
+      "tiemstamp": "2025-10-29T09:14:41Z"
+    },
+    {
+      "name": "pm_fine_coarse_ratio",
+      "value": 0.8339745486830423,
+      "description": "Source mix classification: fine/combustion",
+      "tiemstamp": "2025-10-29T09:24:42Z"
+    },
+    {
+      "name": "pm_fine_coarse_ratio",
+      "value": 0.8339745486830423,
+      "description": "Source mix classification: fine/combustion",
+      "tiemstamp": "2025-10-29T09:34:42Z"
+    },
+    {
+      "name": "pm_fine_coarse_ratio",
+      "value": 0.8339745486830423,
+      "description": "Source mix classification: fine/combustion",
+      "tiemstamp": "2025-10-29T09:44:43Z"
+    },
+    {
+      "name": "pm_fine_coarse_ratio",
+      "value": 0.8339745486830423,
+      "description": "Source mix classification: fine/combustion",
+      "tiemstamp": "2025-10-29T09:54:43Z"
+    },
+    {
+      "name": "pm_fine_coarse_ratio",
+      "value": 0.8502280790674099,
+      "description": "Source mix classification: fine/combustion",
+      "tiemstamp": "2025-10-29T10:04:44Z"
+    },
+    {
+      "name": "aggregate_class_counts",
+      "value": {
+        "fine/combustion": 8
+      },
+      "description": "Counts by class: fine/combustion=8",
+      "tiemstamp": "2025-10-29T05:19:51Z"
+    }
+  ],
+  "result_generated_at": "2025-10-29T05:19:51Z"
+}

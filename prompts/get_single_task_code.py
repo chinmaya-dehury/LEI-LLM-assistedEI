@@ -17,7 +17,7 @@ Sample content in tasks list is like below:
   ]
 }
 
-Your goal is to generate a Python programs that can perform multiple insight or task related to the data. 
+Your goal is to generate a Python programs that can perform multiple insight or task related to the data.
 
 Your response should be in JSON format like this:
 
@@ -38,10 +38,31 @@ Your response should be in JSON format like this:
 
 In the above response, you can reuse the task name and the descriptions, but you must generate new code for task.
 
+
+
 The task should be:
 - Self-contained
 - Lightweight (runnable on Raspberry Pi)
 - Use standard Python libraries (pandas, numpy, matplotlib optional)
 - Should read actual data from 'data/$DATA_TYPE/raw_data.csv' as input when executed
 - Should print the output (no heavy dependencies)
+- Each generated task code will be saved as a separate .py file in the `generated_tasks/{DATA_TYPE}` directory.
+
+Upon execution of each task (python file), the results should be saved in a json file with the name `<task_name>_result.json`, e.g. `comfort_index_estimation_result.json`, in the in the `output/{DATA_TYPE}` directory. 
+The result json file should have following schema:
+{
+  "task_name": "<task_name>",
+  "description": "<task_description>",
+  "result_summary": [
+    {
+      "name": name of the result,
+      "value": value of the result,
+      "description": description of the result,
+      "tiemstamp": "<ISO timestamp>"
+    }
+  ],
+  "result_generated_at": "<ISO timestamp>"
+}
+Please note that one task may generate multiple result summary entries.
+
 """

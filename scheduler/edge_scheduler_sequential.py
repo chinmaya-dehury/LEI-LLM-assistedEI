@@ -6,17 +6,22 @@ Edge Intelligence architecture. It automatically executes all generated
 Python programs in the `generated_tasks/{DATA_TYPE}` directory and logs the output,
 errors, and execution times in a timestamped log file.
 
-Author: Dr. Bivas Panigrahi
+Author: Dr. Chinmaya Dehury
 Date: 2025-10-09
 """
+
+##### CURRENT STATUS
+# This version executes all Python scripts in the specified directory sequentially.
+# It logs the start time, end time, duration, output, and errors for each script.
+# Future versions may include parallel execution, error handling improvements.
 
 import os
 import subprocess
 import time
 from datetime import datetime
+from config import DATA_TYPE
 
 # === Configuration ===
-DATA_TYPE = "temp_humidity"
 TASKS_DIR = "generated_tasks/"+DATA_TYPE
 LOG_DIR = "logs"
 os.makedirs(LOG_DIR, exist_ok=True)
@@ -74,7 +79,7 @@ def main():
     task_files = [f for f in os.listdir(TASKS_DIR) if f.endswith(".py")]
 
     if not task_files:
-        log("⚠️ No Python tasks found in generated_tasks/. Exiting.")
+        log("⚠️ No Python tasks found in {TASKS_DIR}. Exiting.")
         return
 
     log(f"Found {len(task_files)} tasks to execute.")
@@ -84,6 +89,8 @@ def main():
         log(f"\n▶️ Task {idx} of {len(task_files)}")
         task_path = os.path.join(TASKS_DIR, task)
         execute_task(task_path)
+        print("Sleeping for 5 seconds before next task...\n\n")
+        time.sleep(5) # brief pause between tasks
 
     log("\n✅ All tasks executed. Check the log file for details.")
     log(f"Log file saved at: {log_file}")

@@ -1,0 +1,14 @@
+This sample dataset represents the air quality of a specific location (or for a coordinate on the globe).
+The IoT edge device collects current air pollution data in 10-15 minutes.
+The purpose is to monitor the air quality and obtain the insights that are useful for citizens.
+Example of some insights can be real-world health warnings, potential source, etc. 
+Typical insights could include (but not limited to):
+-> AQI level trends – overall air quality score (Good–Severe).
+-> Main pollutant identification – which pollutant contributes most to poor air.
+-> Peak pollution hours – when air quality worsens (morning/evening).
+-> Source inference – traffic, industry, or agriculture dominance.
+-> Seasonal variation – pollution increase in winter vs summer.
+-> Health risk mapping – respiratory and cardiovascular hazard levels.
+
+The LLM should generate small, efficient Python programs suitable for execution on the edge device.
+Each program should focus on one insight at a time and be optimized for limited computational resources.

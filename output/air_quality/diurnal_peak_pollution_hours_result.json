@@ -1,0 +1,42 @@
+{
+  "task_name": "diurnal_peak_pollution_hours",
+  "description": "Aggregate by hour-of-day over the last 24–48 hours and report the peak hour for PM2.5 and O3 (handles sparse data gracefully).",
+  "result_summary": [
+    {
+      "name": "data_window",
+      "value": {
+        "window_used": "24h",
+        "row_count_in_window": 8,
+        "first_timestamp": "2025-10-28T17:24:12",
+        "last_timestamp": "2025-10-29T10:04:44"
+      },
+      "description": "Time window used for diurnal aggregation and basic coverage.",
+      "tiemstamp": "2025-10-29T05:19:30.105413+00:00"
+    },
+    {
+      "name": "peak_hour_pm2_5",
+      "value": {
+        "hour": 10,
+        "median_value": 67.1,
+        "n_samples_at_peak_hour": 1,
+        "unique_hours_observed": 3,
+        "total_samples_in_window": 8
+      },
+      "description": "Hour-of-day with highest median PM2.5 over the selected window.",
+      "tiemstamp": "2025-10-29T05:19:30.109413+00:00"
+    },
+    {
+      "name": "peak_hour_o3",
+      "value": {
+        "hour": 17,
+        "median_value": 105.05,
+        "n_samples_at_peak_hour": 2,
+        "unique_hours_observed": 3,
+        "total_samples_in_window": 8
+      },
+      "description": "Hour-of-day with highest median O3 over the selected window.",
+      "tiemstamp": "2025-10-29T05:19:30.111413+00:00"
+    }
+  ],
+  "result_generated_at": "2025-10-29T05:19:30.100413+00:00"
+}

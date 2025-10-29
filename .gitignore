@@ -1,4 +1,17 @@
 venv/*
-.env
 __pycache__/
 *.pyc
+# =========================================
+# Environment & Virtual Envs
+# =========================================
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+pythonenv*
+env_local/
+.env.local
+*.env

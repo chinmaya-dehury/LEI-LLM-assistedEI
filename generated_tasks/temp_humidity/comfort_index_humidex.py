@@ -1,93 +1,141 @@
-#!/usr/bin/env python3
 import os
-import sys
-import math
-import numpy as np
+import json
 import pandas as pd
+import numpy as np
+from math import log, exp
+from datetime import datetime
 
 
-def compute_humidex(temp_c, rh_percent):
-    # Vapor pressure approximation (Magnus formula), e in hPa
-    e = (rh_percent / 100.0) * 6.112 * np.exp((17.67 * temp_c) / (temp_c + 243.5))
-    # Humidex formula: H = T + (5/9)*(e - 10)
+def iso_now():
+    return datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+
+
+def dew_point_c(temp_c, rh_percent):
+    # Magnus formula constants for water over liquid
+    a = 17.62
+    b = 243.12
+    rh = np.clip(rh_percent, 1e-6, 100.0)
+    gamma = np.log(rh / 100.0) + (a * temp_c) / (b + temp_c)
+    return (b * gamma) / (a - gamma)
+
+
+def humidex(temp_c, rh_percent):
+    # Compute vapor pressure from dew point (hPa)
+    td = dew_point_c(temp_c, rh_percent)
+    # Avoid invalid values
+    valid = np.isfinite(td)
+    e = np.full_like(temp_c, np.nan, dtype=float)
+    # 6.11 hPa * exp(5417.7530 * (1/273.16 - 1/(273.15 + Td)))
+    e[valid] = 6.11 * np.exp(5417.7530 * (1.0 / 273.16 - 1.0 / (273.15 + td[valid])))
     h = temp_c + (5.0 / 9.0) * (e - 10.0)
     return h
 
 
-def category(h):
+def categorize_humidex(h):
+    if pd.isna(h):
+        return "unknown"
     if h < 30:
-        return 'comfortable'
+        return "comfortable"
     elif h < 40:
-        return 'some discomfort'
-    elif h < 45:
-        return 'great discomfort'
+        return "some discomfort"
+    elif h <= 45:
+        return "great discomfort"
+    elif h < 54:
+        return "dangerous"
     else:
-        return 'dangerous'
+        return "heat stroke likely"
 
 
 def main():
-    path = 'data/temp_humidity/raw_data.csv'
-    if not os.path.exists(path):
-        print(f'ERROR: File not found: {path}')
-        sys.exit(1)
+    TASK_NAME = "comfort_index_humidex"
+    DESCRIPTION = "Compute Humidex from temperature and relative humidity and assign comfort categories (e.g., comfortable, some discomfort, great discomfort)."
+    DATA_TYPE = "temp_humidity"
+    INPUT_FILE = os.path.join("data", DATA_TYPE, "raw_data.csv")
+    OUTPUT_DIR = os.path.join("output", DATA_TYPE)
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+    result = {
+        "task_name": TASK_NAME,
+        "description": DESCRIPTION,
+        "result_summary": [],
+        "result_generated_at": iso_now(),
+    }
 
     try:
-        df = pd.read_csv(path)
+        df = pd.read_csv(INPUT_FILE)
     except Exception as e:
-        print('ERROR: Failed to read CSV:', e)
-        sys.exit(1)
+        result["result_summary"].append({
+            "name": "read_error",
+            "value": str(e),
+            "description": f"Failed to read input file at {INPUT_FILE}",
+            "tiemstamp": iso_now(),
+        })
+        out_path = os.path.join(OUTPUT_DIR, f"{TASK_NAME}_result.json")
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump(result, f, ensure_ascii=False, indent=2)
+        print(json.dumps(result, indent=2))
+        return
 
-    required_cols = ['timestamp', 'temperature_c', 'humidity_percent']
-    for c in required_cols:
-        if c not in df.columns:
-            print('ERROR: Missing required column:', c)
-            sys.exit(1)
+    # Parse and clean
+    df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+    for col in ["temperature_c", "humidity_percent"]:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
 
-    # Parse types
-    df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
-    df['temperature_c'] = pd.to_numeric(df['temperature_c'], errors='coerce')
-    df['humidity_percent'] = pd.to_numeric(df['humidity_percent'], errors='coerce')
+    df = df.dropna(subset=["timestamp", "temperature_c", "humidity_percent"]).sort_values("timestamp").reset_index(drop=True)
 
-    # Drop invalid rows
-    df = df.dropna(subset=required_cols).reset_index(drop=True)
     if df.empty:
-        print('No valid rows to compute Humidex.')
-        sys.exit(0)
+        result["result_summary"].append({
+            "name": "no_valid_rows",
+            "value": 0,
+            "description": "No valid rows after parsing and cleaning.",
+            "tiemstamp": iso_now(),
+        })
+        out_path = os.path.join(OUTPUT_DIR, f"{TASK_NAME}_result.json")
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump(result, f, ensure_ascii=False, indent=2)
+        print(json.dumps(result, indent=2))
+        return
 
-    # Compute Humidex
-    df['humidex'] = compute_humidex(df['temperature_c'].values, df['humidity_percent'].values)
-    df['comfort_category'] = df['humidex'].apply(category)
+    T = df["temperature_c"].to_numpy(dtype=float)
+    RH = df["humidity_percent"].to_numpy(dtype=float)
 
-    # Summary
-    h_min = float(df['humidex'].min())
-    h_mean = float(df['humidex'].mean())
-    h_max = float(df['humidex'].max())
+    H = humidex(T, RH)
+    df["humidex"] = H
+    df["comfort_category"] = df["humidex"].apply(categorize_humidex)
 
-    counts = df['comfort_category'].value_counts().to_dict()
+    # Metrics
+    now_iso = iso_now()
+    mean_h = float(np.nanmean(H)) if np.isfinite(H).any() else None
+    max_idx = int(np.nanargmax(H)) if np.isfinite(H).any() else None
+    max_h = float(H[max_idx]) if max_idx is not None else None
+    max_h_ts = df.loc[max_idx, "timestamp"].isoformat() if max_idx is not None else None
 
-    # Latest reading
-    dft = df.sort_values('timestamp')
-    last = dft.iloc[-1]
+    latest_idx = len(df) - 1
+    latest_h = float(df.loc[latest_idx, "humidex"]) if latest_idx >= 0 else None
+    latest_ts = df.loc[latest_idx, "timestamp"].isoformat() if latest_idx >= 0 else None
 
-    print('=== Humidex Comfort Report ===')
-    print(f"Rows computed: {len(df)}")
-    print(f"Time range: {dft['timestamp'].iloc[0]} to {dft['timestamp'].iloc[-1]}")
-    print('Humidex stats (min/mean/max): {:.1f} / {:.1f} / {:.1f}'.format(h_min, h_mean, h_max))
-    print('Category counts:', {k: int(v) for k, v in counts.items()})
-    print('Latest reading:')
-    print('  Timestamp:', last['timestamp'])
-    print('  Temp (C):', round(float(last['temperature_c']), 1))
-    print('  RH (%):', round(float(last['humidity_percent']), 1))
-    print('  Humidex:', round(float(last['humidex']), 1))
-    print('  Comfort category:', last['comfort_category'])
+    discomfort_mask = df["humidex"] >= 30
+    percent_discomfort = float(round(100.0 * discomfort_mask.mean(), 2)) if len(df) > 0 else 0.0
 
-    # Optional: list timestamps where comfort is not "comfortable"
-    non_ok = dft[dft['comfort_category'] != 'comfortable']
-    if not non_ok.empty:
-        print('Periods with discomfort:')
-        for _, r in non_ok.iterrows():
-            print('  {} -> Humidex {:.1f} ({})'.format(r['timestamp'], r['humidex'], r['comfort_category']))
+    cat_counts = df["comfort_category"].value_counts(dropna=False).to_dict()
+
+    alert_triggered = bool((df["humidex"] >= 40).any())
+
+    result["result_summary"].extend([
+        {"name": "mean_humidex", "value": round(mean_h, 2) if mean_h is not None else None, "description": "Average Humidex across dataset", "tiemstamp": now_iso},
+        {"name": "max_humidex", "value": {"value": round(max_h, 2) if max_h is not None else None, "at": max_h_ts}, "description": "Maximum Humidex and when it occurred", "tiemstamp": now_iso},
+        {"name": "latest_humidex", "value": {"value": round(latest_h, 2) if latest_h is not None else None, "at": latest_ts}, "description": "Most recent Humidex value", "tiemstamp": now_iso},
+        {"name": "percent_time_discomfort_or_worse", "value": percent_discomfort, "description": "Percentage of time Humidex >= 30", "tiemstamp": now_iso},
+        {"name": "category_counts", "value": cat_counts, "description": "Counts by comfort category", "tiemstamp": now_iso},
+        {"name": "alert_great_discomfort_or_worse", "value": alert_triggered, "description": "True if any Humidex >= 40 (great discomfort or worse)", "tiemstamp": now_iso},
+    ])
+
+    out_path = os.path.join(OUTPUT_DIR, f"{TASK_NAME}_result.json")
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(result, f, ensure_ascii=False, indent=2)
+
+    print(json.dumps(result, indent=2))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

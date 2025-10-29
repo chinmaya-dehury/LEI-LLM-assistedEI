@@ -1,0 +1,120 @@
+{
+  "data_source": "IoT air quality Sensors",
+  "sampling_interval": "10-15 minutes",
+  "data_format": "CSV",
+  "columns": {
+    "timestamp": {
+      "type": "datetime",
+      "description": "Time at which the reading was recorded (local time)."
+    },
+    "coord": [
+      {
+        "lon": "integer",
+        "range":[0,180],
+        "unit": "degrees",
+        "description": "longitude of a given location."
+      },
+      {
+        "lat": "integer",
+        "range":[0,90],
+        "unit": "degrees",
+        "description": "latitude of a given location."
+      }
+    ],
+    "components": [
+      {
+        "co": {
+          "type": "float",
+          "unit": "µg/m3",
+          "description": "Carbon monoxide concentration."
+        }
+      },
+      {
+        "no": {
+          "type": "float",
+          "unit": "µg/m3",
+          "description": "Nitric oxide concentration."
+        }
+      },
+      {
+        "no2": {
+          "type": "float",
+          "unit": "µg/m3",
+          "description": "Nitrogen dioxide concentration."
+        }
+      },
+      {
+        "no3": {
+          "type": "float",
+          "unit": "µg/m3",
+          "description": "Ozone concentration."
+        }
+      },
+      {
+        "so2": {
+          "type": "float",
+          "unit": "µg/m3",
+          "description": "Sulphur dioxide concentration."
+        }
+      },
+      {
+        "pm2_5": {
+          "type": "float",
+          "unit": "µg/m3",
+          "description": "PM2.5 concentration (fine particles ≤2.5 µm)."
+        }
+      },
+      {
+        "pm10": {
+          "type": "float",
+          "unit": "µg/m3",
+          "description": "PM10 concentration (particles ≤10 µm)."
+        }
+      },
+      {
+        "nh3": {
+          "type": "float",
+          "unit": "µg/m3",
+          "description": "Ammonia concentration."
+        }
+      },
+      {
+        "so2": {
+          "type": "float",
+          "unit": "µg/m3",
+          "description": "Sulphur dioxide concentration."
+        }
+    },
+      {
+        "pm2_5": {
+          "type": "float",
+          "unit": "µg/m3",
+          "description": "PM2.5 concentration (fine particles ≤2.5 µm)."
+        }
+    },
+      {
+        "pm10": {
+          "type": "float",
+          "unit": "µg/m3",
+          "description": "PM10 concentration (particles ≤10 µm)."
+        }
+      },
+      {
+        "nh3": {
+          "type": "float",
+          "unit": "µg/m3",
+          "description": "Ammonia concentration."
+        }
+      }
+    ]    
+  },
+  "data_quality": {
+    "missing_values": "none",
+    "sensor_accuracy": "not available"
+  },
+  "device_specs": {
+    "edge_device_model": "Raspberry Pi 4",
+    "compute_capability": "Quad-core 1.5GHz, 4GB RAM"
+  },
+  "storage": "Local SQLite DB with periodic upload to cloud"
+}

@@ -1,0 +1,55 @@
+{
+  "task_name": "dominant_pollutant_exceedance",
+  "description": "Calculate exceedance ratios against WHO 2021 short-term guidelines (e.g., PM2.5:15, PM10:45, NO2:25, SO2:40, O3:100, CO:4000 ug/m3) and identify the dominant pollutant per timestamp.",
+  "result_summary": [
+    {
+      "name": "dominant_pollutant",
+      "value": "PM2.5",
+      "description": "Dominant pollutant by exceedance ratio; status=exceedance; ratio=3.651",
+      "tiemstamp": "2025-10-28T17:24:12Z"
+    },
+    {
+      "name": "dominant_pollutant",
+      "value": "PM2.5",
+      "description": "Dominant pollutant by exceedance ratio; status=exceedance; ratio=3.651",
+      "tiemstamp": "2025-10-28T17:38:26Z"
+    },
+    {
+      "name": "dominant_pollutant",
+      "value": "PM2.5",
+      "description": "Dominant pollutant by exceedance ratio; status=exceedance; ratio=3.757",
+      "tiemstamp": "2025-10-29T09:14:41Z"
+    },
+    {
+      "name": "dominant_pollutant",
+      "value": "PM2.5",
+      "description": "Dominant pollutant by exceedance ratio; status=exceedance; ratio=3.757",
+      "tiemstamp": "2025-10-29T09:24:42Z"
+    },
+    {
+      "name": "dominant_pollutant",
+      "value": "PM2.5",
+      "description": "Dominant pollutant by exceedance ratio; status=exceedance; ratio=3.757",
+      "tiemstamp": "2025-10-29T09:34:42Z"
+    },
+    {
+      "name": "dominant_pollutant",
+      "value": "PM2.5",
+      "description": "Dominant pollutant by exceedance ratio; status=exceedance; ratio=3.757",
+      "tiemstamp": "2025-10-29T09:44:43Z"
+    },
+    {
+      "name": "dominant_pollutant",
+      "value": "PM2.5",
+      "description": "Dominant pollutant by exceedance ratio; status=exceedance; ratio=3.757",
+      "tiemstamp": "2025-10-29T09:54:43Z"
+    },
+    {
+      "name": "dominant_pollutant",
+      "value": "PM2.5",
+      "description": "Dominant pollutant by exceedance ratio; status=exceedance; ratio=4.473",
+      "tiemstamp": "2025-10-29T10:04:44Z"
+    }
+  ],
+  "result_generated_at": "2025-10-29T05:19:35Z"
+}

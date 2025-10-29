@@ -57,10 +57,13 @@ __The LLM replies with:__
 `python llm_orchestrator_basic.py`    
 OR    
 look at the existing tasks, and if required or if possible generate a list of new tasks
-`python llm_orchestrator_adaptive.py`    
+`python llm_orchestrator_adaptive.py` 
+OR    
+look at the existing tasks, and if required or if possible generate a list of new tasks
+`python llm_orchestrator_adaptive_resource.py`    
 * Step 2 - Generate the code for each task
 `python task_code_generator.py`
-* Step 3 – Execute Tasks (Edge Simulation) `python edge_executor.py`
+* Step 3 – Execute Tasks (Edge Simulation) `python -m scheduler.edge_scheduler_sequential`
 * Step 4 – Visualize Results (Dashboard)  `streamlit run edge_dashboard.py`
 
 ### for setting up virtual environment
@@ -75,3 +78,10 @@ look at the existing tasks, and if required or if possible generate a list of ne
 
 
 # TODO
+[ ] expose the intelligence over a specific port number.     
+[ ] Can the device discover context, metadata, sample data over http (similar to Prometheus HTTP service discovery)?     
+[ ] Prioritise the task - could be by human or by LLM.     
+[ ] Make it model-agnostic: LLMs should integrated in a plug-n-play manner.     
+[ ] Edge-executor should schedule the task using cron.     
+[ ] How many tasks should run in a concurrent manner?      
+[ ] In how many batches tasks should run?      

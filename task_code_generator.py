@@ -14,19 +14,27 @@ import json
 from openai import OpenAI
 from string import Template
 from prompts.get_single_task_code import SYSTEM_PROMPT
+from config import DATA_TYPE, NO_OF_TASKS
 
 # Initialize the LLM client
 client = OpenAI()
 
+# Paths = Data type specific
+# MAke sure that a fodler name with following data type exists inside 
+#   data/, generated_tasks/ and output/ folders.
+#
+#### Select any one data type by uncommenting the line below
+# DATA_TYPE = "temp_humidity" # it is expected that a folder with this name exists
+# DATA_TYPE = "air_quality" # it is expected that a folder with this name exists
+
 # Paths
-DATA_TYPE = "temp_humidity"
 BASE_PATH = "data/"+DATA_TYPE+"/"
 DATA_PATH = BASE_PATH+"sample_data.csv"
 META_PATH = BASE_PATH+"metadata.json"
 CONTEXT_PATH = BASE_PATH+"context.txt"
 OUTPUT_DIR = "generated_tasks/"+DATA_TYPE
-TASK_LIST_PATH = OUTPUT_DIR+"/tasks_list1.json"
-NO_OF_TASKS = 2  # Number of tasks to generate code for
+TASK_LIST_PATH = OUTPUT_DIR+"/tasks_list.json"
+# NO_OF_TASKS = 2  # Number of tasks to generate code for at a time
 
 
 def call_llm_for_task_code(task_list):
@@ -81,7 +89,7 @@ def save_task_code(tasks_data):
         print(f"✅ Saved: {filename}")
         print(f"   → Description: {task['description']}\n")
 
-    print("🎯 All tasks generated successfully and saved in {} folder.",OUTPUT_DIR)
+    print(f"🎯 All tasks generated successfully and saved in {OUTPUT_DIR} folder.")
 
 
 
@@ -106,7 +114,7 @@ with open(TASK_LIST_PATH, "r") as f:
             "task_name": task["task_name"],
             "description": task["description"]
         })
-# loop every 2 entries
+# loop every NO_OF_TASKS=2 entries
 for i in range(0, len(json_task_list), NO_OF_TASKS):    
     group = {"tasks": json_task_list[i:i+2]}
     print(json.dumps(group, ensure_ascii=False, indent=2))
