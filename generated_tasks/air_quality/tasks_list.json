@@ -35,6 +35,38 @@
     {
       "task_name": "health_advisory_generator",
       "description": "Generate brief, on-device health advisories for general and sensitive groups based on DAQI band and the identified dominant pollutant."
+    },
+    {
+      "task_name": "pm25_24h_time_weighted_mean",
+      "description": "Compute a 24-hour time-weighted mean of PM2.5 using actual timestamp gaps (handles 10\u201315 min irregularity), require >=60% coverage, and classify against WHO 24h guideline (15 \u00b5g/m3)."
+    },
+    {
+      "task_name": "pm25_nowcast_concentration",
+      "description": "Estimate near-real-time PM2.5 using the US EPA NowCast (up to last 12 samples): w = max(0.5, 1 - (max-min)/max); compute weighted mean and label low/moderate/high."
+    },
+    {
+      "task_name": "nox_ozone_photochemical_indicator",
+      "description": "Compute NOx = NO + NO2 and the O3/NOx ratio; classify regime as traffic-dominated (low ratio), mixed, or photochemically aged (high ratio)."
+    },
+    {
+      "task_name": "coordinate_validity_and_drift",
+      "description": "Validate lat/lon against metadata ranges and flag sensor relocation/drift if step change >0.01\u00b0 or out-of-bounds values are observed."
+    },
+    {
+      "task_name": "schema_field_mismatch_checker",
+      "description": "Compare CSV headers with metadata definitions; flag missing/extra fields, duplicate entries, and name mismatches (e.g., o3 vs no3), and suggest a mapping fix."
+    },
+    {
+      "task_name": "pollutant_exceedance_duration_24h",
+      "description": "Sum minutes above WHO short-term guidelines (PM2.5:15, PM10:45, NO2:25, SO2:40, O3:100, CO:4000 \u00b5g/m3) over the last 24h per pollutant; report top offender."
+    },
+    {
+      "task_name": "persistent_elevation_alert",
+      "description": "Flag sustained episodes when any pollutant exceeds its guideline for N consecutive readings (default N=3), to distinguish persistent pollution from brief spikes."
+    },
+    {
+      "task_name": "ventilation_advice_now",
+      "description": "Recommend whether it\u2019s currently safe to ventilate based on PM2.5 and O3 staying below thresholds for the last M intervals (e.g., M=2\u20133) and no recent spike detected."
     }
   ]
 }

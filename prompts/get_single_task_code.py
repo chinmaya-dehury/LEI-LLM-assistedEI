@@ -44,7 +44,7 @@ The task should be:
 - Self-contained
 - Lightweight (runnable on Raspberry Pi)
 - Use standard Python libraries (pandas, numpy, matplotlib optional)
-- Should read actual data from 'data/$DATA_TYPE/raw_data.csv' as input when executed
+- Should read raw or actual data from 'data/{DATA_TYPE}/raw_data.csv' as input when executed
 - Should print the output (no heavy dependencies)
 - Each generated task code will be saved as a separate .py file in the `generated_tasks/{DATA_TYPE}` directory.
 

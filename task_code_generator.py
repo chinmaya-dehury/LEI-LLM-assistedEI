@@ -114,6 +114,10 @@ with open(TASK_LIST_PATH, "r") as f:
             "task_name": task["task_name"],
             "description": task["description"]
         })
+
+# TODO; noe the LLM should generate code only for new tasks
+# Check if the corresponding .py file already exists in the generated_tasks/{DATA_TYPE} folder
+# If corresponding .py file exists, skip that task
 # loop every NO_OF_TASKS=2 entries
 for i in range(0, len(json_task_list), NO_OF_TASKS):    
     group = {"tasks": json_task_list[i:i+2]}

@@ -15,3 +15,5 @@ pythonenv*
 env_local/
 .env.local
 *.env
+
+# Project related technical files
