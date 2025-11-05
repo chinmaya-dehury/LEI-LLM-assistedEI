@@ -1,0 +1,274 @@
+🚀 Edge Executor started at 2025-11-05 15:38:31
+Scanning directory: generated_tasks/temp_humidity
+Found 7 tasks to execute.
+============================================================
+
+▶️ Task 1 of 7
+
+🟢 Executing: generated_tasks/temp_humidity\absolute_humidity_estimation.py
+   Start Time: 15:38:31
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+   ❌ Status: FAILED
+   Duration: 0.17 sec
+   Error (stdout):
+{"task_name": "absolute_humidity_estimation", "description": "Compute absolute humidity (g/m³) from temperature_c and humidity_percent to quantify moisture load independent of temperature.", "error": "Input file not found: data\\environment\\raw_data.csv", "result_generated_at": "2025-11-05T15:38:31"}
+------------------------------------------------------------
+
+▶️ Task 2 of 7
+
+🟢 Executing: generated_tasks/temp_humidity\comfort_index_humidex.py
+   Start Time: 15:38:36
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+   ✅ Status: SUCCESS
+   Duration: 1.62 sec
+   Output:
+{
+  "task_name": "comfort_index_humidex",
+  "description": "Compute Humidex from temperature and relative humidity and assign comfort categories (e.g., comfortable, some discomfort, great discomfort).",
+  "result_summary": [
+    {
+      "name": "mean_humidex",
+      "value": 36.67,
+      "description": "Average Humidex across dataset",
+      "tiemstamp": "2025-11-05T10:08:37Z"
+    },
+    {
+      "name": "max_humidex",
+      "value": {
+        "value": 44.42,
+        "at": "2025-10-09T14:55:00"
+      },
+      "description": "Maximum Humidex and when it occurred",
+      "tiemstamp": "2025-11-05T10:08:37Z"
+    },
+    {
+      "name": "latest_humidex",
+      "value": {
+        "value": 31.86,
+        "at": "2025-10-09T23:55:00"
+      },
+      "description": "Most recent Humidex value",
+      "tiemstamp": "2025-11-05T10:08:37Z"
+    },
+    {
+      "name": "percent_time_discomfort_or_worse",
+      "value": 87.85,
+      "description": "Percentage of time Humidex >= 30",
+      "tiemstamp": "2025-11-05T10:08:37Z"
+    },
+    {
+      "name": "category_counts",
+      "value": {
+        "some discomfort": 152,
+        "great discomfort": 101,
+        "comfortable": 35
+      },
+      "description": "Counts by comfort category",
+      "tiemstamp": "2025-11-05T10:08:37Z"
+    },
+    {
+      "name": "alert_great_discomfort_or_worse",
+      "value": true,
+      "description": "True if any Humidex >= 40 (great discomfort or worse)",
+      "tiemstamp": "2025-11-05T10:08:37Z"
+    }
+  ],
+  "result_generated_at": "2025-11-05T10:08:37Z"
+}
+------------------------------------------------------------
+
+▶️ Task 3 of 7
+
+🟢 Executing: generated_tasks/temp_humidity\dew_point_and_condensation_risk.py
+   Start Time: 15:38:42
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+   ✅ Status: SUCCESS
+   Duration: 1.74 sec
+   Output:
+Result written to: output\temp_humidity\dew_point_and_condensation_risk_result.json
+Dew point (°C) min/mean/max: 18.02/20.54/22.74 | Risk points: 175/288 (60.8%) | Threshold: 20.00°C
+------------------------------------------------------------
+
+▶️ Task 4 of 7
+
+🟢 Executing: generated_tasks/temp_humidity\discomfort_index_thom.py
+   Start Time: 15:38:49
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+   ✅ Status: SUCCESS
+   Duration: 1.47 sec
+   Output:
+Processed 288 rows from data\temp_humidity\raw_data.csv
+Latest DI: 23.26 (Mild discomfort) at 2025-10-09T23:55:00
+Max DI: 29.02 (Very severe discomfort) at 2025-10-09T14:55:00
+Min DI: 21.7 (Mild discomfort) at 2025-10-09T03:05:00
+Band distribution (%):
+  - Comfortable: 0.0%
+  - Mild discomfort: 34.03%
+  - Moderate discomfort: 28.82%
+  - Severe discomfort: 36.81%
+  - Very severe discomfort: 0.35%
+  - Medical emergency risk: 0.0%
+High-risk (DI >= 27) count: 107
+Recommendation: Consider increasing air circulation.
+Result saved to: output\temp_humidity\discomfort_index_thom_result.json
+------------------------------------------------------------
+
+▶️ Task 5 of 7
+
+🟢 Executing: generated_tasks/temp_humidity\parse_csv_validate_schema.py
+   Start Time: 15:38:56
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+   ✅ Status: SUCCESS
+   Duration: 1.27 sec
+   Output:
+{
+  "task_name": "parse_csv_validate_schema",
+  "description": "Load the CSV, parse timestamps to datetime, enforce float types for temperature and humidity, and verify 5-minute sampling intervals.",
+  "result_summary": [
+    {
+      "name": "row_count",
+      "value": 288,
+      "description": "Total rows in CSV",
+      "tiemstamp": "2025-11-05T10:08:57Z"
+    },
+    {
+      "name": "missing_timestamp_count",
+      "value": 0,
+      "description": "Rows with unparseable timestamps",
+      "tiemstamp": "2025-11-05T10:08:57Z"
+    },
+    {
+      "name": "missing_temperature_count",
+      "value": 0,
+      "description": "Rows with missing/invalid temperature values",
+      "tiemstamp": "2025-11-05T10:08:57Z"
+    },
+    {
+      "name": "missing_humidity_count",
+      "value": 0,
+      "description": "Rows with missing/invalid humidity values",
+      "tiemstamp": "2025-11-05T10:08:57Z"
+    },
+    {
+      "name": "invalid_temperature_range_count",
+      "value": 0,
+      "description": "Temperature values outside [15, 40] Celsius",
+      "tiemstamp": "2025-11-05T10:08:57Z"
+    },
+    {
+      "name": "invalid_humidity_range_count",
+      "value": 0,
+      "description": "Relative humidity outside [20, 100] percent",
+      "tiemstamp": "2025-11-05T10:08:57Z"
+    },
+    {
+      "name": "duplicate_timestamps_count",
+      "value": 0,
+      "description": "Number of duplicate timestamp entries",
+      "tiemstamp": "2025-11-05T10:08:57Z"
+    },
+    {
+      "name": "timestamps_monotonic_increasing",
+      "value": true,
+      "description": "Timestamps are in non-decreasing order",
+      "tiemstamp": "2025-11-05T10:08:57Z"
+    },
+    {
+      "name": "sampling_interval_ok",
+      "value": true,
+      "description": "All consecutive samples spaced exactly 5 minutes",
+      "tiemstamp": "2025-11-05T10:08:57Z"
+    },
+    {
+      "name": "sampling_unique_intervals_minutes",
+      "value": [
+        5.0
+      ],
+      "description": "Unique observed sampling intervals (minutes)",
+      "tiemstamp": "2025-11-05T10:08:57Z"
+    },
+    {
+      "name": "irregular_intervals_count",
+      "value": 0,
+      "description": "Count of intervals differing from 5 minutes",
+      "tiemstamp": "2025-11-05T10:08:57Z"
+    },
+    {
+      "name": "first_timestamp",
+      "value": "2025-10-09T00:00:00",
+      "description": "First timestamp in dataset (ISO)",
+      "tiemstamp": "2025-11-05T10:08:57Z"
+    },
+    {
+      "name": "last_timestamp",
+      "value": "2025-10-09T23:55:00",
+      "description": "Last timestamp in dataset (ISO)",
+      "tiemstamp": "2025-11-05T10:08:57Z"
+    },
+    {
+      "name": "min_temperature_c",
+      "value": 22.9,
+      "description": "Minimum observed temperature (C)",
+      "tiemstamp": "2025-11-05T10:08:57Z"
+    },
+    {
+      "name": "max_temperature_c",
+      "value": 34.4,
+      "description": "Maximum observed temperature (C)",
+      "tiemstamp": "2025-11-05T10:08:57Z"
+    },
+    {
+      "name": "min_humidity_percent",
+      "value": 49.6,
+      "description": "Minimum observed relative humidity (%)",
+      "tiemstamp": "2025-11-05T10:08:57Z"
+    },
+    {
+      "name": "max_humidity_percent",
+      "value": 75.3,
+      "description": "Maximum observed relative humidity (%)",
+      "tiemstamp": "2025-11-05T10:08:57Z"
+    }
+  ],
+  "result_generated_at": "2025-11-05T10:08:57Z"
+}
+------------------------------------------------------------
+
+▶️ Task 6 of 7
+
+🟢 Executing: generated_tasks/temp_humidity\rolling_zscore_anomaly_detection.py
+   Start Time: 15:39:02
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+   ✅ Status: SUCCESS
+   Duration: 1.30 sec
+   Output:
+Rolling Z-Score Anomaly Detection Summary
+- input_file: data\temp_humidity\raw_data.csv
+- output_file: output\temp_humidity\rolling_zscore_anomaly_detection_result.json
+- total_points: 288
+- valid_points: 288
+- window: 5
+- threshold: 3.0
+- any_anomalies: 0
+No anomalies detected.
+------------------------------------------------------------
+
+▶️ Task 7 of 7
+
+🟢 Executing: generated_tasks/temp_humidity\simple_linear_forecast_next_hour.py
+   Start Time: 15:39:08
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+   ✅ Status: SUCCESS
+   Duration: 1.68 sec
+   Output:
+Task: simple_linear_forecast_next_hour
+Input: data\temp_humidity\raw_data.csv
+Data points used: 288
+Last observed: {'timestamp': '2025-10-09T23:55:00', 'temperature_c': 25.0, 'humidity_percent': 69.9}
+First forecast point: {'timestamp': '2025-10-10T00:00:00', 'temperature_c': 32.31, 'humidity_percent': 54.19}
+End-of-next-hour forecast: {'timestamp': '2025-10-10T00:55:00', 'temperature_c': 32.59, 'humidity_percent': 53.56}
+Results saved to: output\temp_humidity\simple_linear_forecast_next_hour_result.json
+------------------------------------------------------------
+
+✅ All tasks executed. Check the log file for details.
+Log file saved at: logs\edge_execution_20251105_153831.log

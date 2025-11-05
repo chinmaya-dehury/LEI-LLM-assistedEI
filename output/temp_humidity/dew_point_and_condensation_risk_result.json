@@ -1,0 +1,111 @@
+{
+  "task_name": "dew_point_and_condensation_risk",
+  "description": "Estimate dew point using a Magnus formula and flag potential condensation risk when dew_point >= configurable threshold (default 20°C).",
+  "result_summary": [
+    {
+      "name": "dew_point_c_stats",
+      "value": {
+        "min": 18.02,
+        "max": 22.74,
+        "mean": 20.54
+      },
+      "description": "Summary statistics of computed dew point in °C.",
+      "timestamp": "2025-11-05T10:25:37.130844+00:00"
+    },
+    {
+      "name": "condensation_risk_threshold_c",
+      "value": 20.0,
+      "description": "Threshold used for flagging condensation risk (dew_point >= threshold).",
+      "timestamp": "2025-11-05T10:25:37.130844+00:00"
+    },
+    {
+      "name": "condensation_risk_counts",
+      "value": {
+        "risk_points": 175,
+        "total_points": 288,
+        "risk_percent": 60.76
+      },
+      "description": "Number and percentage of samples exceeding the dew point threshold.",
+      "timestamp": "2025-11-05T10:25:37.130844+00:00"
+    },
+    {
+      "name": "first_last_risk_timestamps",
+      "value": {
+        "first": "2025-10-09T07:10:00",
+        "last": "2025-10-09T22:40:00"
+      },
+      "description": "First and last timestamps where condensation risk was flagged (if any).",
+      "timestamp": "2025-11-05T10:25:37.130844+00:00"
+    },
+    {
+      "name": "risk_periods",
+      "value": [
+        {
+          "start": "2025-10-09T07:10:00",
+          "end": "2025-10-09T07:10:00",
+          "points": 1
+        },
+        {
+          "start": "2025-10-09T07:30:00",
+          "end": "2025-10-09T07:35:00",
+          "points": 2
+        },
+        {
+          "start": "2025-10-09T08:00:00",
+          "end": "2025-10-09T21:45:00",
+          "points": 166
+        },
+        {
+          "start": "2025-10-09T21:55:00",
+          "end": "2025-10-09T22:10:00",
+          "points": 4
+        },
+        {
+          "start": "2025-10-09T22:30:00",
+          "end": "2025-10-09T22:30:00",
+          "points": 1
+        },
+        {
+          "start": "2025-10-09T22:40:00",
+          "end": "2025-10-09T22:40:00",
+          "points": 1
+        }
+      ],
+      "description": "Contiguous periods where dew point was at or above the threshold.",
+      "timestamp": "2025-11-05T10:25:37.130844+00:00"
+    },
+    {
+      "name": "data_quality_summary",
+      "value": {
+        "temperature_out_of_range_count": 0,
+        "humidity_out_of_range_count": 0,
+        "dropped_missing_rows": 0
+      },
+      "description": "Counts of out-of-range values and dropped missing rows based on metadata ranges.",
+      "timestamp": "2025-11-05T10:25:37.130844+00:00"
+    },
+    {
+      "name": "time_range",
+      "value": {
+        "start": "2025-10-09T00:00:00",
+        "end": "2025-10-09T23:55:00",
+        "rows": 288
+      },
+      "description": "Time coverage and number of data rows analyzed.",
+      "timestamp": "2025-11-05T10:25:37.130844+00:00"
+    },
+    {
+      "name": "last_observation",
+      "value": {
+        "timestamp": "2025-10-09T23:55:00",
+        "temperature_c": 25.0,
+        "humidity_percent": 69.9,
+        "dew_point_c": 19.12,
+        "risk": false
+      },
+      "description": "Values from the most recent record including computed dew point and risk flag.",
+      "timestamp": "2025-11-05T10:25:37.130844+00:00"
+    }
+  ],
+  "result_generated_at": "2025-11-05T10:25:37.130844+00:00"
+}

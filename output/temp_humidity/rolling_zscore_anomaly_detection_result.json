@@ -1,0 +1,46 @@
+{
+  "task_name": "rolling_zscore_anomaly_detection",
+  "description": "Detect anomalies via rolling z-score for temperature_c and humidity_percent; flag points with absolute z-score above a threshold.",
+  "result_summary": [
+    {
+      "name": "overview",
+      "value": {
+        "total_points": 288,
+        "valid_points": 288,
+        "window": 5,
+        "threshold": 3.0,
+        "temp_anomalies": 0,
+        "hum_anomalies": 0,
+        "any_anomalies": 0,
+        "max_abs_temp_z": 1.9668302043193884,
+        "max_abs_hum_z": 1.9710549133044597,
+        "first_anomaly_time": null,
+        "last_anomaly_time": null
+      },
+      "description": "High-level counts and settings for anomaly detection",
+      "timestamp": "2025-11-05T10:25:56.299174+00:00"
+    },
+    {
+      "name": "latest_point",
+      "value": {
+        "timestamp": "2025-10-09T23:55:00",
+        "temperature_c": 25.0,
+        "humidity_percent": 69.9,
+        "temp_z": 1.557968011145491e-14,
+        "hum_z": -1.4912022701506318,
+        "temp_anomaly": false,
+        "hum_anomaly": false,
+        "any_anomaly": false
+      },
+      "description": "Latest observation and its anomaly status",
+      "timestamp": "2025-11-05T10:25:56.299188+00:00"
+    },
+    {
+      "name": "top_anomalies",
+      "value": [],
+      "description": "Top anomalies by maximum absolute z-score (up to 5)",
+      "timestamp": "2025-11-05T10:25:56.299192+00:00"
+    }
+  ],
+  "result_generated_at": "2025-11-05T10:25:56.274997+00:00"
+}

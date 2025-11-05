@@ -14,12 +14,16 @@ Date: 2025-10-09
 # This version executes all Python scripts in the specified directory sequentially.
 # It logs the start time, end time, duration, output, and errors for each script.
 # Future versions may include parallel execution, error handling improvements.
+# code change so that subprocess uses the same python interpreter as the scheduler
+# Also, improve error detection by scanning stdout/stderr for common error keywords.
 
 import os
 import subprocess
 import time
 from datetime import datetime
 from config import DATA_TYPE
+import sys
+import json
 
 # === Configuration ===
 TASKS_DIR = "generated_tasks/"+DATA_TYPE
@@ -41,25 +45,88 @@ def execute_task(task_path):
     start_time = time.time()
     log(f"\n🟢 Executing: {task_path}")
     log(f"   Start Time: {datetime.now().strftime('%H:%M:%S')}")
+    log(f"   Scheduler python: {sys.executable}")
+
+    def looks_like_error(stdout: str, stderr: str) -> bool:
+        s = ((stdout or "") + "\n" + (stderr or "")).lower()
+        indicators = [
+            "error",
+            "exception",
+            "traceback",
+            "failed",
+            "input file not found",
+            "error:"
+        ]
+        return any(ind in s for ind in indicators)
+
+    def log_multiline(prefix: str, text: str):
+        if not text:
+            return
+        for line in text.splitlines():
+            log(f"{prefix}{line}")
+
+    def json_has_error(payload):
+        if isinstance(payload, dict):
+            status_val = str(payload.get("status", "")).lower()
+            if payload.get("error") or status_val in {"failed", "error"}:
+                return True
+            result = payload.get("result_summary")
+            if isinstance(result, dict):
+                result_status = str(result.get("status", "")).lower()
+                if result_status in {"failed", "error"} or result.get("error"):
+                    return True
+        return False
 
     try:
-        # Run the script as a subprocess
         result = subprocess.run(
-            ["python", task_path],
+            [sys.executable, task_path],
             capture_output=True,
             text=True,
-            timeout=120  # seconds
+            timeout=120,  # seconds
+            env=os.environ
         )
         duration = time.time() - start_time
 
-        if result.returncode == 0:
-            log("   ✅ Status: SUCCESS")
-            log(f"   Duration: {duration:.2f} sec")
-            log(f"   Output:\n{result.stdout.strip()}")
+        stdout = (result.stdout or "").strip()
+        stderr = (result.stderr or "").strip()
+
+        parsed_json = None
+        if stdout:
+            try:
+                parsed_json = json.loads(stdout)
+            except json.JSONDecodeError:
+                parsed_json = None
+
+        if parsed_json is not None:
+            if not json_has_error(parsed_json) and result.returncode == 0:
+                log("   ✅ Status: SUCCESS")
+                log(f"   Duration: {duration:.2f} sec")
+                log("   Output (JSON):")
+                log_multiline("      ", json.dumps(parsed_json, ensure_ascii=False, indent=2))
+            else:
+                log("   ❌ Status: FAILED")
+                log(f"   Duration: {duration:.2f} sec")
+                log("   Error (JSON):")
+                log_multiline("      ", json.dumps(parsed_json, ensure_ascii=False, indent=2))
         else:
-            log("   ❌ Status: FAILED")
-            log(f"   Duration: {duration:.2f} sec")
-            log(f"   Error:\n{result.stderr.strip()}")
+            detected_error = looks_like_error(stdout, stderr)
+            success = (result.returncode == 0) and (not detected_error)
+
+            if success:
+                log("   ✅ Status: SUCCESS")
+                log(f"   Duration: {duration:.2f} sec")
+                if stdout:
+                    log("   Output:")
+                    log_multiline("      ", stdout)
+            else:
+                log("   ❌ Status: FAILED")
+                log(f"   Duration: {duration:.2f} sec")
+                if stderr:
+                    log("   Error (stderr):")
+                    log_multiline("      ", stderr)
+                elif stdout:
+                    log("   Error (stdout):")
+                    log_multiline("      ", stdout)
 
     except subprocess.TimeoutExpired:
         log("   ⚠️ Status: TIMEOUT (script exceeded 120s)")

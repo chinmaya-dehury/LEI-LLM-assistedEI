@@ -59,10 +59,15 @@ OR
 look at the existing tasks, and if required or if possible generate a list of new tasks
 `python llm_orchestrator_adaptive.py` 
 OR    
-look at the existing tasks, and if required or if possible generate a list of new tasks
+look at the existing tasks, and if required or if possible generate a list of new tasks. Also store in new json file and existing one.
 `python llm_orchestrator_adaptive_resource.py`    
+
 * Step 2 - Generate the code for each task
 `python task_code_generator.py`
+OR
+only generate code for new json file and validate each code before saving
+`python tak_code_generator_updated.py`
+
 * Step 3 – Execute Tasks (Edge Simulation) `python -m scheduler.edge_scheduler_sequential`
 * Step 4 – Visualize Results (Dashboard)  `streamlit run edge_dashboard.py`
 

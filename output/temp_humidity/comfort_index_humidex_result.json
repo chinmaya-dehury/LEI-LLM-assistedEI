@@ -6,7 +6,7 @@
       "name": "mean_humidex",
       "value": 36.67,
       "description": "Average Humidex across dataset",
-      "tiemstamp": "2025-10-28T10:32:56Z"
+      "tiemstamp": "2025-11-05T10:25:30Z"
     },
     {
       "name": "max_humidex",
@@ -15,7 +15,7 @@
         "at": "2025-10-09T14:55:00"
       },
       "description": "Maximum Humidex and when it occurred",
-      "tiemstamp": "2025-10-28T10:32:56Z"
+      "tiemstamp": "2025-11-05T10:25:30Z"
     },
     {
       "name": "latest_humidex",
@@ -24,13 +24,13 @@
         "at": "2025-10-09T23:55:00"
       },
       "description": "Most recent Humidex value",
-      "tiemstamp": "2025-10-28T10:32:56Z"
+      "tiemstamp": "2025-11-05T10:25:30Z"
     },
     {
       "name": "percent_time_discomfort_or_worse",
       "value": 87.85,
       "description": "Percentage of time Humidex >= 30",
-      "tiemstamp": "2025-10-28T10:32:56Z"
+      "tiemstamp": "2025-11-05T10:25:30Z"
     },
     {
       "name": "category_counts",
@@ -40,14 +40,14 @@
         "comfortable": 35
       },
       "description": "Counts by comfort category",
-      "tiemstamp": "2025-10-28T10:32:56Z"
+      "tiemstamp": "2025-11-05T10:25:30Z"
     },
     {
       "name": "alert_great_discomfort_or_worse",
       "value": true,
       "description": "True if any Humidex >= 40 (great discomfort or worse)",
-      "tiemstamp": "2025-10-28T10:32:56Z"
+      "tiemstamp": "2025-11-05T10:25:30Z"
     }
   ],
-  "result_generated_at": "2025-10-28T10:32:56Z"
+  "result_generated_at": "2025-11-05T10:25:30Z"
 }
