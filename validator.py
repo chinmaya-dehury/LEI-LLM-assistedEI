@@ -84,7 +84,7 @@ def call_llm_for_validator(task_data):
 	try:
 		validation_result = json.loads(raw_output)
 	except json.JSONDecodeError:
-		print("⚠️ Validator LLM response was not valid JSON. Raw output:")
+		print("Validator LLM response was not valid JSON. Raw output:")
 		print(raw_output)
 		return None
 

@@ -1,44 +1,14 @@
 {
   "tasks": [
     {
-      "task_name": "hourly_stats_summary",
-      "description": "Compute hourly mean, min, max, and count for temperature_c and humidity_percent.",
-      "status": "failed to generate correct code"
-    },
-    {
-      "task_name": "rolling_zscore_anomaly_detection",
-      "description": "Detect anomalies via rolling z-score (e.g., window=5) for temperature_c and humidity_percent; flag points with absolute z-score above a threshold (default 3).",
+      "task_name": "hourly_summary_stats",
+      "description": "Resample 5-minute readings to hourly and compute mean, min, and max for temperature_c and humidity_percent.",
       "status": "code_generated"
     },
     {
-      "task_name": "delta_spike_detection_5min",
-      "description": "Flag sudden 5-minute jumps when absolute delta exceeds configurable limits (e.g., >0.7°C for temperature or >2.5 percentage points for humidity).",
-      "status": "failed to generate correct code"
-    },
-    {
-      "task_name": "simple_linear_forecast_next_hour",
-      "description": "Fit a lightweight linear model on recent readings and forecast temperature_c and humidity_percent for the next 12 five-minute intervals (next hour).",
+      "task_name": "next_hour_forecast_ewma",
+      "description": "Predict the next 60-minute average temperature and humidity using simple exponential smoothing (EWMA) over the last N readings.",
       "status": "code_generated"
-    },
-    {
-      "task_name": "dew_point_and_condensation_risk",
-      "description": "Estimate dew point using a Magnus formula and flag potential condensation risk when dew_point >= configurable threshold (default 20°C).",
-      "status": "code_generated"
-    },
-    {
-      "task_name": "absolute_humidity_estimation",
-      "description": "Compute absolute humidity (g/m³) from temperature_c and humidity_percent to quantify moisture load independent of temperature.",
-      "status": "code_generated"
-    },
-    {
-      "task_name": "threshold_alerts_raw_metrics",
-      "description": "Trigger alerts when temperature_c or humidity_percent exceed configurable comfort thresholds (e.g., temperature > 30°C or humidity > 65%).",
-      "status": "failed to generate correct code"
-    },
-    {
-      "task_name": "trend_slope_classification",
-      "description": "Estimate linear slope over the last N samples for temperature_c and humidity_percent and classify as rising, stable, or falling using sensor-accuracy-based tolerance.",
-      "status": "failed to generate correct code"
     }
   ]
 }

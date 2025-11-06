@@ -44,9 +44,9 @@ The task should be:
 - Self-contained
 - Lightweight (runnable on Raspberry Pi)
 - Use standard Python libraries (pandas, numpy, matplotlib optional)
-- Should read raw or actual data from 'data/{DATA_TYPE}/raw_data.csv' as input when executed
+- Should read raw or actual data from f"data/{DATA_TYPE}/raw_data.csv" as input when executed
 - Should print the output (no heavy dependencies)
-- Each generated task code will be saved as a separate .py file in the `generated_tasks/{DATA_TYPE}` directory.
+- Each generated task code will be saved as a separate .py file in the f"generated_tasks/{DATA_TYPE}" directory.
 
 Upon execution of each task (python file), the results should be saved in a json file with the name `<task_name>_result.json`, e.g. `comfort_index_estimation_result.json`, in the in the `output/{DATA_TYPE}` directory. 
 The result json file should have following schema:
@@ -58,7 +58,7 @@ The result json file should have following schema:
       "name": name of the result,
       "value": value of the result,
       "description": description of the result,
-      "tiemstamp": "<ISO timestamp>"
+      "timestamp": "<ISO timestamp>"
     }
   ],
   "result_generated_at": "<ISO timestamp>"

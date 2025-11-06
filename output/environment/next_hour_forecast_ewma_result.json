@@ -1,0 +1,13 @@
+{
+  "task_name": "next_hour_forecast_ewma",
+  "description": "Predict the next 60-minute average temperature and humidity using simple exponential smoothing (EWMA) over the last N readings.",
+  "result_summary": [
+    {
+      "name": "error",
+      "value": "Input file not found: data/environment/raw_data.csv",
+      "description": "An error occurred while computing EWMA forecast.",
+      "timestamp": "2025-11-06T09:47:09.953721+00:00"
+    }
+  ],
+  "result_generated_at": "2025-11-06T09:47:09.953721+00:00"
+}

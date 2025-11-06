@@ -1,0 +1,238 @@
+ Edge Executor started at 2025-11-06 15:16:46
+Scanning directory: generated_tasks/temp_humidity
+Found 5 tasks to execute.
+============================================================
+
+ Task 1 of 5
+
+ Executing: generated_tasks/temp_humidity\comfort_index_humidex.py
+   Start Time: 15:16:46
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 2.65 sec
+   Output (JSON):
+      {
+        "task_name": "comfort_index_humidex",
+        "description": "Compute Humidex from temperature and relative humidity and assign comfort categories (e.g., comfortable, some discomfort, great discomfort).",
+        "result_summary": [
+          {
+            "name": "mean_humidex",
+            "value": 36.67,
+            "description": "Average Humidex across dataset",
+            "tiemstamp": "2025-11-06T09:46:48Z"
+          },
+          {
+            "name": "max_humidex",
+            "value": {
+              "value": 44.42,
+              "at": "2025-10-09T14:55:00"
+            },
+            "description": "Maximum Humidex and when it occurred",
+            "tiemstamp": "2025-11-06T09:46:48Z"
+          },
+          {
+            "name": "latest_humidex",
+            "value": {
+              "value": 31.86,
+              "at": "2025-10-09T23:55:00"
+            },
+            "description": "Most recent Humidex value",
+            "tiemstamp": "2025-11-06T09:46:48Z"
+          },
+          {
+            "name": "percent_time_discomfort_or_worse",
+            "value": 87.85,
+            "description": "Percentage of time Humidex >= 30",
+            "tiemstamp": "2025-11-06T09:46:48Z"
+          },
+          {
+            "name": "category_counts",
+            "value": {
+              "some discomfort": 152,
+              "great discomfort": 101,
+              "comfortable": 35
+            },
+            "description": "Counts by comfort category",
+            "tiemstamp": "2025-11-06T09:46:48Z"
+          },
+          {
+            "name": "alert_great_discomfort_or_worse",
+            "value": true,
+            "description": "True if any Humidex >= 40 (great discomfort or worse)",
+            "tiemstamp": "2025-11-06T09:46:48Z"
+          }
+        ],
+        "result_generated_at": "2025-11-06T09:46:48Z"
+      }
+------------------------------------------------------------
+
+ Task 2 of 5
+
+ Executing: generated_tasks/temp_humidity\discomfort_index_thom.py
+   Start Time: 15:16:54
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 2.01 sec
+   Output:
+      Processed 288 rows from data\temp_humidity\raw_data.csv
+      Latest DI: 23.26 (Mild discomfort) at 2025-10-09T23:55:00
+      Max DI: 29.02 (Very severe discomfort) at 2025-10-09T14:55:00
+      Min DI: 21.7 (Mild discomfort) at 2025-10-09T03:05:00
+      Band distribution (%):
+        - Comfortable: 0.0%
+        - Mild discomfort: 34.03%
+        - Moderate discomfort: 28.82%
+        - Severe discomfort: 36.81%
+        - Very severe discomfort: 0.35%
+        - Medical emergency risk: 0.0%
+      High-risk (DI >= 27) count: 107
+      Recommendation: Consider increasing air circulation.
+      Result saved to: output\temp_humidity\discomfort_index_thom_result.json
+------------------------------------------------------------
+
+ Task 3 of 5
+
+ Executing: generated_tasks/temp_humidity\hourly_summary_stats.py
+   Start Time: 15:17:01
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+   Status: FAILED
+   Duration: 2.00 sec
+   Error (stdout):
+      Input file not found: data\environment\raw_data.csv
+------------------------------------------------------------
+
+ Task 4 of 5
+
+ Executing: generated_tasks/temp_humidity\next_hour_forecast_ewma.py
+   Start Time: 15:17:08
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+   Status: FAILED
+   Duration: 2.03 sec
+   Error (stderr):
+      C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\generated_tasks\temp_humidity\next_hour_forecast_ewma.py:10: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+        return datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
+------------------------------------------------------------
+
+ Task 5 of 5
+
+ Executing: generated_tasks/temp_humidity\parse_csv_validate_schema.py
+   Start Time: 15:17:15
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 2.10 sec
+   Output (JSON):
+      {
+        "task_name": "parse_csv_validate_schema",
+        "description": "Load the CSV, parse timestamps to datetime, enforce float types for temperature and humidity, and verify 5-minute sampling intervals.",
+        "result_summary": [
+          {
+            "name": "row_count",
+            "value": 288,
+            "description": "Total rows in CSV",
+            "tiemstamp": "2025-11-06T09:47:17Z"
+          },
+          {
+            "name": "missing_timestamp_count",
+            "value": 0,
+            "description": "Rows with unparseable timestamps",
+            "tiemstamp": "2025-11-06T09:47:17Z"
+          },
+          {
+            "name": "missing_temperature_count",
+            "value": 0,
+            "description": "Rows with missing/invalid temperature values",
+            "tiemstamp": "2025-11-06T09:47:17Z"
+          },
+          {
+            "name": "missing_humidity_count",
+            "value": 0,
+            "description": "Rows with missing/invalid humidity values",
+            "tiemstamp": "2025-11-06T09:47:17Z"
+          },
+          {
+            "name": "invalid_temperature_range_count",
+            "value": 0,
+            "description": "Temperature values outside [15, 40] Celsius",
+            "tiemstamp": "2025-11-06T09:47:17Z"
+          },
+          {
+            "name": "invalid_humidity_range_count",
+            "value": 0,
+            "description": "Relative humidity outside [20, 100] percent",
+            "tiemstamp": "2025-11-06T09:47:17Z"
+          },
+          {
+            "name": "duplicate_timestamps_count",
+            "value": 0,
+            "description": "Number of duplicate timestamp entries",
+            "tiemstamp": "2025-11-06T09:47:17Z"
+          },
+          {
+            "name": "timestamps_monotonic_increasing",
+            "value": true,
+            "description": "Timestamps are in non-decreasing order",
+            "tiemstamp": "2025-11-06T09:47:17Z"
+          },
+          {
+            "name": "sampling_interval_ok",
+            "value": true,
+            "description": "All consecutive samples spaced exactly 5 minutes",
+            "tiemstamp": "2025-11-06T09:47:17Z"
+          },
+          {
+            "name": "sampling_unique_intervals_minutes",
+            "value": [
+              5.0
+            ],
+            "description": "Unique observed sampling intervals (minutes)",
+            "tiemstamp": "2025-11-06T09:47:17Z"
+          },
+          {
+            "name": "irregular_intervals_count",
+            "value": 0,
+            "description": "Count of intervals differing from 5 minutes",
+            "tiemstamp": "2025-11-06T09:47:17Z"
+          },
+          {
+            "name": "first_timestamp",
+            "value": "2025-10-09T00:00:00",
+            "description": "First timestamp in dataset (ISO)",
+            "tiemstamp": "2025-11-06T09:47:17Z"
+          },
+          {
+            "name": "last_timestamp",
+            "value": "2025-10-09T23:55:00",
+            "description": "Last timestamp in dataset (ISO)",
+            "tiemstamp": "2025-11-06T09:47:17Z"
+          },
+          {
+            "name": "min_temperature_c",
+            "value": 22.9,
+            "description": "Minimum observed temperature (C)",
+            "tiemstamp": "2025-11-06T09:47:17Z"
+          },
+          {
+            "name": "max_temperature_c",
+            "value": 34.4,
+            "description": "Maximum observed temperature (C)",
+            "tiemstamp": "2025-11-06T09:47:17Z"
+          },
+          {
+            "name": "min_humidity_percent",
+            "value": 49.6,
+            "description": "Minimum observed relative humidity (%)",
+            "tiemstamp": "2025-11-06T09:47:17Z"
+          },
+          {
+            "name": "max_humidity_percent",
+            "value": 75.3,
+            "description": "Maximum observed relative humidity (%)",
+            "tiemstamp": "2025-11-06T09:47:17Z"
+          }
+        ],
+        "result_generated_at": "2025-11-06T09:47:17Z"
+      }
+------------------------------------------------------------
+
+ All tasks executed. Check the log file for details.
+Log file saved at: logs\edge_execution_20251106_151646.log

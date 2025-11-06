@@ -33,7 +33,7 @@
       "name": "mean_di",
       "value": 25.51,
       "description": "Average Thom DI across the dataset.",
-      "tiemstamp": "2025-11-05T10:25:43.398559+00:00"
+      "tiemstamp": "2025-11-06T09:46:55.859790+00:00"
     },
     {
       "name": "band_distribution_percent",
@@ -46,13 +46,13 @@
         "Medical emergency risk": 0.0
       },
       "description": "Percentage of readings in each Thom DI risk band.",
-      "tiemstamp": "2025-11-05T10:25:43.398559+00:00"
+      "tiemstamp": "2025-11-06T09:46:55.859790+00:00"
     },
     {
       "name": "high_risk_count",
       "value": 107,
       "description": "Number of readings with DI >= 27 (Severe discomfort or worse).",
-      "tiemstamp": "2025-11-05T10:25:43.398559+00:00"
+      "tiemstamp": "2025-11-06T09:46:55.859790+00:00"
     },
     {
       "name": "latest_recommendation",
@@ -61,5 +61,5 @@
       "tiemstamp": "2025-10-09T23:55:00"
     }
   ],
-  "result_generated_at": "2025-11-05T10:25:43.398559+00:00"
+  "result_generated_at": "2025-11-06T09:46:55.859790+00:00"
 }

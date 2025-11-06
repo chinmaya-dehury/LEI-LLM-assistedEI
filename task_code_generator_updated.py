@@ -11,12 +11,17 @@ Each generated task code will be saved as a separate .py file in the `generated_
 
 import os
 import json
+import sys
 import validator
 from openai import OpenAI
 from config import OPENAI_API_KEY, DATA_TYPE
 from string import Template
 from prompts.get_single_task_code import SYSTEM_PROMPT
-from config import DATA_TYPE
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
 
 # Initialize the LLM client
 client = OpenAI(api_key=OPENAI_API_KEY)
@@ -78,7 +83,7 @@ def call_llm_for_task_code(task_list, error_message=None):
     try:
         tasks_data = json.loads(raw_output)
     except json.JSONDecodeError:
-        print("⚠️ The LLM response was not valid JSON. Saving raw output for review.")
+        print("The LLM response was not valid JSON. Saving raw output for review.")
         print(raw_output)
         return None
     return tasks_data
@@ -97,10 +102,10 @@ def save_task_code(tasks_data, allowed_task_names=None):
 
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(task["code"])
-        print(f"✅ Saved: {filename}")
-        print(f"   → Description: {task['description']}\n")
+        print(f" Saved: {filename}")
+        print(f" Description: {task['description']}\n")
 
-    print(f"🎯 All tasks generated successfully and saved in {OUTPUT_DIR} folder.")
+    print(f" All tasks generated successfully and saved in {OUTPUT_DIR} folder.")
 
 
 # Read all inputs
@@ -138,7 +143,16 @@ for task_info in pending_tasks:
     }
 
     if not base_task["task_name"]:
-        print(f"⚠️ Skipping task with missing name: {task_info}")
+        print(f" Skipping task with missing name: {task_info}")
+        continue
+
+    # code to skip if the task code file already exists
+    existing_task_path = os.path.join(OUTPUT_DIR, f"{base_task['task_name']}.py")
+    if os.path.exists(existing_task_path):
+        print(
+            f"\nSkipping {base_task['task_name']} - existing script detected at {existing_task_path}."
+        )
+        update_task_status(base_task["task_name"], "code_generated")
         continue
 
     attempt = 0
@@ -151,12 +165,12 @@ for task_info in pending_tasks:
 
         generated_tasks = call_llm_for_task_code(payload, error_message=feedback)
         if not generated_tasks or not generated_tasks.get("tasks"):
-            print(f"⚠️ LLM failed to return code for {base_task['task_name']} (attempt {attempt}).")
+            print(f" LLM failed to return code for {base_task['task_name']} (attempt {attempt}).")
             break
 
         validation_result = validator.call_llm_for_validator(generated_tasks)
         if not validation_result or not validation_result.get("tasks"):
-            print(f"⚠️ Validator did not return results for {base_task['task_name']} (attempt {attempt}).")
+            print(f" Validator did not return results for {base_task['task_name']} (attempt {attempt}).")
             break
 
         validation_entry = next(
@@ -165,7 +179,7 @@ for task_info in pending_tasks:
         )
 
         if not validation_entry:
-            print(f"⚠️ Validator response missing entry for {base_task['task_name']}.")
+            print(f" Validator response missing entry for {base_task['task_name']}.")
             break
 
         if validation_entry.get("is_valid"):
@@ -176,13 +190,13 @@ for task_info in pending_tasks:
 
         feedback = validation_entry.get("error_message") or "Validation failed without a message."
         print(
-            f"⚠️ Validation failed for {base_task['task_name']} on attempt {attempt}."
+            f" Validation failed for {base_task['task_name']} on attempt {attempt}."
             f" Feedback: {feedback}"
         )
 
     if not task_generated_successfully:
         update_task_status(base_task["task_name"], "failed to generate correct code")
-        print(f"❌ Failed to generate valid code for {base_task['task_name']} after {MAX_VALIDATION_ATTEMPTS} attempts.")
+        print(f" Failed to generate valid code for {base_task['task_name']} after {MAX_VALIDATION_ATTEMPTS} attempts.")
 
     
     

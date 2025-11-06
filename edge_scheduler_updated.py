@@ -6,8 +6,6 @@ Edge Intelligence architecture. It automatically executes all generated
 Python programs in the `generated_tasks/{DATA_TYPE}` directory and logs the output,
 errors, and execution times in a timestamped log file.
 
-Author: Dr. Chinmaya Dehury
-Date: 2025-10-09
 """
 
 ##### CURRENT STATUS

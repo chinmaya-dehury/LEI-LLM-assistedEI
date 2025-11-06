@@ -11,6 +11,34 @@
     {
       "task_name": "discomfort_index_thom",
       "description": "Calculate Thom\u2019s Discomfort Index (DI) using temperature and humidity and label comfort risk levels."
+    },
+    {
+      "task_name": "hourly_summary_stats",
+      "description": "Resample 5-minute readings to hourly and compute mean, min, and max for temperature_c and humidity_percent."
+    },
+    {
+      "task_name": "next_hour_forecast_ewma",
+      "description": "Predict the next 60-minute average temperature and humidity using simple exponential smoothing (EWMA) over the last N readings."
+    },
+    {
+      "task_name": "dew_point_magnus",
+      "description": "Compute dew point temperature (\u00b0C) from temperature_c and humidity_percent using the Magnus formula."
+    },
+    {
+      "task_name": "vpd_calculation",
+      "description": "Calculate Vapor Pressure Deficit (kPa) from temperature_c and humidity_percent using saturation vapor pressure minus actual vapor pressure."
+    },
+    {
+      "task_name": "sudden_change_detector",
+      "description": "Flag sudden changes using 5-minute deltas (e.g., |\u0394T| > 0.8\u00b0C or |\u0394RH| > 3%) to indicate potential system issues."
+    },
+    {
+      "task_name": "sensor_flatline_detector",
+      "description": "Detect potential sensor stuck conditions when temperature or humidity varies less than a small epsilon for K consecutive intervals."
+    },
+    {
+      "task_name": "comfort_duration_counter",
+      "description": "Aggregate total time spent in each comfort category using outputs from existing comfort indices (Humidex/Thom) over rolling windows (e.g., 1h, 24h)."
     }
   ]
 }

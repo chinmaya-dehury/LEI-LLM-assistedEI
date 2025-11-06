@@ -56,10 +56,10 @@ __The LLM replies with:__
 * Step 1 – Generate Tasks list only (Cloud Simulation)
 `python llm_orchestrator_basic.py`    
 OR    
-look at the existing tasks, and if required or if possible generate a list of new tasks
+look at the existing tasks, and if required or if possible generate a list of new tasks and store both in new .json file as well as in existing one.
 `python llm_orchestrator_adaptive.py` 
 OR    
-look at the existing tasks, and if required or if possible generate a list of new tasks. Also store in new json file and existing one.
+look at the existing tasks, and if required or if possible generate a list of new tasks.
 `python llm_orchestrator_adaptive_resource.py`    
 
 * Step 2 - Generate the code for each task
