@@ -1,0 +1,38 @@
+{
+  "task_name": "humidity_cusum_drift_detector",
+  "description": "Apply one-sided CUSUM to humidity_percent to flag sustained upward drift (k=0.5, h=3.0 in % units); return drift start/end times and peak CUSUM.",
+  "result_summary": [
+    {
+      "name": "cusum_parameters",
+      "value": {
+        "k": 0.5,
+        "h": 3.0,
+        "baseline_mu0": 71.22
+      },
+      "description": "CUSUM configuration and baseline mean.",
+      "timestamp": "2025-11-10T06:23:48.882799Z"
+    },
+    {
+      "name": "drift_event_count",
+      "value": 1,
+      "description": "Number of upward humidity drift events detected by CUSUM.",
+      "timestamp": "2025-11-10T06:23:48.882834Z"
+    },
+    {
+      "name": "humidity_drift_event_1",
+      "value": {
+        "start_time": "2025-10-09T00:25:00",
+        "end_time": "2025-10-09T08:30:00",
+        "peak_cusum": 119.96000000000008,
+        "parameters": {
+          "k": 0.5,
+          "h": 3.0,
+          "baseline_mu0": 71.22
+        }
+      },
+      "description": "CUSUM upward drift event details.",
+      "timestamp": "2025-10-09T08:30:00"
+    }
+  ],
+  "result_generated_at": "2025-11-10T06:23:48.882855Z"
+}

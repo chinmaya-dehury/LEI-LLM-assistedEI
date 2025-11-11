@@ -1,0 +1,48 @@
+{
+  "task_name": "vapor_pressure_deficit_kpa",
+  "description": "Compute saturation vapor pressure (es) from temperature_c (Magnus), actual vapor pressure (ea = es * RH/100), and VPD = es - ea (kPa); classify humidity dryness bands (<0.6 humid, 0.6–1.2 moderate, >1.2 dry).",
+  "result_summary": [
+    {
+      "name": "latest_vpd_kpa",
+      "value": {
+        "vpd_kpa": 0.954,
+        "band": "moderate",
+        "es_kpa": 3.168,
+        "ea_kpa": 2.214,
+        "temperature_c": 25.0,
+        "humidity_percent": 69.9
+      },
+      "description": "Latest vapor pressure deficit with components and dryness band.",
+      "timestamp": "2025-10-09T23:55:00+00:00"
+    },
+    {
+      "name": "max_vpd_kpa",
+      "value": {
+        "vpd_kpa": 2.696,
+        "band": "dry",
+        "at": "2025-10-09T15:15:00+00:00",
+        "temperature_c": 34.1,
+        "humidity_percent": 49.6
+      },
+      "description": "Maximum VPD observed in the dataset.",
+      "timestamp": "2025-10-09T15:15:00+00:00"
+    },
+    {
+      "name": "mean_vpd_kpa",
+      "value": 1.574,
+      "description": "Mean VPD across all readings.",
+      "timestamp": "2025-10-09T23:55:00+00:00"
+    },
+    {
+      "name": "dryness_distribution",
+      "value": {
+        "humid": 0,
+        "moderate": 115,
+        "dry": 173
+      },
+      "description": "Counts of readings in each dryness band.",
+      "timestamp": "2025-10-09T23:55:00+00:00"
+    }
+  ],
+  "result_generated_at": "2025-11-10T06:24:46.613965+00:00"
+}

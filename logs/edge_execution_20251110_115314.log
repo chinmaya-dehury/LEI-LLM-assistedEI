@@ -1,0 +1,1374 @@
+ Edge Executor started at 2025-11-10 11:53:14
+Scanning directory: generated_tasks/temp_humidity
+Found 16 tasks to execute.
+============================================================
+
+ Task 1 of 16
+
+ Executing: generated_tasks/temp_humidity\absolute_humidity_estimation.py
+   Start Time: 11:53:14
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.48 sec
+   Output:
+      {
+        "task_name": "absolute_humidity_estimation",
+        "description": "Estimate absolute humidity (g/m^3) per reading using temperature_c and humidity_percent via saturation vapor pressure-based calculation.",
+        "result_summary": [
+          {
+            "name": "average_absolute_humidity_g_per_m3",
+            "value": 17.402,
+            "description": "Average absolute humidity across all records.",
+            "timestamp": "2025-11-10T11:53:16.085132"
+          },
+          {
+            "name": "minimum_absolute_humidity_g_per_m3",
+            "value": 15.121,
+            "description": "Minimum absolute humidity observed.",
+            "timestamp": "2025-10-09T03:05:00"
+          },
+          {
+            "name": "maximum_absolute_humidity_g_per_m3",
+            "value": 19.495,
+            "description": "Maximum absolute humidity observed.",
+            "timestamp": "2025-10-09T14:55:00"
+          },
+          {
+            "name": "latest_absolute_humidity_g_per_m3",
+            "value": 16.092,
+            "description": "Latest absolute humidity value.",
+            "timestamp": "2025-10-09T23:55:00"
+          }
+        ],
+        "result_generated_at": "2025-11-10T11:53:16.085132"
+      }
+      Saved result to output\temp_humidity\absolute_humidity_estimation_result.json
+------------------------------------------------------------
+
+ Task 2 of 16
+
+ Executing: generated_tasks/temp_humidity\comfort_compliance_rate.py
+   Start Time: 11:53:21
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.49 sec
+   Output (JSON):
+      {
+        "task_name": "comfort_compliance_rate",
+        "description": "Compute percent of time within a simplified comfort box (temperature_c in [22, 26] and humidity_percent in [30, 60]); report compliance %, compliant minutes, and longest continuous non-compliance streak.",
+        "result_summary": [
+          {
+            "name": "compliance_percent",
+            "value": 0.0,
+            "description": "Percent of time within comfort box [22-26]Â°C and [30-60]% RH (time-weighted).",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "compliant_minutes",
+            "value": 0.0,
+            "description": "Total minutes meeting both temperature and humidity comfort thresholds.",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "longest_non_compliance_streak_minutes",
+            "value": 1440.0,
+            "description": "Longest continuous duration of non-compliance (sum of consecutive non-compliant intervals).",
+            "timestamp": "2025-10-09T23:55:00"
+          }
+        ],
+        "result_generated_at": "2025-11-10T11:53:22.514664"
+      }
+------------------------------------------------------------
+
+ Task 3 of 16
+
+ Executing: generated_tasks/temp_humidity\comfort_index_humidex.py
+   Start Time: 11:53:27
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.51 sec
+   Output (JSON):
+      {
+        "task_name": "comfort_index_humidex",
+        "description": "Compute Humidex from temperature and relative humidity and assign comfort categories (e.g., comfortable, some discomfort, great discomfort).",
+        "result_summary": [
+          {
+            "name": "mean_humidex",
+            "value": 36.67,
+            "description": "Average Humidex across dataset",
+            "tiemstamp": "2025-11-10T06:23:29Z"
+          },
+          {
+            "name": "max_humidex",
+            "value": {
+              "value": 44.42,
+              "at": "2025-10-09T14:55:00"
+            },
+            "description": "Maximum Humidex and when it occurred",
+            "tiemstamp": "2025-11-10T06:23:29Z"
+          },
+          {
+            "name": "latest_humidex",
+            "value": {
+              "value": 31.86,
+              "at": "2025-10-09T23:55:00"
+            },
+            "description": "Most recent Humidex value",
+            "tiemstamp": "2025-11-10T06:23:29Z"
+          },
+          {
+            "name": "percent_time_discomfort_or_worse",
+            "value": 87.85,
+            "description": "Percentage of time Humidex >= 30",
+            "tiemstamp": "2025-11-10T06:23:29Z"
+          },
+          {
+            "name": "category_counts",
+            "value": {
+              "some discomfort": 152,
+              "great discomfort": 101,
+              "comfortable": 35
+            },
+            "description": "Counts by comfort category",
+            "tiemstamp": "2025-11-10T06:23:29Z"
+          },
+          {
+            "name": "alert_great_discomfort_or_worse",
+            "value": true,
+            "description": "True if any Humidex >= 40 (great discomfort or worse)",
+            "tiemstamp": "2025-11-10T06:23:29Z"
+          }
+        ],
+        "result_generated_at": "2025-11-10T06:23:29Z"
+      }
+------------------------------------------------------------
+
+ Task 4 of 16
+
+ Executing: generated_tasks/temp_humidity\condensation_risk_indicator.py
+   Start Time: 11:53:34
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.85 sec
+   Output (JSON):
+      {
+        "task_name": "condensation_risk_indicator",
+        "description": "Compute dewpoint depression (temperature_c − dew_point_c) and classify condensation risk (high <2°C, moderate 2–4°C, low >4°C); optionally flag if dew_point_c ≥ (temperature_c − 2.0) to indicate potential surface condensation.",
+        "result_summary": [
+          {
+            "name": "latest_dew_point_c",
+            "value": 19.12,
+            "description": "Dew point temperature at last sample (°C)",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "latest_dewpoint_depression_c",
+            "value": 5.88,
+            "description": "Dew point depression at last sample (°C)",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "latest_condensation_risk",
+            "value": "low",
+            "description": "Condensation risk class at last sample",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "count_high_risk",
+            "value": 0,
+            "description": "Number of readings classified as high condensation risk",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "count_moderate_risk",
+            "value": 0,
+            "description": "Number of readings classified as moderate condensation risk",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "count_low_risk",
+            "value": 288,
+            "description": "Number of readings classified as low condensation risk",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "count_unknown_risk",
+            "value": 0,
+            "description": "Number of readings classified as unknown condensation risk",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "min_dewpoint_depression_c",
+            "value": 4.61,
+            "description": "Minimum dew point depression observed (°C)",
+            "timestamp": "2025-10-09T02:55:00"
+          },
+          {
+            "name": "potential_surface_condensation_count",
+            "value": 0,
+            "description": "Number of readings where dew_point_c >= (temperature_c - 2.0)",
+            "timestamp": "2025-10-09T23:55:00"
+          }
+        ],
+        "result_generated_at": "2025-11-10T11:53:36.004129"
+      }
+------------------------------------------------------------
+
+ Task 5 of 16
+
+ Executing: generated_tasks/temp_humidity\discomfort_index_thom.py
+   Start Time: 11:53:41
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.43 sec
+   Output:
+      Processed 288 rows from data\temp_humidity\raw_data.csv
+      Latest DI: 23.26 (Mild discomfort) at 2025-10-09T23:55:00
+      Max DI: 29.02 (Very severe discomfort) at 2025-10-09T14:55:00
+      Min DI: 21.7 (Mild discomfort) at 2025-10-09T03:05:00
+      Band distribution (%):
+        - Comfortable: 0.0%
+        - Mild discomfort: 34.03%
+        - Moderate discomfort: 28.82%
+        - Severe discomfort: 36.81%
+        - Very severe discomfort: 0.35%
+        - Medical emergency risk: 0.0%
+      High-risk (DI >= 27) count: 107
+      Recommendation: Consider increasing air circulation.
+      Result saved to: output\temp_humidity\discomfort_index_thom_result.json
+------------------------------------------------------------
+
+ Task 6 of 16
+
+ Executing: generated_tasks/temp_humidity\humidity_cusum_drift_detector.py
+   Start Time: 11:53:47
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.41 sec
+   Output (JSON):
+      {
+        "drift_events_detected": 1,
+        "baseline_mu0": 71.22,
+        "output_file": "output\\temp_humidity\\humidity_cusum_drift_detector_result.json"
+      }
+------------------------------------------------------------
+
+ Task 7 of 16
+
+ Executing: generated_tasks/temp_humidity\monotonic_ramp_event_detector.py
+   Start Time: 11:53:54
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.46 sec
+   Output (JSON):
+      {
+        "events_detected": 0,
+        "output_file": "output\\temp_humidity\\monotonic_ramp_event_detector_result.json",
+        "sample_events": []
+      }
+------------------------------------------------------------
+
+ Task 8 of 16
+
+ Executing: generated_tasks/temp_humidity\next_hour_forecast_ses.py
+   Start Time: 11:54:00
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.84 sec
+   Output:
+      {
+        "task_name": "next_hour_forecast_ses",
+        "description": "Predict next 60-minute average temperature and humidity using simple exponential smoothing (alpha=0.3) on 5-minute data; output mean forecast and an approximate Â±1Ïƒ uncertainty from residuals.",
+        "result_summary": [
+          {
+            "name": "next_60min_temperature_mean_forecast_c",
+            "value": 25.08,
+            "description": "SES(alpha=0.3) forecast for the next 60-minute average temperature.",
+            "timestamp": "2025-11-10T11:54:02.176477"
+          },
+          {
+            "name": "next_60min_temperature_sigma_c",
+            "value": 0.32,
+            "description": "Approximate Â±1Ïƒ from in-sample SES residuals (one-step-ahead).",
+            "timestamp": "2025-11-10T11:54:02.176477"
+          },
+          {
+            "name": "next_60min_humidity_mean_forecast_percent",
+            "value": 70.13,
+            "description": "SES(alpha=0.3) forecast for the next 60-minute average humidity.",
+            "timestamp": "2025-11-10T11:54:02.176477"
+          },
+          {
+            "name": "next_60min_humidity_sigma_percent",
+            "value": 0.74,
+            "description": "Approximate Â±1Ïƒ from in-sample SES residuals (one-step-ahead).",
+            "timestamp": "2025-11-10T11:54:02.176477"
+          },
+          {
+            "name": "config_horizon_minutes",
+            "value": 60,
+            "description": "Prediction window length in minutes.",
+            "timestamp": "2025-11-10T11:54:02.176477"
+          },
+          {
+            "name": "config_alpha",
+            "value": 0.3,
+            "description": "SES smoothing parameter used.",
+            "timestamp": "2025-11-10T11:54:02.176477"
+          }
+        ],
+        "result_generated_at": "2025-11-10T11:54:02.176477"
+      }
+      Saved result to output\temp_humidity\next_hour_forecast_ses_result.json
+------------------------------------------------------------
+
+ Task 9 of 16
+
+ Executing: generated_tasks/temp_humidity\overheating_degree_minutes_temperature.py
+   Start Time: 11:54:07
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.33 sec
+   Output (JSON):
+      {
+        "task_name": "overheating_degree_minutes_temperature",
+        "description": "Accumulate degree-minutes above a configurable comfort setpoint (default 26.0Â°C) using per-interval minutes to quantify overheating burden.",
+        "result_summary": [
+          {
+            "name": "total_overheating_degree_minutes",
+            "value": 4645.5,
+            "description": "Sum of degrees above 26.0Â°C multiplied by minutes across intervals.",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "total_minutes_above_setpoint",
+            "value": 945.0,
+            "description": "Total minutes where temperature exceeded 26.0Â°C.",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "max_instant_degrees_above_setpoint",
+            "value": 8.4,
+            "description": "Maximum single reading degrees above 26.0Â°C.",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "peak_interval_overheating",
+            "value": 42.0,
+            "description": "Highest degree-minutes contribution from a single interval.",
+            "timestamp": "2025-10-09T14:55:00"
+          }
+        ],
+        "result_generated_at": "2025-11-10T11:54:08.575390"
+      }
+------------------------------------------------------------
+
+ Task 10 of 16
+
+ Executing: generated_tasks/temp_humidity\parse_csv_validate_schema.py
+   Start Time: 11:54:13
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.32 sec
+   Output (JSON):
+      {
+        "task_name": "parse_csv_validate_schema",
+        "description": "Load the CSV, parse timestamps to datetime, enforce float types for temperature and humidity, and verify 5-minute sampling intervals.",
+        "result_summary": [
+          {
+            "name": "row_count",
+            "value": 288,
+            "description": "Total rows in CSV",
+            "tiemstamp": "2025-11-10T06:24:14Z"
+          },
+          {
+            "name": "missing_timestamp_count",
+            "value": 0,
+            "description": "Rows with unparseable timestamps",
+            "tiemstamp": "2025-11-10T06:24:14Z"
+          },
+          {
+            "name": "missing_temperature_count",
+            "value": 0,
+            "description": "Rows with missing/invalid temperature values",
+            "tiemstamp": "2025-11-10T06:24:14Z"
+          },
+          {
+            "name": "missing_humidity_count",
+            "value": 0,
+            "description": "Rows with missing/invalid humidity values",
+            "tiemstamp": "2025-11-10T06:24:14Z"
+          },
+          {
+            "name": "invalid_temperature_range_count",
+            "value": 0,
+            "description": "Temperature values outside [15, 40] Celsius",
+            "tiemstamp": "2025-11-10T06:24:14Z"
+          },
+          {
+            "name": "invalid_humidity_range_count",
+            "value": 0,
+            "description": "Relative humidity outside [20, 100] percent",
+            "tiemstamp": "2025-11-10T06:24:14Z"
+          },
+          {
+            "name": "duplicate_timestamps_count",
+            "value": 0,
+            "description": "Number of duplicate timestamp entries",
+            "tiemstamp": "2025-11-10T06:24:14Z"
+          },
+          {
+            "name": "timestamps_monotonic_increasing",
+            "value": true,
+            "description": "Timestamps are in non-decreasing order",
+            "tiemstamp": "2025-11-10T06:24:14Z"
+          },
+          {
+            "name": "sampling_interval_ok",
+            "value": true,
+            "description": "All consecutive samples spaced exactly 5 minutes",
+            "tiemstamp": "2025-11-10T06:24:14Z"
+          },
+          {
+            "name": "sampling_unique_intervals_minutes",
+            "value": [
+              5.0
+            ],
+            "description": "Unique observed sampling intervals (minutes)",
+            "tiemstamp": "2025-11-10T06:24:14Z"
+          },
+          {
+            "name": "irregular_intervals_count",
+            "value": 0,
+            "description": "Count of intervals differing from 5 minutes",
+            "tiemstamp": "2025-11-10T06:24:14Z"
+          },
+          {
+            "name": "first_timestamp",
+            "value": "2025-10-09T00:00:00",
+            "description": "First timestamp in dataset (ISO)",
+            "tiemstamp": "2025-11-10T06:24:14Z"
+          },
+          {
+            "name": "last_timestamp",
+            "value": "2025-10-09T23:55:00",
+            "description": "Last timestamp in dataset (ISO)",
+            "tiemstamp": "2025-11-10T06:24:14Z"
+          },
+          {
+            "name": "min_temperature_c",
+            "value": 22.9,
+            "description": "Minimum observed temperature (C)",
+            "tiemstamp": "2025-11-10T06:24:14Z"
+          },
+          {
+            "name": "max_temperature_c",
+            "value": 34.4,
+            "description": "Maximum observed temperature (C)",
+            "tiemstamp": "2025-11-10T06:24:14Z"
+          },
+          {
+            "name": "min_humidity_percent",
+            "value": 49.6,
+            "description": "Minimum observed relative humidity (%)",
+            "tiemstamp": "2025-11-10T06:24:14Z"
+          },
+          {
+            "name": "max_humidity_percent",
+            "value": 75.3,
+            "description": "Maximum observed relative humidity (%)",
+            "tiemstamp": "2025-11-10T06:24:14Z"
+          }
+        ],
+        "result_generated_at": "2025-11-10T06:24:14Z"
+      }
+------------------------------------------------------------
+
+ Task 11 of 16
+
+ Executing: generated_tasks/temp_humidity\sensor_stuck_detection.py
+   Start Time: 11:54:20
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.48 sec
+   Output (JSON):
+      {
+        "task_name": "sensor_stuck_detection",
+        "description": "Detect potential sensor lock-up by checking if rolling std over the last 6 readings is < 0.05Â°C for temperature or < 0.5% for humidity; flag the period as suspect.",
+        "result_summary": [
+          {
+            "name": "suspect_period_1",
+            "value": {
+              "start_time": "2025-10-09T00:25:00",
+              "end_time": "2025-10-09T00:25:00",
+              "duration_minutes": 5,
+              "count_readings": 1,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.2074,
+              "min_hum_std6": 0.4491
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T00:25:00"
+          },
+          {
+            "name": "suspect_period_2",
+            "value": {
+              "start_time": "2025-10-09T00:35:00",
+              "end_time": "2025-10-09T00:35:00",
+              "duration_minutes": 5,
+              "count_readings": 1,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.1761,
+              "min_hum_std6": 0.4227
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T00:35:00"
+          },
+          {
+            "name": "suspect_period_3",
+            "value": {
+              "start_time": "2025-10-09T00:45:00",
+              "end_time": "2025-10-09T03:05:00",
+              "duration_minutes": 145,
+              "count_readings": 29,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.0753,
+              "min_hum_std6": 0.1414
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T03:05:00"
+          },
+          {
+            "name": "suspect_period_4",
+            "value": {
+              "start_time": "2025-10-09T03:25:00",
+              "end_time": "2025-10-09T05:30:00",
+              "duration_minutes": 130,
+              "count_readings": 26,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.0516,
+              "min_hum_std6": 0.2041
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T05:30:00"
+          },
+          {
+            "name": "suspect_period_5",
+            "value": {
+              "start_time": "2025-10-09T05:45:00",
+              "end_time": "2025-10-09T06:20:00",
+              "duration_minutes": 40,
+              "count_readings": 8,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.0894,
+              "min_hum_std6": 0.2898
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T06:20:00"
+          },
+          {
+            "name": "suspect_period_6",
+            "value": {
+              "start_time": "2025-10-09T06:35:00",
+              "end_time": "2025-10-09T06:40:00",
+              "duration_minutes": 10,
+              "count_readings": 2,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.1506,
+              "min_hum_std6": 0.4355
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T06:40:00"
+          },
+          {
+            "name": "suspect_period_7",
+            "value": {
+              "start_time": "2025-10-09T06:50:00",
+              "end_time": "2025-10-09T07:10:00",
+              "duration_minutes": 25,
+              "count_readings": 5,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.1517,
+              "min_hum_std6": 0.1329
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T07:10:00"
+          },
+          {
+            "name": "suspect_period_8",
+            "value": {
+              "start_time": "2025-10-09T08:05:00",
+              "end_time": "2025-10-09T08:20:00",
+              "duration_minutes": 20,
+              "count_readings": 4,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.2191,
+              "min_hum_std6": 0.1673
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T08:20:00"
+          },
+          {
+            "name": "suspect_period_9",
+            "value": {
+              "start_time": "2025-10-09T08:50:00",
+              "end_time": "2025-10-09T08:50:00",
+              "duration_minutes": 5,
+              "count_readings": 1,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.3386,
+              "min_hum_std6": 0.4167
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T08:50:00"
+          },
+          {
+            "name": "suspect_period_10",
+            "value": {
+              "start_time": "2025-10-09T09:45:00",
+              "end_time": "2025-10-09T09:45:00",
+              "duration_minutes": 5,
+              "count_readings": 1,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.1835,
+              "min_hum_std6": 0.3077
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T09:45:00"
+          },
+          {
+            "name": "suspect_period_11",
+            "value": {
+              "start_time": "2025-10-09T10:05:00",
+              "end_time": "2025-10-09T10:10:00",
+              "duration_minutes": 10,
+              "count_readings": 2,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.2658,
+              "min_hum_std6": 0.432
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T10:10:00"
+          },
+          {
+            "name": "suspect_period_12",
+            "value": {
+              "start_time": "2025-10-09T10:40:00",
+              "end_time": "2025-10-09T10:40:00",
+              "duration_minutes": 5,
+              "count_readings": 1,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.3033,
+              "min_hum_std6": 0.4309
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T10:40:00"
+          },
+          {
+            "name": "suspect_period_13",
+            "value": {
+              "start_time": "2025-10-09T10:55:00",
+              "end_time": "2025-10-09T11:05:00",
+              "duration_minutes": 15,
+              "count_readings": 3,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.1761,
+              "min_hum_std6": 0.3886
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T11:05:00"
+          },
+          {
+            "name": "suspect_period_14",
+            "value": {
+              "start_time": "2025-10-09T12:10:00",
+              "end_time": "2025-10-09T12:20:00",
+              "duration_minutes": 15,
+              "count_readings": 3,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.1506,
+              "min_hum_std6": 0.2994
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T12:20:00"
+          },
+          {
+            "name": "suspect_period_15",
+            "value": {
+              "start_time": "2025-10-09T12:50:00",
+              "end_time": "2025-10-09T12:55:00",
+              "duration_minutes": 10,
+              "count_readings": 2,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.1211,
+              "min_hum_std6": 0.4502
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T12:55:00"
+          },
+          {
+            "name": "suspect_period_16",
+            "value": {
+              "start_time": "2025-10-09T13:05:00",
+              "end_time": "2025-10-09T15:20:00",
+              "duration_minutes": 140,
+              "count_readings": 28,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.0837,
+              "min_hum_std6": 0.1966
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T15:20:00"
+          },
+          {
+            "name": "suspect_period_17",
+            "value": {
+              "start_time": "2025-10-09T16:05:00",
+              "end_time": "2025-10-09T16:05:00",
+              "duration_minutes": 5,
+              "count_readings": 1,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.1329,
+              "min_hum_std6": 0.494
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T16:05:00"
+          },
+          {
+            "name": "suspect_period_18",
+            "value": {
+              "start_time": "2025-10-09T16:20:00",
+              "end_time": "2025-10-09T16:35:00",
+              "duration_minutes": 20,
+              "count_readings": 4,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.1211,
+              "min_hum_std6": 0.2787
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T16:35:00"
+          },
+          {
+            "name": "suspect_period_19",
+            "value": {
+              "start_time": "2025-10-09T17:05:00",
+              "end_time": "2025-10-09T17:40:00",
+              "duration_minutes": 40,
+              "count_readings": 8,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.1549,
+              "min_hum_std6": 0.2258
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T17:40:00"
+          },
+          {
+            "name": "suspect_period_20",
+            "value": {
+              "start_time": "2025-10-09T18:05:00",
+              "end_time": "2025-10-09T18:30:00",
+              "duration_minutes": 30,
+              "count_readings": 6,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.1506,
+              "min_hum_std6": 0.3371
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T18:30:00"
+          },
+          {
+            "name": "suspect_period_21",
+            "value": {
+              "start_time": "2025-10-09T18:45:00",
+              "end_time": "2025-10-09T18:55:00",
+              "duration_minutes": 15,
+              "count_readings": 3,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.1789,
+              "min_hum_std6": 0.3578
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T18:55:00"
+          },
+          {
+            "name": "suspect_period_22",
+            "value": {
+              "start_time": "2025-10-09T19:20:00",
+              "end_time": "2025-10-09T19:20:00",
+              "duration_minutes": 5,
+              "count_readings": 1,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.1549,
+              "min_hum_std6": 0.407
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T19:20:00"
+          },
+          {
+            "name": "suspect_period_23",
+            "value": {
+              "start_time": "2025-10-09T19:50:00",
+              "end_time": "2025-10-09T19:50:00",
+              "duration_minutes": 5,
+              "count_readings": 1,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.3633,
+              "min_hum_std6": 0.2787
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T19:50:00"
+          },
+          {
+            "name": "suspect_period_24",
+            "value": {
+              "start_time": "2025-10-09T20:20:00",
+              "end_time": "2025-10-09T20:25:00",
+              "duration_minutes": 10,
+              "count_readings": 2,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.2366,
+              "min_hum_std6": 0.468
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T20:25:00"
+          },
+          {
+            "name": "suspect_period_25",
+            "value": {
+              "start_time": "2025-10-09T21:55:00",
+              "end_time": "2025-10-09T21:55:00",
+              "duration_minutes": 5,
+              "count_readings": 1,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.4147,
+              "min_hum_std6": 0.4336
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T21:55:00"
+          },
+          {
+            "name": "suspect_period_26",
+            "value": {
+              "start_time": "2025-10-09T22:15:00",
+              "end_time": "2025-10-09T22:35:00",
+              "duration_minutes": 25,
+              "count_readings": 5,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.2191,
+              "min_hum_std6": 0.2503
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T22:35:00"
+          },
+          {
+            "name": "suspect_period_27",
+            "value": {
+              "start_time": "2025-10-09T23:05:00",
+              "end_time": "2025-10-09T23:25:00",
+              "duration_minutes": 25,
+              "count_readings": 5,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.1633,
+              "min_hum_std6": 0.3445
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T23:25:00"
+          },
+          {
+            "name": "suspect_period_28",
+            "value": {
+              "start_time": "2025-10-09T23:55:00",
+              "end_time": "2025-10-09T23:55:00",
+              "duration_minutes": 5,
+              "count_readings": 1,
+              "triggered_by": [
+                "humidity"
+              ],
+              "min_temp_std6": 0.3347,
+              "min_hum_std6": 0.4309
+            },
+            "description": "Low rolling std suggests sensor may be stuck.",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "total_suspect_periods",
+            "value": {
+              "count": 28
+            },
+            "description": "Total number of suspect periods detected.",
+            "timestamp": "2025-11-10T06:24:21.530320+00:00"
+          }
+        ],
+        "result_generated_at": "2025-11-10T06:24:21.498921+00:00"
+      }
+------------------------------------------------------------
+
+ Task 12 of 16
+
+ Executing: generated_tasks/temp_humidity\temp_humidity_rolling_correlation.py
+   Start Time: 11:54:26
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.77 sec
+   Output (JSON):
+      {
+        "task_name": "temp_humidity_rolling_correlation",
+        "description": "Calculate rolling Pearson correlation (window=6) and overall correlation between temperature_c and humidity_percent; flag windows where |corr| > 0.6 as strong coupling periods.",
+        "result_summary": [
+          {
+            "name": "overall_correlation",
+            "value": -0.998,
+            "description": "Pearson correlation between temperature_c and humidity_percent over entire dataset",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "max_abs_rolling_correlation",
+            "value": 0.979,
+            "description": "Maximum absolute rolling correlation (window=6)",
+            "timestamp": "2025-10-09T19:10:00"
+          },
+          {
+            "name": "num_strong_coupling_windows",
+            "value": 129,
+            "description": "Number of rolling windows with |corr| > 0.6",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "strong_coupling_window_timestamps",
+            "value": [
+              "2025-10-09T00:25:00",
+              "2025-10-09T00:40:00",
+              "2025-10-09T00:45:00",
+              "2025-10-09T00:50:00",
+              "2025-10-09T00:55:00",
+              "2025-10-09T01:00:00",
+              "2025-10-09T01:10:00",
+              "2025-10-09T01:20:00",
+              "2025-10-09T02:05:00",
+              "2025-10-09T02:10:00",
+              "2025-10-09T02:15:00",
+              "2025-10-09T02:20:00",
+              "2025-10-09T02:55:00",
+              "2025-10-09T03:00:00",
+              "2025-10-09T03:45:00",
+              "2025-10-09T03:50:00",
+              "2025-10-09T04:55:00",
+              "2025-10-09T05:00:00",
+              "2025-10-09T05:05:00",
+              "2025-10-09T05:10:00",
+              "2025-10-09T05:25:00",
+              "2025-10-09T05:30:00",
+              "2025-10-09T05:35:00",
+              "2025-10-09T05:40:00",
+              "2025-10-09T05:45:00",
+              "2025-10-09T05:55:00",
+              "2025-10-09T06:00:00",
+              "2025-10-09T06:45:00",
+              "2025-10-09T06:50:00",
+              "2025-10-09T06:55:00",
+              "2025-10-09T07:00:00",
+              "2025-10-09T07:05:00",
+              "2025-10-09T07:15:00",
+              "2025-10-09T07:20:00",
+              "2025-10-09T07:25:00",
+              "2025-10-09T07:30:00",
+              "2025-10-09T07:35:00",
+              "2025-10-09T07:40:00",
+              "2025-10-09T07:45:00",
+              "2025-10-09T07:50:00",
+              "2025-10-09T07:55:00",
+              "2025-10-09T08:00:00",
+              "2025-10-09T08:05:00",
+              "2025-10-09T08:10:00",
+              "2025-10-09T08:25:00",
+              "2025-10-09T08:30:00",
+              "2025-10-09T08:35:00",
+              "2025-10-09T08:40:00",
+              "2025-10-09T08:45:00",
+              "2025-10-09T09:35:00",
+              "2025-10-09T09:40:00",
+              "2025-10-09T09:50:00",
+              "2025-10-09T09:55:00",
+              "2025-10-09T10:00:00",
+              "2025-10-09T10:05:00",
+              "2025-10-09T10:10:00",
+              "2025-10-09T10:55:00",
+              "2025-10-09T11:05:00",
+              "2025-10-09T11:10:00",
+              "2025-10-09T11:15:00",
+              "2025-10-09T11:20:00",
+              "2025-10-09T11:25:00",
+              "2025-10-09T11:30:00",
+              "2025-10-09T11:35:00",
+              "2025-10-09T11:40:00",
+              "2025-10-09T11:45:00",
+              "2025-10-09T11:50:00",
+              "2025-10-09T11:55:00",
+              "2025-10-09T12:00:00",
+              "2025-10-09T12:25:00",
+              "2025-10-09T12:30:00",
+              "2025-10-09T12:35:00",
+              "2025-10-09T12:45:00",
+              "2025-10-09T12:50:00",
+              "2025-10-09T12:55:00",
+              "2025-10-09T13:00:00",
+              "2025-10-09T13:05:00",
+              "2025-10-09T13:25:00",
+              "2025-10-09T13:30:00",
+              "2025-10-09T13:35:00",
+              "2025-10-09T13:50:00",
+              "2025-10-09T13:55:00",
+              "2025-10-09T14:00:00",
+              "2025-10-09T14:45:00",
+              "2025-10-09T18:40:00",
+              "2025-10-09T18:55:00",
+              "2025-10-09T19:00:00",
+              "2025-10-09T19:05:00",
+              "2025-10-09T19:10:00",
+              "2025-10-09T19:15:00",
+              "2025-10-09T19:20:00",
+              "2025-10-09T19:25:00",
+              "2025-10-09T19:30:00",
+              "2025-10-09T19:35:00",
+              "2025-10-09T20:05:00",
+              "2025-10-09T20:10:00",
+              "2025-10-09T20:15:00",
+              "2025-10-09T20:20:00",
+              "2025-10-09T20:25:00",
+              "2025-10-09T20:30:00",
+              "2025-10-09T20:35:00",
+              "2025-10-09T20:40:00",
+              "2025-10-09T20:45:00",
+              "2025-10-09T20:50:00",
+              "2025-10-09T20:55:00",
+              "2025-10-09T21:00:00",
+              "2025-10-09T21:05:00",
+              "2025-10-09T21:10:00",
+              "2025-10-09T21:15:00",
+              "2025-10-09T21:20:00",
+              "2025-10-09T21:25:00",
+              "2025-10-09T21:30:00",
+              "2025-10-09T21:35:00",
+              "2025-10-09T21:40:00",
+              "2025-10-09T21:45:00",
+              "2025-10-09T21:50:00",
+              "2025-10-09T21:55:00",
+              "2025-10-09T22:00:00",
+              "2025-10-09T22:05:00",
+              "2025-10-09T22:35:00",
+              "2025-10-09T22:45:00",
+              "2025-10-09T22:50:00",
+              "2025-10-09T22:55:00",
+              "2025-10-09T23:00:00",
+              "2025-10-09T23:05:00",
+              "2025-10-09T23:35:00",
+              "2025-10-09T23:40:00",
+              "2025-10-09T23:45:00",
+              "2025-10-09T23:50:00"
+            ],
+            "description": "Timestamps where rolling window end had strong coupling (|corr| > 0.6)",
+            "timestamp": "2025-10-09T23:55:00"
+          }
+        ],
+        "result_generated_at": "2025-11-10T11:54:28.432827"
+      }
+------------------------------------------------------------
+
+ Task 13 of 16
+
+ Executing: generated_tasks/temp_humidity\threshold_alerts_temp_humidity.py
+   Start Time: 11:54:33
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.26 sec
+   Output (JSON):
+      {
+        "task_name": "threshold_alerts_temp_humidity",
+        "description": "Trigger alerts when temperature_c > 30.0Â°C or humidity_percent > 65.0% for at least 2 consecutive readings; include start time, end time, and duration.",
+        "result_summary": [
+          {
+            "name": "alert_period_1",
+            "value": {
+              "start_time": "2025-10-09T00:00:00",
+              "end_time": "2025-10-09T08:15:00",
+              "duration_minutes": 500,
+              "count_readings": 100,
+              "max_temperature_c": 27.5,
+              "max_humidity_percent": 75.3
+            },
+            "description": "Consecutive readings exceeded thresholds (temp>30.0Â°C or humidity>65.0%).",
+            "timestamp": "2025-10-09T08:15:00"
+          },
+          {
+            "name": "alert_period_2",
+            "value": {
+              "start_time": "2025-10-09T10:10:00",
+              "end_time": "2025-10-09T19:55:00",
+              "duration_minutes": 590,
+              "count_readings": 118,
+              "max_temperature_c": 34.4,
+              "max_humidity_percent": 59.2
+            },
+            "description": "Consecutive readings exceeded thresholds (temp>30.0Â°C or humidity>65.0%).",
+            "timestamp": "2025-10-09T19:55:00"
+          },
+          {
+            "name": "alert_period_3",
+            "value": {
+              "start_time": "2025-10-09T21:50:00",
+              "end_time": "2025-10-09T23:55:00",
+              "duration_minutes": 130,
+              "count_readings": 26,
+              "max_temperature_c": 27.2,
+              "max_humidity_percent": 70.9
+            },
+            "description": "Consecutive readings exceeded thresholds (temp>30.0Â°C or humidity>65.0%).",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "total_alert_periods",
+            "value": {
+              "count": 3
+            },
+            "description": "Total number of alert periods detected.",
+            "timestamp": "2025-11-10T06:24:34.815567+00:00"
+          }
+        ],
+        "result_generated_at": "2025-11-10T06:24:34.804061+00:00"
+      }
+------------------------------------------------------------
+
+ Task 14 of 16
+
+ Executing: generated_tasks/temp_humidity\time_to_threshold_estimator.py
+   Start Time: 11:54:40
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.36 sec
+   Output (JSON):
+      {
+        "task_name": "time_to_threshold_estimator",
+        "description": "Using a linear fit on the last N readings (default N=6), estimate minutes until temperature_c > 30.0°C or humidity_percent > 65.0% if the slope is positive; output predicted breach time or None.",
+        "result_summary": [
+          {
+            "name": "temperature_slope_degC_per_min",
+            "value": -0.02286,
+            "description": "Slope of linear fit over last 6 readings for temperature.",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "humidity_slope_percent_per_min",
+            "value": 0.00629,
+            "description": "Slope of linear fit over last 6 readings for humidity.",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "minutes_until_temperature_breach",
+            "value": null,
+            "description": "Estimated minutes until temperature exceeds 30.0C. Status: non_positive_slope.",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "predicted_temperature_breach_time",
+            "value": null,
+            "description": "Predicted timestamp when temperature crosses 30.0C, if applicable.",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "minutes_until_humidity_breach",
+            "value": 0.0,
+            "description": "Estimated minutes until humidity exceeds 65.0%. Status: already_above.",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "predicted_humidity_breach_time",
+            "value": "2025-10-09T23:55:00",
+            "description": "Predicted timestamp when humidity crosses 65.0%, if applicable.",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "earliest_predicted_breach_metric",
+            "value": "humidity_percent",
+            "description": "Metric expected to breach threshold first among temperature and humidity.",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "earliest_predicted_breach_minutes",
+            "value": 0.0,
+            "description": "Minutes until earliest breach.",
+            "timestamp": "2025-10-09T23:55:00"
+          },
+          {
+            "name": "earliest_predicted_breach_time",
+            "value": "2025-10-09T23:55:00",
+            "description": "Predicted timestamp of earliest breach.",
+            "timestamp": "2025-10-09T23:55:00"
+          }
+        ],
+        "result_generated_at": "2025-11-10T06:24:41.249445+00:00"
+      }
+------------------------------------------------------------
+
+ Task 15 of 16
+
+ Executing: generated_tasks/temp_humidity\vapor_pressure_deficit_kpa.py
+   Start Time: 11:54:46
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.20 sec
+   Output:
+      [OK] Results written to output\temp_humidity\vapor_pressure_deficit_kpa_result.json
+      [
+        {
+          "name": "latest_vpd_kpa",
+          "value": {
+            "vpd_kpa": 0.954,
+            "band": "moderate",
+            "es_kpa": 3.168,
+            "ea_kpa": 2.214,
+            "temperature_c": 25.0,
+            "humidity_percent": 69.9
+          },
+          "description": "Latest vapor pressure deficit with components and dryness band.",
+          "timestamp": "2025-10-09T23:55:00+00:00"
+        },
+        {
+          "name": "max_vpd_kpa",
+          "value": {
+            "vpd_kpa": 2.696,
+            "band": "dry",
+            "at": "2025-10-09T15:15:00+00:00",
+            "temperature_c": 34.1,
+            "humidity_percent": 49.6
+          },
+          "description": "Maximum VPD observed in the dataset.",
+          "timestamp": "2025-10-09T15:15:00+00:00"
+        },
+        {
+          "name": "mean_vpd_kpa",
+          "value": 1.574,
+          "description": "Mean VPD across all readings.",
+          "timestamp": "2025-10-09T23:55:00+00:00"
+        },
+        {
+          "name": "dryness_distribution",
+          "value": {
+            "humid": 0,
+            "moderate": 115,
+            "dry": 173
+          },
+          "description": "Counts of readings in each dryness band.",
+          "timestamp": "2025-10-09T23:55:00+00:00"
+        }
+      ]
+------------------------------------------------------------
+
+ Task 16 of 16
+
+ Executing: generated_tasks/temp_humidity\wet_bulb_temperature_stull.py
+   Start Time: 11:54:51
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.19 sec
+   Output:
+      [OK] Results written to output\temp_humidity\wet_bulb_temperature_stull_result.json
+      [
+        {
+          "name": "latest_wet_bulb_temperature_c",
+          "value": {
+            "wbt_c": 20.92,
+            "band": "caution",
+            "temperature_c": 25.0,
+            "humidity_percent": 69.9
+          },
+          "description": "Latest computed wet-bulb temperature and heat stress band.",
+          "timestamp": "2025-10-09T23:55:00+00:00"
+        },
+        {
+          "name": "max_wet_bulb_temperature_c",
+          "value": {
+            "wbt_c": 26.23,
+            "band": "danger",
+            "at": "2025-10-09T14:55:00+00:00",
+            "temperature_c": 34.4,
+            "humidity_percent": 50.8
+          },
+          "description": "Maximum wet-bulb temperature observed in the dataset.",
+          "timestamp": "2025-10-09T14:55:00+00:00"
+        },
+        {
+          "name": "mean_wet_bulb_temperature_c",
+          "value": 22.99,
+          "description": "Mean wet-bulb temperature across all readings.",
+          "timestamp": "2025-10-09T23:55:00+00:00"
+        },
+        {
+          "name": "heat_stress_distribution",
+          "value": {
+            "safe": 26,
+            "caution": 147,
+            "high caution": 113,
+            "danger": 2
+          },
+          "description": "Counts of readings in each heat stress band.",
+          "timestamp": "2025-10-09T23:55:00+00:00"
+        }
+      ]
+------------------------------------------------------------
+
+ All tasks executed. Check the log file for details.
+Log file saved at: logs\edge_execution_20251110_115314.log

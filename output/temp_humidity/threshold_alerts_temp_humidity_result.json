@@ -1,0 +1,54 @@
+{
+  "task_name": "threshold_alerts_temp_humidity",
+  "description": "Trigger alerts when temperature_c > 30.0°C or humidity_percent > 65.0% for at least 2 consecutive readings; include start time, end time, and duration.",
+  "result_summary": [
+    {
+      "name": "alert_period_1",
+      "value": {
+        "start_time": "2025-10-09T00:00:00",
+        "end_time": "2025-10-09T08:15:00",
+        "duration_minutes": 500,
+        "count_readings": 100,
+        "max_temperature_c": 27.5,
+        "max_humidity_percent": 75.3
+      },
+      "description": "Consecutive readings exceeded thresholds (temp>30.0°C or humidity>65.0%).",
+      "timestamp": "2025-10-09T08:15:00"
+    },
+    {
+      "name": "alert_period_2",
+      "value": {
+        "start_time": "2025-10-09T10:10:00",
+        "end_time": "2025-10-09T19:55:00",
+        "duration_minutes": 590,
+        "count_readings": 118,
+        "max_temperature_c": 34.4,
+        "max_humidity_percent": 59.2
+      },
+      "description": "Consecutive readings exceeded thresholds (temp>30.0°C or humidity>65.0%).",
+      "timestamp": "2025-10-09T19:55:00"
+    },
+    {
+      "name": "alert_period_3",
+      "value": {
+        "start_time": "2025-10-09T21:50:00",
+        "end_time": "2025-10-09T23:55:00",
+        "duration_minutes": 130,
+        "count_readings": 26,
+        "max_temperature_c": 27.2,
+        "max_humidity_percent": 70.9
+      },
+      "description": "Consecutive readings exceeded thresholds (temp>30.0°C or humidity>65.0%).",
+      "timestamp": "2025-10-09T23:55:00"
+    },
+    {
+      "name": "total_alert_periods",
+      "value": {
+        "count": 3
+      },
+      "description": "Total number of alert periods detected.",
+      "timestamp": "2025-11-10T06:24:34.815567+00:00"
+    }
+  ],
+  "result_generated_at": "2025-11-10T06:24:34.804061+00:00"
+}

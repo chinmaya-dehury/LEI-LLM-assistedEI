@@ -1,0 +1,13 @@
+{
+  "task_name": "monotonic_ramp_event_detector",
+  "description": "Detect monotonic ramp events where temperature_c increases by \u22650.2\u00b0C per step for \u22653 consecutive readings or humidity_percent increases by \u22651.0% per step; output start/end timestamps and total change.",
+  "result_summary": [
+    {
+      "name": "no_ramp_events",
+      "value": "none",
+      "description": "No monotonic ramp events detected for configured thresholds.",
+      "timestamp": "2025-11-10T06:23:55.380455Z"
+    }
+  ],
+  "result_generated_at": "2025-11-10T06:23:55.380484Z"
+}

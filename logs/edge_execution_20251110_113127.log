@@ -1,0 +1,374 @@
+ Edge Executor started at 2025-11-10 11:31:27
+Scanning directory: generated_tasks/temp_humidity
+Found 11 tasks to execute.
+============================================================
+
+ Task 1 of 11
+
+ Executing: generated_tasks/temp_humidity\absolute_humidity_estimation.py
+   Start Time: 11:31:27
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+   Status: FAILED
+   Duration: 0.13 sec
+   Error (stderr):
+      File "C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\generated_tasks\temp_humidity\absolute_humidity_estimation.py", line 1
+          import json\nimport sys\nfrom pathlib import Path\nfrom datetime import datetime\n\nimport pandas as pd\nimport numpy as np\n\n\ndef iso_now():\n    return datetime.now().isoformat()\n\n\ndef compute_absolute_humidity_g_m3(temp_c: pd.Series, rh_percent: pd.Series) -> pd.Series:\n    # Magnus formula for saturation vapor pressure (hPa)\n    # e_s = 6.112 * exp((17.67*T)/(T+243.5)) with T in Celsius\n    # Actual vapor pressure e = RH/100 * e_s (hPa)\n    # Absolute humidity AH (g/m^3) = 216.7 * e(hPa) / (T_K)\n    T = temp_c.astype(float)\n    RH = rh_percent.astype(float)\n    T_k = T + 273.15\n    e_s_hpa = 6.112 * np.exp((17.67 * T) / (T + 243.5))\n    e_hpa = (RH / 100.0) * e_s_hpa\n    ah = 216.7 * e_hpa / T_k\n    return ah\n\n\ndef main():\n    task_name = 'absolute_humidity_estimation'\n    description = 'Estimate absolute humidity (g/m^3) per reading using temperature_c and humidity_percent via saturation vapor pressure-based calculation.'\n    data_type = 'temp_humidity'\n\n 
+                      ^
+      SyntaxError: unexpected character after line continuation character
+------------------------------------------------------------
+
+ Task 2 of 11
+
+ Executing: generated_tasks/temp_humidity\comfort_index_humidex.py
+   Start Time: 11:31:32
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.65 sec
+   Output (JSON):
+      {
+        "task_name": "comfort_index_humidex",
+        "description": "Compute Humidex from temperature and relative humidity and assign comfort categories (e.g., comfortable, some discomfort, great discomfort).",
+        "result_summary": [
+          {
+            "name": "mean_humidex",
+            "value": 36.67,
+            "description": "Average Humidex across dataset",
+            "tiemstamp": "2025-11-10T06:01:33Z"
+          },
+          {
+            "name": "max_humidex",
+            "value": {
+              "value": 44.42,
+              "at": "2025-10-09T14:55:00"
+            },
+            "description": "Maximum Humidex and when it occurred",
+            "tiemstamp": "2025-11-10T06:01:33Z"
+          },
+          {
+            "name": "latest_humidex",
+            "value": {
+              "value": 31.86,
+              "at": "2025-10-09T23:55:00"
+            },
+            "description": "Most recent Humidex value",
+            "tiemstamp": "2025-11-10T06:01:33Z"
+          },
+          {
+            "name": "percent_time_discomfort_or_worse",
+            "value": 87.85,
+            "description": "Percentage of time Humidex >= 30",
+            "tiemstamp": "2025-11-10T06:01:33Z"
+          },
+          {
+            "name": "category_counts",
+            "value": {
+              "some discomfort": 152,
+              "great discomfort": 101,
+              "comfortable": 35
+            },
+            "description": "Counts by comfort category",
+            "tiemstamp": "2025-11-10T06:01:33Z"
+          },
+          {
+            "name": "alert_great_discomfort_or_worse",
+            "value": true,
+            "description": "True if any Humidex >= 40 (great discomfort or worse)",
+            "tiemstamp": "2025-11-10T06:01:33Z"
+          }
+        ],
+        "result_generated_at": "2025-11-10T06:01:33Z"
+      }
+------------------------------------------------------------
+
+ Task 3 of 11
+
+ Executing: generated_tasks/temp_humidity\dew_point_estimation_magnus.py
+   Start Time: 11:31:38
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.22 sec
+   Output:
+      [OK] Computed dew point for 288 readings.
+                timestamp  temperature_c  humidity_percent  dew_point_c
+      2025-10-09 23:35:00           25.0              70.7    19.305016
+      2025-10-09 23:40:00           25.4              70.3    19.596744
+      2025-10-09 23:45:00           24.7              70.3    18.926636
+      2025-10-09 23:50:00           24.9              70.9    19.254606
+      2025-10-09 23:55:00           25.0              69.9    19.122197
+------------------------------------------------------------
+
+ Task 4 of 11
+
+ Executing: generated_tasks/temp_humidity\discomfort_index_thom.py
+   Start Time: 11:31:45
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.27 sec
+   Output:
+      Processed 288 rows from data\temp_humidity\raw_data.csv
+      Latest DI: 23.26 (Mild discomfort) at 2025-10-09T23:55:00
+      Max DI: 29.02 (Very severe discomfort) at 2025-10-09T14:55:00
+      Min DI: 21.7 (Mild discomfort) at 2025-10-09T03:05:00
+      Band distribution (%):
+        - Comfortable: 0.0%
+        - Mild discomfort: 34.03%
+        - Moderate discomfort: 28.82%
+        - Severe discomfort: 36.81%
+        - Very severe discomfort: 0.35%
+        - Medical emergency risk: 0.0%
+      High-risk (DI >= 27) count: 107
+      Recommendation: Consider increasing air circulation.
+      Result saved to: output\temp_humidity\discomfort_index_thom_result.json
+------------------------------------------------------------
+
+ Task 5 of 11
+
+ Executing: generated_tasks/temp_humidity\hourly_aggregates_summary.py
+   Start Time: 11:31:51
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.29 sec
+   Output:
+      [OK] Generated 24 summary entries.
+                           temperature_c_mean  temperature_c_min  temperature_c_max  temperature_c_std  temperature_c_count  humidity_percent_mean  humidity_percent_min  humidity_percent_max  humidity_percent_std  humidity_percent_count
+      timestamp                                                                                                                                                                                                                             
+      2025-10-09 00:00:00           24.425000               23.9               24.9           0.325087                   12              71.966667                  70.9                  73.0              0.737728                      12
+      2025-10-09 01:00:00           23.583333               23.2               24.0           0.194625                   12              73.575000                  72.6                  74.5              0.532789                      12
+      2025-10-09 02:00:00           23.250000               23.0               23.5           0.138170                   12              74.525000                  74.2                  75.3              0.295804                      12
+      2025-10-09 03:00:00           23.200000               22.9               23.5           0.153741                   12              74.391667                  74.0                  75.0              0.357919                      12
+      2025-10-09 04:00:00           23.616667               23.2               24.0           0.240580                   12              73.441667                  72.5                  74.1              0.492597                      12
+      2025-10-09 05:00:00           24.308333               23.9               24.9           0.328795                   12              72.066667                  70.8                  73.1              0.699784                      12
+      2025-10-09 06:00:00           25.266667               24.6               25.9           0.379793                   12              69.991667                  68.9                  71.4              0.870171                      12
+      2025-10-09 07:00:00           26.450000               25.8               26.9           0.375379                   12              67.275000                  65.3                  69.1              1.301136                      12
+      2025-10-09 08:00:00           27.816667               27.2               28.6           0.468718                   12              64.283333                  62.6                  65.6              0.999848                      12
+      2025-10-09 09:00:00           29.291667               28.4               30.0           0.473782                   12              61.033333                  59.5                  63.0              1.091565                      12
+      2025-10-09 10:00:00           30.591667               30.0               31.2           0.387201                   12              58.116667                  56.8                  59.4              0.868471                      12
+      2025-10-09 11:00:00           31.816667               31.1               32.4           0.390415                   12              55.408333                  53.4                  57.3              1.231745                      12
+      2025-10-09 12:00:00           32.825000               32.4               33.2           0.266714                   12              53.050000                  51.6                  54.3              0.879566                      12
+      2025-10-09 13:00:00           33.633333               33.2               34.1           0.264002                   12              51.366667                  50.7                  52.2              0.469687                      12
+      2025-10-09 14:00:00           33.966667               33.7               34.4           0.205971                   12              50.658333                  50.3                  51.5              0.334279                      12
+      2025-10-09 15:00:00           33.925000               33.7               34.1           0.135680                   12              50.708333                  49.6                  52.0              0.670764                      12
+      2025-10-09 16:00:00           33.608333               33.4               33.8           0.137895                   12              51.325000                  50.4                  52.6              0.721268                      12
+      2025-10-09 17:00:00           33.000000               32.5               33.5           0.273030                   12              52.916667                  51.9                  54.2              0.743252                      12
+      2025-10-09 18:00:00           31.900000               31.2               32.4           0.386123                   12              54.983333                  53.8                  56.6              0.841895                      12
+      2025-10-09 19:00:00           30.716667               30.1               31.3           0.423907                   12              57.633333                  56.3                  59.2              0.824989                      12
+      2025-10-09 20:00:00           29.358333               28.6               29.9           0.425245                   12              60.675000                  59.3                  62.4              1.010063                      12
+      2025-10-09 21:00:00           27.916667               26.9               28.9           0.571813                   12              63.875000                  62.3                  65.3              0.994645                      12
+      2025-10-09 22:00:00           26.583333               26.0               27.2           0.401889                   12              67.066667                  66.0                  68.6              0.943237                      12
+      2025-10-09 23:00:00           25.366667               24.7               25.9           0.374975                   12              69.541667                  68.1                  70.9              0.915978                      12
+------------------------------------------------------------
+
+ Task 6 of 11
+
+ Executing: generated_tasks/temp_humidity\next_hour_forecast_ses.py
+   Start Time: 11:31:57
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+   Status: FAILED
+   Duration: 0.15 sec
+   Error (stderr):
+      File "C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\generated_tasks\temp_humidity\next_hour_forecast_ses.py", line 1
+          import json\nimport sys\nfrom pathlib import Path\nfrom datetime import datetime, timedelta\n\nimport pandas as pd\nimport numpy as np\n\n\ndef iso_now():\n    return datetime.now().isoformat()\n\n\ndef ses_level_and_residuals(y: pd.Series, alpha: float):\n    y = pd.to_numeric(y, errors='coerce').dropna().values.astype(float)\n    if y.size == 0:\n        return None, None\n    level = y[0]\n    residuals = []\n    # one-step-ahead residuals: e_t = y_t - l_{t-1}\n    for i in range(1, y.size):\n        forecast = level\n        residuals.append(y[i] - forecast)\n        level = alpha * y[i] + (1 - alpha) * level\n    return float(level), np.array(residuals) if residuals else np.array([])\n\n\ndef main():\n    task_name = 'next_hour_forecast_ses'\n    description = 'Predict next 60-minute average temperature and humidity using simple exponential smoothing (alpha=0.3) on 5-minute data; output mean forecast and an approximate ±1\u03c3 uncertainty from residuals.'\n    data_type = 'temp_hum
+                      ^
+      SyntaxError: unexpected character after line continuation character
+------------------------------------------------------------
+
+ Task 7 of 11
+
+ Executing: generated_tasks/temp_humidity\parse_csv_validate_schema.py
+   Start Time: 11:32:02
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.50 sec
+   Output (JSON):
+      {
+        "task_name": "parse_csv_validate_schema",
+        "description": "Load the CSV, parse timestamps to datetime, enforce float types for temperature and humidity, and verify 5-minute sampling intervals.",
+        "result_summary": [
+          {
+            "name": "row_count",
+            "value": 288,
+            "description": "Total rows in CSV",
+            "tiemstamp": "2025-11-10T06:02:04Z"
+          },
+          {
+            "name": "missing_timestamp_count",
+            "value": 0,
+            "description": "Rows with unparseable timestamps",
+            "tiemstamp": "2025-11-10T06:02:04Z"
+          },
+          {
+            "name": "missing_temperature_count",
+            "value": 0,
+            "description": "Rows with missing/invalid temperature values",
+            "tiemstamp": "2025-11-10T06:02:04Z"
+          },
+          {
+            "name": "missing_humidity_count",
+            "value": 0,
+            "description": "Rows with missing/invalid humidity values",
+            "tiemstamp": "2025-11-10T06:02:04Z"
+          },
+          {
+            "name": "invalid_temperature_range_count",
+            "value": 0,
+            "description": "Temperature values outside [15, 40] Celsius",
+            "tiemstamp": "2025-11-10T06:02:04Z"
+          },
+          {
+            "name": "invalid_humidity_range_count",
+            "value": 0,
+            "description": "Relative humidity outside [20, 100] percent",
+            "tiemstamp": "2025-11-10T06:02:04Z"
+          },
+          {
+            "name": "duplicate_timestamps_count",
+            "value": 0,
+            "description": "Number of duplicate timestamp entries",
+            "tiemstamp": "2025-11-10T06:02:04Z"
+          },
+          {
+            "name": "timestamps_monotonic_increasing",
+            "value": true,
+            "description": "Timestamps are in non-decreasing order",
+            "tiemstamp": "2025-11-10T06:02:04Z"
+          },
+          {
+            "name": "sampling_interval_ok",
+            "value": true,
+            "description": "All consecutive samples spaced exactly 5 minutes",
+            "tiemstamp": "2025-11-10T06:02:04Z"
+          },
+          {
+            "name": "sampling_unique_intervals_minutes",
+            "value": [
+              5.0
+            ],
+            "description": "Unique observed sampling intervals (minutes)",
+            "tiemstamp": "2025-11-10T06:02:04Z"
+          },
+          {
+            "name": "irregular_intervals_count",
+            "value": 0,
+            "description": "Count of intervals differing from 5 minutes",
+            "tiemstamp": "2025-11-10T06:02:04Z"
+          },
+          {
+            "name": "first_timestamp",
+            "value": "2025-10-09T00:00:00",
+            "description": "First timestamp in dataset (ISO)",
+            "tiemstamp": "2025-11-10T06:02:04Z"
+          },
+          {
+            "name": "last_timestamp",
+            "value": "2025-10-09T23:55:00",
+            "description": "Last timestamp in dataset (ISO)",
+            "tiemstamp": "2025-11-10T06:02:04Z"
+          },
+          {
+            "name": "min_temperature_c",
+            "value": 22.9,
+            "description": "Minimum observed temperature (C)",
+            "tiemstamp": "2025-11-10T06:02:04Z"
+          },
+          {
+            "name": "max_temperature_c",
+            "value": 34.4,
+            "description": "Maximum observed temperature (C)",
+            "tiemstamp": "2025-11-10T06:02:04Z"
+          },
+          {
+            "name": "min_humidity_percent",
+            "value": 49.6,
+            "description": "Minimum observed relative humidity (%)",
+            "tiemstamp": "2025-11-10T06:02:04Z"
+          },
+          {
+            "name": "max_humidity_percent",
+            "value": 75.3,
+            "description": "Maximum observed relative humidity (%)",
+            "tiemstamp": "2025-11-10T06:02:04Z"
+          }
+        ],
+        "result_generated_at": "2025-11-10T06:02:04Z"
+      }
+------------------------------------------------------------
+
+ Task 8 of 11
+
+ Executing: generated_tasks/temp_humidity\rolling_zscore_anomaly_detection.py
+   Start Time: 11:32:09
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.28 sec
+   Output:
+      temperature_c: 0 anomalies detected (|z| > 2.5, window=5)
+      humidity_percent: 0 anomalies detected (|z| > 2.5, window=5)
+      Results saved to output\temp_humidity\rolling_zscore_anomaly_detection_result.json
+      {
+        "task_name": "rolling_zscore_anomaly_detection",
+        "description": "Detect anomalies in temperature_c and humidity_percent using a rolling z-score (window=5); flag readings where |z| > 2.5 and output flagged timestamps with z-scores.",
+        "result_summary": [
+          {
+            "name": "temperature_c_anomaly_count",
+            "value": 0,
+            "description": "Number of temperature_c points with |z| > 2.5 using rolling window=5.",
+            "timestamp": "2025-11-10T11:32:10.692268"
+          },
+          {
+            "name": "humidity_percent_anomaly_count",
+            "value": 0,
+            "description": "Number of humidity_percent points with |z| > 2.5 using rolling window=5.",
+            "timestamp": "2025-11-10T11:32:10.695069"
+          },
+          {
+            "name": "total_anomalies",
+            "value": 0,
+            "description": "Total anomalies across temperature_c and humidity_percent.",
+            "timestamp": "2025-11-10T11:32:10.695311"
+          }
+        ],
+        "result_generated_at": "2025-11-10T11:32:10.671455"
+      }
+------------------------------------------------------------
+
+ Task 9 of 11
+
+ Executing: generated_tasks/temp_humidity\sensor_stuck_detection.py
+   Start Time: 11:32:15
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.08 sec
+------------------------------------------------------------
+
+ Task 10 of 11
+
+ Executing: generated_tasks/temp_humidity\sudden_change_detector.py
+   Start Time: 11:32:20
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+   Status: FAILED
+   Duration: 1.48 sec
+   Error (stderr):
+      Traceback (most recent call last):
+        File "C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\generated_tasks\temp_humidity\sudden_change_detector.py", line 131, in <module>
+          main()
+          ~~~~^^
+        File "C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\generated_tasks\temp_humidity\sudden_change_detector.py", line 127, in main
+          print(json.dumps(result, ensure_ascii=False, indent=2))
+          ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "C:\Users\siddh\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+          return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+                 ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      UnicodeEncodeError: 'charmap' codec can't encode character '\u0394' in position 117: character maps to <undefined>
+------------------------------------------------------------
+
+ Task 11 of 11
+
+ Executing: generated_tasks/temp_humidity\threshold_alerts_temp_humidity.py
+   Start Time: 11:32:27
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.10 sec
+------------------------------------------------------------
+
+ All tasks executed. Check the log file for details.
+Log file saved at: logs\edge_execution_20251110_113127.log

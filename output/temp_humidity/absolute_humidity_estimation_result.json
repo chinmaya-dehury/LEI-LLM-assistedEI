@@ -1,0 +1,31 @@
+{
+  "task_name": "absolute_humidity_estimation",
+  "description": "Estimate absolute humidity (g/m^3) per reading using temperature_c and humidity_percent via saturation vapor pressure-based calculation.",
+  "result_summary": [
+    {
+      "name": "average_absolute_humidity_g_per_m3",
+      "value": 17.402,
+      "description": "Average absolute humidity across all records.",
+      "timestamp": "2025-11-10T11:53:16.085132"
+    },
+    {
+      "name": "minimum_absolute_humidity_g_per_m3",
+      "value": 15.121,
+      "description": "Minimum absolute humidity observed.",
+      "timestamp": "2025-10-09T03:05:00"
+    },
+    {
+      "name": "maximum_absolute_humidity_g_per_m3",
+      "value": 19.495,
+      "description": "Maximum absolute humidity observed.",
+      "timestamp": "2025-10-09T14:55:00"
+    },
+    {
+      "name": "latest_absolute_humidity_g_per_m3",
+      "value": 16.092,
+      "description": "Latest absolute humidity value.",
+      "timestamp": "2025-10-09T23:55:00"
+    }
+  ],
+  "result_generated_at": "2025-11-10T11:53:16.085132"
+}

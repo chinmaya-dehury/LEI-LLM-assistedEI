@@ -12,10 +12,12 @@ to individual components without affecting the entire workflow.
 
 """
 
+import os
 import subprocess
 import sys
 from pathlib import Path
 from typing import Optional
+import time
 
 
 # === Script Locations ===
@@ -28,41 +30,39 @@ STEP_3_SCRIPT = BASE_DIR / "edge_scheduler_updated.py"
 def run_script(script_path: Path, cwd: Optional[Path] = None) -> None:
 	"""Execute a Python script using the current interpreter."""
 
-	if not script_path.exists():
-		raise FileNotFoundError(f"Script not found: {script_path}")
+	command = [sys.executable, script_path]
 
-	command = [sys.executable, str(script_path)]
-	run_cwd = cwd if cwd else script_path.parent
-
-	print(f"\n Starting: {script_path.relative_to(BASE_DIR)}")
-	print(f"   Interpreter: {sys.executable}")
-	print(f"   Working Dir: {run_cwd}")
+	# Prepare environment forcing UTF-8 for child Python process output
+	env = os.environ.copy()
+	env["PYTHONIOENCODING"] = "utf-8"
 
 	try:
+		print(f"\n🚀 Starting: {script_path} (CWD: {cwd if cwd else os.getcwd()})")
+		start = time.perf_counter()
+
 		result = subprocess.run(
 			command,
-			cwd=run_cwd,
+			check=True,             # raise CalledProcessError on non-zero exit
 			capture_output=True,
-			text=True,
-			check=True,
+			text=True,              # use text mode
+			encoding="utf-8",       # decode using UTF-8
+			errors="replace",       # replace undecodable bytes instead of raising
+			cwd=cwd,
+			env=env
 		)
-	except subprocess.CalledProcessError as err:
-		print(f"\n {script_path.name} failed with exit code {err.returncode}")
-		if err.stdout:
-			print("--- stdout ---")
-			print(err.stdout)
-		if err.stderr:
-			print("--- stderr ---")
-			print(err.stderr)
-		raise
 
-	stdout = (result.stdout or "").strip()
-	if stdout:
-		preview = stdout if len(stdout) < 400 else stdout[:400] + "..."
-		print("Output snippet:")
-		print(preview)
-	else:
-		print("Completed with no stdout")
+		elapsed = time.perf_counter() - start
+		print(f"✅ Success. ({elapsed:.2f}s) Output Snippet:\n{result.stdout[:200]}...") 
+		return True
+
+	except subprocess.CalledProcessError as e:
+		print(f"\n❌ ERROR: {script_path} failed (exit {e.returncode}).")
+		print(f"--- Stderr ---\n{e.stderr}")
+		print(f"--- Stdout ---\n{e.stdout}")
+		raise
+	except FileNotFoundError:
+		print(f"\n❌ ERROR: Script not found at {script_path}")
+		raise
 
 
 def run_pipeline() -> None:
@@ -92,9 +92,7 @@ if __name__ == "__main__":
 	run_pipeline()
 
 
-# Following problems need to resolved:
-# 1. The generated task code files have data type = "environment" instead of "temp_humidity" for which
-# the generated code is not working properly.
-# Instead of searching raw_data in temp_humidity folder, it is searching in environment folder.
-# 2. The validator may be used after all the code is generated to validate the code before passing to edge_scheduler_updated.py.
-# Maybe we can add the datatype parameter in .json file.
+
+# TODO: to add validaor.py in the step3. If the edge_scheduler_sequential.py
+# returns status as Failed then only we will call validator.py to validate the code.
+# 
