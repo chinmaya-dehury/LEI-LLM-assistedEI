@@ -1,0 +1,64 @@
+{
+  "tasks": [
+    {
+      "task_name": "timestamp_crossfield_consistency_check",
+      "description": "Cross-validate timestamp_unix against timestamp_utc (convert UTC to epoch and ensure |diff| <= 1s) and verify timestamps are monotonically non-decreasing; report indices and counts of mismatches.",
+      "data_type": "air_quality",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "pollutant_plausibility_and_constraints",
+      "description": "Validate readings for non-negativity and physical constraints (e.g., PM2.5 <= PM10) and flag out-of-range values using simple ambient bounds: CO<=10000, NO<=200, NO2<=400, O3<=300, SO2<=500, PM2.5<=500, PM10<=600, NH3<=100 µg/m3.",
+      "data_type": "air_quality",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "daq_band_duration_24h",
+      "description": "Aggregate minutes spent in each UK DAQI band (Low/Moderate/High/Very High) over the last 24 hours from aqi_uk; output durations and percentages with coverage check.",
+      "data_type": "air_quality",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "traffic_freshness_indicator_no_no2_ratio",
+      "description": "Compute NO/NO2 ratio per reading and classify source freshness: >1.0 fresh-traffic, 0.3–1.0 mixed, <0.3 aged/oxidized; optionally smooth using a 2-point median.",
+      "data_type": "air_quality",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "coarse_dust_event_detector",
+      "description": "Detect coarse dust episodes when PM10 is high (e.g., >80 µg/m3) and PM2.5/PM10 < 0.3 for at least N consecutive readings (default N=2); return start/end timestamps and peak PM10.",
+      "data_type": "air_quality",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "o3_8h_time_weighted_average",
+      "description": "Compute a time-weighted 8-hour mean of O3 using actual timestamp gaps; require >=75% coverage and flag exceedance of the WHO 8h guideline (100 µg/m3).",
+      "data_type": "air_quality",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "pm25_no2_rolling_correlation",
+      "description": "Calculate Pearson correlation between PM2.5 and NO2 over the last K readings (default K=12, require K>=6); label coupling strength as strong (|r|>=0.7), moderate (0.4–0.7), or weak.",
+      "data_type": "air_quality",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "aqi_gap_fill_estimator_from_components",
+      "description": "When aqi_uk is missing, estimate a DAQI-like band by taking the maximum ratio of pollutant concentration to WHO short-term guideline (PM2.5:15, PM10:45, NO2:25, SO2:40, O3:100, CO:4000 µg/m3): ratio<=1 Low, 1–2 Moderate, 2–4 High, >4 Very High; report dominant pollutant.",
+      "data_type": "air_quality",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "unit_string_normalization_checker",
+      "description": "Detect malformed unit encodings (e.g., 'Âµg/m3') in metadata/CSV headers and normalize to 'µg/m3'; output a mapping to apply during parsing.",
+      "data_type": "air_quality",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "pollutant_24h_extremes_reporter",
+      "description": "Report 24-hour min/max values and their timestamps for key pollutants (PM2.5, PM10, NO2, O3); handles sparse data and includes sample count and coverage percentage.",
+      "data_type": "air_quality",
+      "status": "code_generated"
+    }
+  ]
+}

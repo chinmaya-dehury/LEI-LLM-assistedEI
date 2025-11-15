@@ -10,7 +10,7 @@ Why adaptive?
 This version check if there is a list of tasks already generated. 
 If so, it asks the LLM to only generate new list of task, if any. 
 """
-
+ 
 import os
 import json
 from openai import OpenAI
@@ -23,13 +23,12 @@ import sys
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 # Paths
-#DATA_TYPE = "temp_humidity"
 BASE_PATH = "data/"+DATA_TYPE+"/"
 DATA_PATH = BASE_PATH+"sample_data.csv"
 META_PATH = BASE_PATH+"metadata.json"
 CONTEXT_PATH = BASE_PATH+"context.txt"
 OUTPUT_DIR = "generated_tasks/"+DATA_TYPE
-TASK_LIST_PATH = OUTPUT_DIR+"/tasks_list1.json"
+TASK_LIST_PATH = OUTPUT_DIR+"/tasks_list.json"
 
 # Read all inputs
 with open(DATA_PATH, "r") as f:
@@ -86,11 +85,6 @@ except json.JSONDecodeError:
         f.write(raw_output)
     exit()
 
-###
-# {
-#   "tasks": [],
-#   "empty_reason": "<reason for not generating new tasks>"
-# }
 # if no new tasks are generated, print the reason
 if len(tasks_data.get("tasks", [])) == 0:
     reason = tasks_data.get("empty_reason", "No reason provided.")
@@ -109,7 +103,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 with open(os.path.join(OUTPUT_DIR, "new_tasks.json"), "w", encoding="utf-8") as f:
     json.dump(tasks_data, f, indent=2)
 
-# TODO: if the json file exists, append the new tasks to existing tasks
+# if the json file exists, append the new tasks to existing tasks
 if os.path.exists(TASK_LIST_PATH):
     with open(TASK_LIST_PATH, "r", encoding="utf-8") as f:
         existing_tasks_data = json.load(f)
@@ -117,8 +111,8 @@ if os.path.exists(TASK_LIST_PATH):
     existing_tasks_data["tasks"].extend(tasks_data["tasks"])
     tasks_data = existing_tasks_data
 
-# write updated tasks_list1.json (tasks_data now contains merged list)
-with open(os.path.join(OUTPUT_DIR, "tasks_list1.json"), "w", encoding="utf-8") as f:
+# write updated tasks_list.json (tasks_data now contains merged list)
+with open(os.path.join(OUTPUT_DIR, "tasks_list.json"), "w", encoding="utf-8") as f:
     json.dump(tasks_data, f, indent=2)
-print("The list of all tasks with their description are successfully saved in "+os.path.join(OUTPUT_DIR, "tasks_list1.json"))
+print("The list of all tasks with their description are successfully saved in "+os.path.join(OUTPUT_DIR, "tasks_list.json"))
 ### Now the json_task_list contains all newly tasks from llm_orchestrator_adaptive.py

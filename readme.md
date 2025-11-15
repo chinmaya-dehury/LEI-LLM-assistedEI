@@ -52,24 +52,29 @@ __The LLM replies with:__
 
 
 # How to execute?
-* `export OPENAI_API_KEY="your_api_key_here"`
+* export `OPENAI_API_KEY="your_api_key_here"`
+* config file: Modify DATA_TYPE according to your needs, for ex: `DATA_TYPE="air_quality"`
+* Run `python pipeline.py`
+
+    OR Step 1 to Step 4 one by one
+
 * Step 1 – Generate Tasks list only (Cloud Simulation)
 `python llm_orchestrator_basic.py`    
 OR    
 look at the existing tasks, and if required or if possible generate a list of new tasks and store both in new .json file as well as in existing one.
-`python llm_orchestrator_adaptive.py` 
+`python llm_orchestrator_adaptive.py`
 OR    
-look at the existing tasks, and if required or if possible generate a list of new tasks.
-`python llm_orchestrator_adaptive_resource.py`    
+look at the existing tasks, and if required or if possible generate a list of new tasks. `python llm_orchestrator_adaptive_resource.py`    
 
-* Step 2 - Generate the code for each task
+* Step 2 - Generate the code for new tasks only
 `python task_code_generator.py`
-OR
-only generate code for new json file and validate each code before saving
-`python tak_code_generator_updated.py`
 
-* Step 3 – Execute Tasks (Edge Simulation) `python -m scheduler.edge_scheduler_sequential`
-* Step 4 – Visualize Results (Dashboard)  `streamlit run edge_dashboard.py`
+* Step 3 - Intermediate Step to validate the generated codes
+`python validator.py`
+
+* Step 4 – Execute Tasks (Edge Simulation) `python -m scheduler.edge_scheduler_sequential`
+
+* Step 5 – Visualize Results (Dashboard)  `streamlit run edge_dashboard.py`
 
 ### for setting up virtual environment
 * `python -m venv venv`

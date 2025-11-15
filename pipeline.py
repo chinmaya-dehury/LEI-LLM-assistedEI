@@ -23,8 +23,8 @@ import time
 # === Script Locations ===
 BASE_DIR = Path(__file__).parent.resolve()
 STEP_1_SCRIPT = BASE_DIR / "llm_orchestrator_adaptive.py"
-STEP_2_SCRIPT = BASE_DIR / "task_code_generator_updated.py"
-STEP_3_SCRIPT = BASE_DIR / "edge_scheduler_updated.py"
+STEP_2_SCRIPT = BASE_DIR / "task_code_generator.py"
+STEP_3_SCRIPT = BASE_DIR / "scheduler" / "edge_scheduler_sequential.py"
 
 
 def run_script(script_path: Path, cwd: Optional[Path] = None) -> None:
@@ -76,6 +76,9 @@ def run_pipeline() -> None:
 		print("\nStep 2/3: Generating code via task_code_generator_update.py")
 		run_script(STEP_2_SCRIPT)
 
+		print("\nIntermediate Step: Validator run now\n");
+		run_script(BASE_DIR / "validator.py")
+
 		print("\nStep 3/3: Executing generated tasks via edge_scheduler_sequential.py")
 		run_script(STEP_3_SCRIPT, cwd=BASE_DIR)
 
@@ -93,6 +96,5 @@ if __name__ == "__main__":
 
 
 
-# TODO: to add validaor.py in the step3. If the edge_scheduler_sequential.py
-# returns status as Failed then only we will call validator.py to validate the code.
-# 
+# TODO: added validaor.py before the step3. to check the generated code from step2.
+#

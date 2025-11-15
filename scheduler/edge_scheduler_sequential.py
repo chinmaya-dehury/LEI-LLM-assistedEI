@@ -8,21 +8,21 @@ errors, and execution times in a timestamped log file.
 
 Author: Dr. Chinmaya Dehury
 Date: 2025-10-09
+
+Last Modified: 15-11-2025
 """
 
-##### CURRENT STATUS
-# This version executes all Python scripts in the specified directory sequentially.
-# It logs the start time, end time, duration, output, and errors for each script.
-# Future versions may include parallel execution, error handling improvements.
-# code change so that subprocess uses the same python interpreter as the scheduler
-# Also, improve error detection by scanning stdout/stderr for common error keywords.
-
 import os
+import sys
+# Add parent directory to path so we can import config
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
 import subprocess
 import time
 from datetime import datetime
 from config import DATA_TYPE
-import sys
 import json
 
 # === Configuration ===

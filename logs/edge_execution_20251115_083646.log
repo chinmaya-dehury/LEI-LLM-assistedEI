@@ -1,4 +1,4 @@
- Edge Executor started at 2025-11-10 11:53:14
+ Edge Executor started at 2025-11-15 08:36:46
 Scanning directory: generated_tasks/temp_humidity
 Found 16 tasks to execute.
 ============================================================
@@ -6,10 +6,10 @@ Found 16 tasks to execute.
  Task 1 of 16
 
  Executing: generated_tasks/temp_humidity\absolute_humidity_estimation.py
-   Start Time: 11:53:14
+   Start Time: 08:36:46
    Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
     Status: SUCCESS
-   Duration: 1.48 sec
+   Duration: 8.90 sec
    Output:
       {
         "task_name": "absolute_humidity_estimation",
@@ -19,7 +19,7 @@ Found 16 tasks to execute.
             "name": "average_absolute_humidity_g_per_m3",
             "value": 17.402,
             "description": "Average absolute humidity across all records.",
-            "timestamp": "2025-11-10T11:53:16.085132"
+            "timestamp": "2025-11-15T08:36:55.513385"
           },
           {
             "name": "minimum_absolute_humidity_g_per_m3",
@@ -40,7 +40,7 @@ Found 16 tasks to execute.
             "timestamp": "2025-10-09T23:55:00"
           }
         ],
-        "result_generated_at": "2025-11-10T11:53:16.085132"
+        "result_generated_at": "2025-11-15T08:36:55.513385"
       }
       Saved result to output\temp_humidity\absolute_humidity_estimation_result.json
 ------------------------------------------------------------
@@ -48,10 +48,10 @@ Found 16 tasks to execute.
  Task 2 of 16
 
  Executing: generated_tasks/temp_humidity\comfort_compliance_rate.py
-   Start Time: 11:53:21
+   Start Time: 08:37:00
    Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
     Status: SUCCESS
-   Duration: 1.49 sec
+   Duration: 1.31 sec
    Output (JSON):
       {
         "task_name": "comfort_compliance_rate",
@@ -76,17 +76,17 @@ Found 16 tasks to execute.
             "timestamp": "2025-10-09T23:55:00"
           }
         ],
-        "result_generated_at": "2025-11-10T11:53:22.514664"
+        "result_generated_at": "2025-11-15T08:37:01.856042"
       }
 ------------------------------------------------------------
 
  Task 3 of 16
 
  Executing: generated_tasks/temp_humidity\comfort_index_humidex.py
-   Start Time: 11:53:27
+   Start Time: 08:37:07
    Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
     Status: SUCCESS
-   Duration: 1.51 sec
+   Duration: 1.49 sec
    Output (JSON):
       {
         "task_name": "comfort_index_humidex",
@@ -96,7 +96,7 @@ Found 16 tasks to execute.
             "name": "mean_humidex",
             "value": 36.67,
             "description": "Average Humidex across dataset",
-            "tiemstamp": "2025-11-10T06:23:29Z"
+            "tiemstamp": "2025-11-15T03:07:08Z"
           },
           {
             "name": "max_humidex",
@@ -105,7 +105,7 @@ Found 16 tasks to execute.
               "at": "2025-10-09T14:55:00"
             },
             "description": "Maximum Humidex and when it occurred",
-            "tiemstamp": "2025-11-10T06:23:29Z"
+            "tiemstamp": "2025-11-15T03:07:08Z"
           },
           {
             "name": "latest_humidex",
@@ -114,13 +114,13 @@ Found 16 tasks to execute.
               "at": "2025-10-09T23:55:00"
             },
             "description": "Most recent Humidex value",
-            "tiemstamp": "2025-11-10T06:23:29Z"
+            "tiemstamp": "2025-11-15T03:07:08Z"
           },
           {
             "name": "percent_time_discomfort_or_worse",
             "value": 87.85,
             "description": "Percentage of time Humidex >= 30",
-            "tiemstamp": "2025-11-10T06:23:29Z"
+            "tiemstamp": "2025-11-15T03:07:08Z"
           },
           {
             "name": "category_counts",
@@ -130,26 +130,26 @@ Found 16 tasks to execute.
               "comfortable": 35
             },
             "description": "Counts by comfort category",
-            "tiemstamp": "2025-11-10T06:23:29Z"
+            "tiemstamp": "2025-11-15T03:07:08Z"
           },
           {
             "name": "alert_great_discomfort_or_worse",
             "value": true,
             "description": "True if any Humidex >= 40 (great discomfort or worse)",
-            "tiemstamp": "2025-11-10T06:23:29Z"
+            "tiemstamp": "2025-11-15T03:07:08Z"
           }
         ],
-        "result_generated_at": "2025-11-10T06:23:29Z"
+        "result_generated_at": "2025-11-15T03:07:08Z"
       }
 ------------------------------------------------------------
 
  Task 4 of 16
 
  Executing: generated_tasks/temp_humidity\condensation_risk_indicator.py
-   Start Time: 11:53:34
+   Start Time: 08:37:13
    Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
     Status: SUCCESS
-   Duration: 1.85 sec
+   Duration: 1.42 sec
    Output (JSON):
       {
         "task_name": "condensation_risk_indicator",
@@ -210,17 +210,17 @@ Found 16 tasks to execute.
             "timestamp": "2025-10-09T23:55:00"
           }
         ],
-        "result_generated_at": "2025-11-10T11:53:36.004129"
+        "result_generated_at": "2025-11-15T08:37:14.835954"
       }
 ------------------------------------------------------------
 
  Task 5 of 16
 
  Executing: generated_tasks/temp_humidity\discomfort_index_thom.py
-   Start Time: 11:53:41
+   Start Time: 08:37:20
    Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
     Status: SUCCESS
-   Duration: 1.43 sec
+   Duration: 1.77 sec
    Output:
       Processed 288 rows from data\temp_humidity\raw_data.csv
       Latest DI: 23.26 (Mild discomfort) at 2025-10-09T23:55:00
@@ -241,10 +241,10 @@ Found 16 tasks to execute.
  Task 6 of 16
 
  Executing: generated_tasks/temp_humidity\humidity_cusum_drift_detector.py
-   Start Time: 11:53:47
+   Start Time: 08:37:26
    Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
     Status: SUCCESS
-   Duration: 1.41 sec
+   Duration: 1.72 sec
    Output (JSON):
       {
         "drift_events_detected": 1,
@@ -256,10 +256,10 @@ Found 16 tasks to execute.
  Task 7 of 16
 
  Executing: generated_tasks/temp_humidity\monotonic_ramp_event_detector.py
-   Start Time: 11:53:54
+   Start Time: 08:37:33
    Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
     Status: SUCCESS
-   Duration: 1.46 sec
+   Duration: 1.61 sec
    Output (JSON):
       {
         "events_detected": 0,
@@ -271,10 +271,10 @@ Found 16 tasks to execute.
  Task 8 of 16
 
  Executing: generated_tasks/temp_humidity\next_hour_forecast_ses.py
-   Start Time: 11:54:00
+   Start Time: 08:37:40
    Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
     Status: SUCCESS
-   Duration: 1.84 sec
+   Duration: 1.75 sec
    Output:
       {
         "task_name": "next_hour_forecast_ses",
@@ -284,40 +284,40 @@ Found 16 tasks to execute.
             "name": "next_60min_temperature_mean_forecast_c",
             "value": 25.08,
             "description": "SES(alpha=0.3) forecast for the next 60-minute average temperature.",
-            "timestamp": "2025-11-10T11:54:02.176477"
+            "timestamp": "2025-11-15T08:37:41.713545"
           },
           {
             "name": "next_60min_temperature_sigma_c",
             "value": 0.32,
             "description": "Approximate Â±1Ïƒ from in-sample SES residuals (one-step-ahead).",
-            "timestamp": "2025-11-10T11:54:02.176477"
+            "timestamp": "2025-11-15T08:37:41.713545"
           },
           {
             "name": "next_60min_humidity_mean_forecast_percent",
             "value": 70.13,
             "description": "SES(alpha=0.3) forecast for the next 60-minute average humidity.",
-            "timestamp": "2025-11-10T11:54:02.176477"
+            "timestamp": "2025-11-15T08:37:41.713545"
           },
           {
             "name": "next_60min_humidity_sigma_percent",
             "value": 0.74,
             "description": "Approximate Â±1Ïƒ from in-sample SES residuals (one-step-ahead).",
-            "timestamp": "2025-11-10T11:54:02.176477"
+            "timestamp": "2025-11-15T08:37:41.713545"
           },
           {
             "name": "config_horizon_minutes",
             "value": 60,
             "description": "Prediction window length in minutes.",
-            "timestamp": "2025-11-10T11:54:02.176477"
+            "timestamp": "2025-11-15T08:37:41.713545"
           },
           {
             "name": "config_alpha",
             "value": 0.3,
             "description": "SES smoothing parameter used.",
-            "timestamp": "2025-11-10T11:54:02.176477"
+            "timestamp": "2025-11-15T08:37:41.713545"
           }
         ],
-        "result_generated_at": "2025-11-10T11:54:02.176477"
+        "result_generated_at": "2025-11-15T08:37:41.713545"
       }
       Saved result to output\temp_humidity\next_hour_forecast_ses_result.json
 ------------------------------------------------------------
@@ -325,10 +325,10 @@ Found 16 tasks to execute.
  Task 9 of 16
 
  Executing: generated_tasks/temp_humidity\overheating_degree_minutes_temperature.py
-   Start Time: 11:54:07
+   Start Time: 08:37:46
    Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
     Status: SUCCESS
-   Duration: 1.33 sec
+   Duration: 1.87 sec
    Output (JSON):
       {
         "task_name": "overheating_degree_minutes_temperature",
@@ -359,17 +359,17 @@ Found 16 tasks to execute.
             "timestamp": "2025-10-09T14:55:00"
           }
         ],
-        "result_generated_at": "2025-11-10T11:54:08.575390"
+        "result_generated_at": "2025-11-15T08:37:48.589011"
       }
 ------------------------------------------------------------
 
  Task 10 of 16
 
  Executing: generated_tasks/temp_humidity\parse_csv_validate_schema.py
-   Start Time: 11:54:13
+   Start Time: 08:37:53
    Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
     Status: SUCCESS
-   Duration: 1.32 sec
+   Duration: 1.50 sec
    Output (JSON):
       {
         "task_name": "parse_csv_validate_schema",
@@ -379,55 +379,55 @@ Found 16 tasks to execute.
             "name": "row_count",
             "value": 288,
             "description": "Total rows in CSV",
-            "tiemstamp": "2025-11-10T06:24:14Z"
+            "tiemstamp": "2025-11-15T03:07:55Z"
           },
           {
             "name": "missing_timestamp_count",
             "value": 0,
             "description": "Rows with unparseable timestamps",
-            "tiemstamp": "2025-11-10T06:24:14Z"
+            "tiemstamp": "2025-11-15T03:07:55Z"
           },
           {
             "name": "missing_temperature_count",
             "value": 0,
             "description": "Rows with missing/invalid temperature values",
-            "tiemstamp": "2025-11-10T06:24:14Z"
+            "tiemstamp": "2025-11-15T03:07:55Z"
           },
           {
             "name": "missing_humidity_count",
             "value": 0,
             "description": "Rows with missing/invalid humidity values",
-            "tiemstamp": "2025-11-10T06:24:14Z"
+            "tiemstamp": "2025-11-15T03:07:55Z"
           },
           {
             "name": "invalid_temperature_range_count",
             "value": 0,
             "description": "Temperature values outside [15, 40] Celsius",
-            "tiemstamp": "2025-11-10T06:24:14Z"
+            "tiemstamp": "2025-11-15T03:07:55Z"
           },
           {
             "name": "invalid_humidity_range_count",
             "value": 0,
             "description": "Relative humidity outside [20, 100] percent",
-            "tiemstamp": "2025-11-10T06:24:14Z"
+            "tiemstamp": "2025-11-15T03:07:55Z"
           },
           {
             "name": "duplicate_timestamps_count",
             "value": 0,
             "description": "Number of duplicate timestamp entries",
-            "tiemstamp": "2025-11-10T06:24:14Z"
+            "tiemstamp": "2025-11-15T03:07:55Z"
           },
           {
             "name": "timestamps_monotonic_increasing",
             "value": true,
             "description": "Timestamps are in non-decreasing order",
-            "tiemstamp": "2025-11-10T06:24:14Z"
+            "tiemstamp": "2025-11-15T03:07:55Z"
           },
           {
             "name": "sampling_interval_ok",
             "value": true,
             "description": "All consecutive samples spaced exactly 5 minutes",
-            "tiemstamp": "2025-11-10T06:24:14Z"
+            "tiemstamp": "2025-11-15T03:07:55Z"
           },
           {
             "name": "sampling_unique_intervals_minutes",
@@ -435,62 +435,62 @@ Found 16 tasks to execute.
               5.0
             ],
             "description": "Unique observed sampling intervals (minutes)",
-            "tiemstamp": "2025-11-10T06:24:14Z"
+            "tiemstamp": "2025-11-15T03:07:55Z"
           },
           {
             "name": "irregular_intervals_count",
             "value": 0,
             "description": "Count of intervals differing from 5 minutes",
-            "tiemstamp": "2025-11-10T06:24:14Z"
+            "tiemstamp": "2025-11-15T03:07:55Z"
           },
           {
             "name": "first_timestamp",
             "value": "2025-10-09T00:00:00",
             "description": "First timestamp in dataset (ISO)",
-            "tiemstamp": "2025-11-10T06:24:14Z"
+            "tiemstamp": "2025-11-15T03:07:55Z"
           },
           {
             "name": "last_timestamp",
             "value": "2025-10-09T23:55:00",
             "description": "Last timestamp in dataset (ISO)",
-            "tiemstamp": "2025-11-10T06:24:14Z"
+            "tiemstamp": "2025-11-15T03:07:55Z"
           },
           {
             "name": "min_temperature_c",
             "value": 22.9,
             "description": "Minimum observed temperature (C)",
-            "tiemstamp": "2025-11-10T06:24:14Z"
+            "tiemstamp": "2025-11-15T03:07:55Z"
           },
           {
             "name": "max_temperature_c",
             "value": 34.4,
             "description": "Maximum observed temperature (C)",
-            "tiemstamp": "2025-11-10T06:24:14Z"
+            "tiemstamp": "2025-11-15T03:07:55Z"
           },
           {
             "name": "min_humidity_percent",
             "value": 49.6,
             "description": "Minimum observed relative humidity (%)",
-            "tiemstamp": "2025-11-10T06:24:14Z"
+            "tiemstamp": "2025-11-15T03:07:55Z"
           },
           {
             "name": "max_humidity_percent",
             "value": 75.3,
             "description": "Maximum observed relative humidity (%)",
-            "tiemstamp": "2025-11-10T06:24:14Z"
+            "tiemstamp": "2025-11-15T03:07:55Z"
           }
         ],
-        "result_generated_at": "2025-11-10T06:24:14Z"
+        "result_generated_at": "2025-11-15T03:07:55Z"
       }
 ------------------------------------------------------------
 
  Task 11 of 16
 
  Executing: generated_tasks/temp_humidity\sensor_stuck_detection.py
-   Start Time: 11:54:20
+   Start Time: 08:38:00
    Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
     Status: SUCCESS
-   Duration: 1.48 sec
+   Duration: 1.60 sec
    Output (JSON):
       {
         "task_name": "sensor_stuck_detection",
@@ -950,20 +950,20 @@ Found 16 tasks to execute.
               "count": 28
             },
             "description": "Total number of suspect periods detected.",
-            "timestamp": "2025-11-10T06:24:21.530320+00:00"
+            "timestamp": "2025-11-15T03:08:01.912043+00:00"
           }
         ],
-        "result_generated_at": "2025-11-10T06:24:21.498921+00:00"
+        "result_generated_at": "2025-11-15T03:08:01.874386+00:00"
       }
 ------------------------------------------------------------
 
  Task 12 of 16
 
  Executing: generated_tasks/temp_humidity\temp_humidity_rolling_correlation.py
-   Start Time: 11:54:26
+   Start Time: 08:38:07
    Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
     Status: SUCCESS
-   Duration: 1.77 sec
+   Duration: 1.73 sec
    Output (JSON):
       {
         "task_name": "temp_humidity_rolling_correlation",
@@ -1124,17 +1124,17 @@ Found 16 tasks to execute.
             "timestamp": "2025-10-09T23:55:00"
           }
         ],
-        "result_generated_at": "2025-11-10T11:54:28.432827"
+        "result_generated_at": "2025-11-15T08:38:08.805687"
       }
 ------------------------------------------------------------
 
  Task 13 of 16
 
  Executing: generated_tasks/temp_humidity\threshold_alerts_temp_humidity.py
-   Start Time: 11:54:33
+   Start Time: 08:38:14
    Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
     Status: SUCCESS
-   Duration: 1.26 sec
+   Duration: 1.44 sec
    Output (JSON):
       {
         "task_name": "threshold_alerts_temp_humidity",
@@ -1185,20 +1185,20 @@ Found 16 tasks to execute.
               "count": 3
             },
             "description": "Total number of alert periods detected.",
-            "timestamp": "2025-11-10T06:24:34.815567+00:00"
+            "timestamp": "2025-11-15T03:08:15.353394+00:00"
           }
         ],
-        "result_generated_at": "2025-11-10T06:24:34.804061+00:00"
+        "result_generated_at": "2025-11-15T03:08:15.336459+00:00"
       }
 ------------------------------------------------------------
 
  Task 14 of 16
 
  Executing: generated_tasks/temp_humidity\time_to_threshold_estimator.py
-   Start Time: 11:54:40
+   Start Time: 08:38:20
    Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
     Status: SUCCESS
-   Duration: 1.36 sec
+   Duration: 1.55 sec
    Output (JSON):
       {
         "task_name": "time_to_threshold_estimator",
@@ -1259,17 +1259,17 @@ Found 16 tasks to execute.
             "timestamp": "2025-10-09T23:55:00"
           }
         ],
-        "result_generated_at": "2025-11-10T06:24:41.249445+00:00"
+        "result_generated_at": "2025-11-15T03:08:21.925935+00:00"
       }
 ------------------------------------------------------------
 
  Task 15 of 16
 
  Executing: generated_tasks/temp_humidity\vapor_pressure_deficit_kpa.py
-   Start Time: 11:54:46
+   Start Time: 08:38:27
    Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
     Status: SUCCESS
-   Duration: 0.20 sec
+   Duration: 0.24 sec
    Output:
       [OK] Results written to output\temp_humidity\vapor_pressure_deficit_kpa_result.json
       [
@@ -1320,10 +1320,10 @@ Found 16 tasks to execute.
  Task 16 of 16
 
  Executing: generated_tasks/temp_humidity\wet_bulb_temperature_stull.py
-   Start Time: 11:54:51
+   Start Time: 08:38:32
    Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
     Status: SUCCESS
-   Duration: 0.19 sec
+   Duration: 0.18 sec
    Output:
       [OK] Results written to output\temp_humidity\wet_bulb_temperature_stull_result.json
       [
@@ -1371,4 +1371,4 @@ Found 16 tasks to execute.
 ------------------------------------------------------------
 
  All tasks executed. Check the log file for details.
-Log file saved at: logs\edge_execution_20251110_115314.log
+Log file saved at: logs\edge_execution_20251115_083646.log

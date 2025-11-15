@@ -1,4 +1,3 @@
-
 # Paths = Data type specific
 # MAke sure that a fodler name with following data type exists inside 
 #   data/, generated_tasks/ and output/ folders.
@@ -11,8 +10,8 @@ from dotenv import load_dotenv
 # Load .env from project root (load_dotenv looks for a .env file)
 load_dotenv()
 
-# DATA_TYPE and other config
-DATA_TYPE = os.getenv("DATA_TYPE", "temp_humidity")
+# DATA_TYPE available options: "temp_humidity", "air_quality"
+DATA_TYPE = "air_quality"  # change only this line to switch data type
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 if not OPENAI_API_KEY:

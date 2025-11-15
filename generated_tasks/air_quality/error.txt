@@ -1,0 +1,69 @@
+[2025-11-15T09:09:19.129085] TASK: daq_band_duration_24h | exit_code=1
+File "C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\generated_tasks\air_quality\daq_band_duration_24h.py", line 11
+    DATA_TYPE = \"air_quality\"
+                 ^
+SyntaxError: unexpected character after line continuation character
+------------------------------------------------------------
+[2025-11-15T09:10:15.863928] TASK: traffic_freshness_indicator_no_no2_ratio | exit_code=1
+File "C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\generated_tasks\air_quality\traffic_freshness_indicator_no_no2_ratio.py", line 11
+    DATA_TYPE = \"air_quality\"
+                 ^
+SyntaxError: unexpected character after line continuation character
+------------------------------------------------------------
+[2025-11-15T09:11:02.747651] TASK: coarse_dust_event_detector | exit_code=0
+Exit 0 but invalid/missing JSON output.
+Stdout:
+Detected 0 coarse dust event(s).
+
+Stderr:
+C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\generated_tasks\air_quality\coarse_dust_event_detector.py:95: FutureWarning: The argument 'infer_datetime_format' is deprecated and will be removed in a future version. A strict version of it is now the default, see https://pandas.pydata.org/pdeps/0004-consistent-to-datetime-parsing.html. You can safely remove this argument.
+  df = pd.read_csv(data_path, parse_dates=["timestamp_utc"], infer_datetime_format=True)
+------------------------------------------------------------
+[2025-11-15T09:12:32.628744] TASK: coarse_dust_event_detector | exit_code=0
+Detected 0 coarse dust event(s).
+------------------------------------------------------------
+[2025-11-15T09:12:33.614813] TASK: o3_8h_time_weighted_average | exit_code=0
+Exit 0 but invalid/missing JSON output.
+Stdout:
+Valid windows: 113
+Max 8h TWA: 136.33 ug/m3, start: 2025-10-29T15:06:26, end: 2025-10-29T23:06:26 (coverage=100.00%)
+
+Stderr:
+C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\generated_tasks\air_quality\o3_8h_time_weighted_average.py:102: FutureWarning: The argument 'infer_datetime_format' is deprecated and will be removed in a future version. A strict version of it is now the default, see https://pandas.pydata.org/pdeps/0004-consistent-to-datetime-parsing.html. You can safely remove this argument.
+  df = pd.read_csv(data_path, parse_dates=["timestamp_utc"], infer_datetime_format=True)
+------------------------------------------------------------
+[2025-11-15T09:13:05.825227] TASK: o3_8h_time_weighted_average | exit_code=0
+Valid windows: 113
+Max 8h TWA: 136.33 ug/m3, start: 2025-10-29T15:06:26, end: 2025-10-29T23:06:26 (coverage=100.00%)
+------------------------------------------------------------
+[2025-11-15T09:13:52.451378] TASK: o3_8h_time_weighted_average | exit_code=0
+Valid windows: 0
+------------------------------------------------------------
+[2025-11-15T09:13:54.578605] TASK: unit_string_normalization_checker | exit_code=0
+Exit 0 but invalid/missing JSON output.
+Stdout:
+Detected 0 malformed unit variants.
+
+Stderr:
+------------------------------------------------------------
+[2025-11-15T09:14:53.388534] TASK: pollutant_24h_extremes_reporter | exit_code=0
+Exit 0 but invalid/missing JSON output.
+Stdout:
+PM2_5: min=65.79 at 2025-11-03T10:02:25+00:00, max=66.9 at 2025-11-03T09:32:24+00:00, samples=4, coverage=2.78%
+PM10: min=114.79 at 2025-11-03T10:02:25+00:00, max=115.11 at 2025-11-03T09:32:24+00:00, samples=4, coverage=2.78%
+NO2: min=11.18 at 2025-11-03T10:02:25+00:00, max=12.58 at 2025-11-03T09:32:24+00:00, samples=4, coverage=2.78%
+O3: min=65.49 at 2025-11-03T09:32:24+00:00, max=80.31 at 2025-11-03T10:02:25+00:00, samples=4, coverage=2.78%
+
+Stderr:
+------------------------------------------------------------
+[2025-11-15T09:15:42.185093] TASK: pollutant_24h_extremes_reporter | exit_code=0
+PM2_5: min=65.79 at 2025-11-03T10:02:25+00:00, max=66.9 at 2025-11-03T09:32:24+00:00, samples=4, coverage=2.78%
+PM10: min=114.79 at 2025-11-03T10:02:25+00:00, max=115.11 at 2025-11-03T09:32:24+00:00, samples=4, coverage=2.78%
+NO2: min=11.18 at 2025-11-03T10:02:25+00:00, max=12.58 at 2025-11-03T09:32:24+00:00, samples=4, coverage=2.78%
+O3: min=65.49 at 2025-11-03T09:32:24+00:00, max=80.31 at 2025-11-03T10:02:25+00:00, samples=4, coverage=2.78%
+------------------------------------------------------------
+[2025-11-15T09:16:32.819497] TASK: pollutant_24h_extremes_reporter | exit_code=0
+PM2_5: min=65.79 at 2025-11-03T10:02:25+00:00, max=66.9 at 2025-11-03T09:32:24+00:00, samples=4, coverage=2.78%
+PM10: min=114.79 at 2025-11-03T10:02:25+00:00, max=115.11 at 2025-11-03T09:32:24+00:00, samples=4, coverage=2.78%
+NO2: min=11.18 at 2025-11-03T10:02:25+00:00, max=12.58 at 2025-11-03T09:32:24+00:00, samples=4, coverage=2.78%
+------------------------------------------------------------

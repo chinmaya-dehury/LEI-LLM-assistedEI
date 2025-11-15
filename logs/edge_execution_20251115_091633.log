@@ -1,0 +1,771 @@
+ Edge Executor started at 2025-11-15 09:16:33
+Scanning directory: generated_tasks/air_quality
+Found 7 tasks to execute.
+============================================================
+
+ Task 1 of 7
+
+ Executing: generated_tasks/air_quality\aqi_gap_fill_estimator_from_components.py
+   Start Time: 09:16:33
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.97 sec
+   Output (JSON):
+      {
+        "task_name": "aqi_gap_fill_estimator_from_components",
+        "description": "When aqi_uk is missing, estimate a DAQI-like band by taking the maximum ratio of pollutant concentration to WHO short-term guideline (PM2.5:15, PM10:45, NO2:25, SO2:40, O3:100, CO:4000 Âµg/m3): ratio<=1 Low, 1â€“2 Moderate, 2â€“4 High, >4 Very High; report dominant pollutant.",
+        "result_summary": [
+          {
+            "name": "rows_total",
+            "value": 117,
+            "description": "Total number of rows in the dataset.",
+            "timestamp": "2025-11-15T03:46:34.076621+00:00"
+          },
+          {
+            "name": "rows_with_missing_aqi",
+            "value": 0,
+            "description": "Number of rows where aqi_uk is missing and eligible for estimation.",
+            "timestamp": "2025-11-15T03:46:34.076621+00:00"
+          },
+          {
+            "name": "estimation_status",
+            "value": "no_missing_aqi_no_estimation",
+            "description": "All rows have aqi_uk present; no gap-filling performed.",
+            "timestamp": "2025-11-15T03:46:34.076621+00:00"
+          },
+          {
+            "name": "latest_components_band_info",
+            "value": {
+              "band": "Very High",
+              "dominant_pollutant": "pm2_5",
+              "max_ratio": 4.386
+            },
+            "description": "Informational DAQI-like band from components for the latest row.",
+            "timestamp": "2025-11-15T03:46:34.076621+00:00"
+          }
+        ],
+        "result_generated_at": "2025-11-15T03:46:34.076621+00:00"
+      }
+------------------------------------------------------------
+
+ Task 2 of 7
+
+ Executing: generated_tasks/air_quality\daq_band_duration_24h.py
+   Start Time: 09:16:39
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.00 sec
+   Output (JSON):
+      {
+        "task_name": "daq_band_duration_24h",
+        "description": "Aggregate minutes spent in each UK DAQI band (Low/Moderate/High/Very High) over the last 24 hours from aqi_uk; output durations and percentages with coverage check.",
+        "result_summary": [
+          {
+            "name": "window_end_utc",
+            "value": "2025-11-03T10:02:25+00:00",
+            "description": "End of the 24h window (latest data timestamp, UTC).",
+            "timestamp": "2025-11-15T03:46:40.085860+00:00"
+          },
+          {
+            "name": "window_start_utc",
+            "value": "2025-11-02T10:02:25+00:00",
+            "description": "Start of the 24h window (UTC).",
+            "timestamp": "2025-11-15T03:46:40.085860+00:00"
+          },
+          {
+            "name": "coverage_minutes_24h",
+            "value": 1440.0,
+            "description": "Total minutes covered by data within the 24h window.",
+            "timestamp": "2025-11-15T03:46:40.085860+00:00"
+          },
+          {
+            "name": "coverage_percent_of_24h",
+            "value": 100.0,
+            "description": "Coverage as a percentage of the 24h window.",
+            "timestamp": "2025-11-15T03:46:40.085860+00:00"
+          },
+          {
+            "name": "Low_minutes",
+            "value": 1409.98,
+            "description": "Minutes in DAQI band Low within the 24h window.",
+            "timestamp": "2025-11-15T03:46:40.085860+00:00"
+          },
+          {
+            "name": "Low_percent_of_24h",
+            "value": 97.92,
+            "description": "Percentage of the full 24h window spent in DAQI band Low.",
+            "timestamp": "2025-11-15T03:46:40.085860+00:00"
+          },
+          {
+            "name": "Low_percent_of_covered",
+            "value": 97.92,
+            "description": "Percentage of covered minutes spent in DAQI band Low.",
+            "timestamp": "2025-11-15T03:46:40.085860+00:00"
+          },
+          {
+            "name": "Moderate_minutes",
+            "value": 30.02,
+            "description": "Minutes in DAQI band Moderate within the 24h window.",
+            "timestamp": "2025-11-15T03:46:40.085860+00:00"
+          },
+          {
+            "name": "Moderate_percent_of_24h",
+            "value": 2.08,
+            "description": "Percentage of the full 24h window spent in DAQI band Moderate.",
+            "timestamp": "2025-11-15T03:46:40.085860+00:00"
+          },
+          {
+            "name": "Moderate_percent_of_covered",
+            "value": 2.08,
+            "description": "Percentage of covered minutes spent in DAQI band Moderate.",
+            "timestamp": "2025-11-15T03:46:40.085860+00:00"
+          },
+          {
+            "name": "High_minutes",
+            "value": 0.0,
+            "description": "Minutes in DAQI band High within the 24h window.",
+            "timestamp": "2025-11-15T03:46:40.085860+00:00"
+          },
+          {
+            "name": "High_percent_of_24h",
+            "value": 0.0,
+            "description": "Percentage of the full 24h window spent in DAQI band High.",
+            "timestamp": "2025-11-15T03:46:40.085860+00:00"
+          },
+          {
+            "name": "High_percent_of_covered",
+            "value": 0.0,
+            "description": "Percentage of covered minutes spent in DAQI band High.",
+            "timestamp": "2025-11-15T03:46:40.085860+00:00"
+          },
+          {
+            "name": "Very High_minutes",
+            "value": 0.0,
+            "description": "Minutes in DAQI band Very High within the 24h window.",
+            "timestamp": "2025-11-15T03:46:40.085860+00:00"
+          },
+          {
+            "name": "Very High_percent_of_24h",
+            "value": 0.0,
+            "description": "Percentage of the full 24h window spent in DAQI band Very High.",
+            "timestamp": "2025-11-15T03:46:40.085860+00:00"
+          },
+          {
+            "name": "Very High_percent_of_covered",
+            "value": 0.0,
+            "description": "Percentage of covered minutes spent in DAQI band Very High.",
+            "timestamp": "2025-11-15T03:46:40.085860+00:00"
+          },
+          {
+            "name": "Unknown_minutes",
+            "value": 0.0,
+            "description": "Minutes in DAQI band Unknown within the 24h window.",
+            "timestamp": "2025-11-15T03:46:40.085860+00:00"
+          },
+          {
+            "name": "Unknown_percent_of_24h",
+            "value": 0.0,
+            "description": "Percentage of the full 24h window spent in DAQI band Unknown.",
+            "timestamp": "2025-11-15T03:46:40.085860+00:00"
+          },
+          {
+            "name": "Unknown_percent_of_covered",
+            "value": 0.0,
+            "description": "Percentage of covered minutes spent in DAQI band Unknown.",
+            "timestamp": "2025-11-15T03:46:40.085860+00:00"
+          }
+        ],
+        "result_generated_at": "2025-11-15T03:46:40.085860+00:00"
+      }
+------------------------------------------------------------
+
+ Task 3 of 7
+
+ Executing: generated_tasks/air_quality\pm25_no2_rolling_correlation.py
+   Start Time: 09:16:45
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.26 sec
+   Output (JSON):
+      {
+        "task_name": "pm25_no2_rolling_correlation",
+        "description": "Calculate Pearson correlation between PM2.5 and NO2 over the last K readings (default K=12, require K>=6); label coupling strength as strong (|r|>=0.7), moderate (0.4â€“0.7), or weak.",
+        "result_summary": [
+          {
+            "name": "correlation_coefficient",
+            "value": 0.0244,
+            "description": "Pearson correlation r between PM2.5 and NO2 over the last K readings.",
+            "timestamp": "2025-11-15T03:46:46.441855+00:00"
+          },
+          {
+            "name": "coupling_strength_label",
+            "value": "weak",
+            "description": "Coupling strength based on |r|: strong (>=0.7), moderate (0.4â€“0.7), weak (<0.4), undefined if variance is zero.",
+            "timestamp": "2025-11-15T03:46:46.441855+00:00"
+          },
+          {
+            "name": "sample_size_used",
+            "value": 12,
+            "description": "Number of valid paired observations in the analysis window.",
+            "timestamp": "2025-11-15T03:46:46.441855+00:00"
+          },
+          {
+            "name": "window_requested",
+            "value": 12,
+            "description": "Requested window size K.",
+            "timestamp": "2025-11-15T03:46:46.441855+00:00"
+          },
+          {
+            "name": "time_range_analyzed",
+            "value": "2025-10-31T16:12:24+00:00 to 2025-11-03T10:02:25+00:00",
+            "description": "Time coverage of the analyzed window.",
+            "timestamp": "2025-11-15T03:46:46.441855+00:00"
+          }
+        ],
+        "result_generated_at": "2025-11-15T03:46:46.441855+00:00"
+      }
+------------------------------------------------------------
+
+ Task 4 of 7
+
+ Executing: generated_tasks/air_quality\pollutant_plausibility_and_constraints.py
+   Start Time: 09:16:51
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.85 sec
+   Output (JSON):
+      {
+        "task_name": "pollutant_plausibility_and_constraints",
+        "description": "Validate readings for non-negativity and physical constraints (e.g., PM2.5 <= PM10) and flag out-of-range values using simple ambient bounds: CO<=10000, NO<=200, NO2<=400, O3<=300, SO2<=500, PM2.5<=500, PM10<=600, NH3<=100 Âµg/m3.",
+        "result_summary": [
+          {
+            "name": "total_rows",
+            "value": 117,
+            "description": "Number of rows in the dataset.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "co_out_of_range_count",
+            "value": 0,
+            "description": "Values < 0 or > 10000.0 Âµg/m3 for 'co'.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "co_out_of_range_indices",
+            "value": [],
+            "description": "Row indices where 'co' is out of range (<0 or > 10000.0).",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "co_missing_count",
+            "value": 0,
+            "description": "Rows where 'co' is missing or not parseable.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "no_out_of_range_count",
+            "value": 0,
+            "description": "Values < 0 or > 200.0 Âµg/m3 for 'no'.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "no_out_of_range_indices",
+            "value": [],
+            "description": "Row indices where 'no' is out of range (<0 or > 200.0).",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "no_missing_count",
+            "value": 0,
+            "description": "Rows where 'no' is missing or not parseable.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "no2_out_of_range_count",
+            "value": 0,
+            "description": "Values < 0 or > 400.0 Âµg/m3 for 'no2'.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "no2_out_of_range_indices",
+            "value": [],
+            "description": "Row indices where 'no2' is out of range (<0 or > 400.0).",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "no2_missing_count",
+            "value": 0,
+            "description": "Rows where 'no2' is missing or not parseable.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "o3_out_of_range_count",
+            "value": 0,
+            "description": "Values < 0 or > 300.0 Âµg/m3 for 'o3'.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "o3_out_of_range_indices",
+            "value": [],
+            "description": "Row indices where 'o3' is out of range (<0 or > 300.0).",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "o3_missing_count",
+            "value": 0,
+            "description": "Rows where 'o3' is missing or not parseable.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "so2_out_of_range_count",
+            "value": 0,
+            "description": "Values < 0 or > 500.0 Âµg/m3 for 'so2'.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "so2_out_of_range_indices",
+            "value": [],
+            "description": "Row indices where 'so2' is out of range (<0 or > 500.0).",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "so2_missing_count",
+            "value": 0,
+            "description": "Rows where 'so2' is missing or not parseable.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "pm2_5_out_of_range_count",
+            "value": 0,
+            "description": "Values < 0 or > 500.0 Âµg/m3 for 'pm2_5'.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "pm2_5_out_of_range_indices",
+            "value": [],
+            "description": "Row indices where 'pm2_5' is out of range (<0 or > 500.0).",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "pm2_5_missing_count",
+            "value": 0,
+            "description": "Rows where 'pm2_5' is missing or not parseable.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "pm10_out_of_range_count",
+            "value": 0,
+            "description": "Values < 0 or > 600.0 Âµg/m3 for 'pm10'.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "pm10_out_of_range_indices",
+            "value": [],
+            "description": "Row indices where 'pm10' is out of range (<0 or > 600.0).",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "pm10_missing_count",
+            "value": 0,
+            "description": "Rows where 'pm10' is missing or not parseable.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "nh3_out_of_range_count",
+            "value": 0,
+            "description": "Values < 0 or > 100.0 Âµg/m3 for 'nh3'.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "nh3_out_of_range_indices",
+            "value": [],
+            "description": "Row indices where 'nh3' is out of range (<0 or > 100.0).",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "nh3_missing_count",
+            "value": 0,
+            "description": "Rows where 'nh3' is missing or not parseable.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "pm25_le_pm10_violations_count",
+            "value": 0,
+            "description": "Count of rows where PM2.5 exceeds PM10 (should not happen).",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "pm25_le_pm10_violations_indices",
+            "value": [],
+            "description": "Row indices where PM2.5 > PM10.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "rows_with_any_violation_count",
+            "value": 0,
+            "description": "Number of rows with at least one constraint violation.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          },
+          {
+            "name": "rows_with_any_violation_indices",
+            "value": [],
+            "description": "Indices of rows with at least one violation.",
+            "timestamp": "2025-11-15T03:46:52Z"
+          }
+        ],
+        "result_generated_at": "2025-11-15T03:46:52Z"
+      }
+------------------------------------------------------------
+
+ Task 5 of 7
+
+ Executing: generated_tasks/air_quality\timestamp_crossfield_consistency_check.py
+   Start Time: 09:16:57
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.07 sec
+   Output (JSON):
+      {
+        "task_name": "timestamp_crossfield_consistency_check",
+        "description": "Cross-validate timestamp_unix against timestamp_utc (convert UTC to epoch and ensure |diff| <= 1s) and verify timestamps are monotonically non-decreasing; report indices and counts of mismatches.",
+        "result_summary": [
+          {
+            "name": "parse_nan_unix_count",
+            "value": 0,
+            "description": "Rows where timestamp_unix could not be parsed to numeric.",
+            "timestamp": "2025-11-15T03:46:58Z"
+          },
+          {
+            "name": "parse_nan_utc_count",
+            "value": 0,
+            "description": "Rows where timestamp_utc could not be parsed to datetime.",
+            "timestamp": "2025-11-15T03:46:58Z"
+          },
+          {
+            "name": "crossfield_mismatch_count",
+            "value": 117,
+            "description": "Count of rows where |epoch(UTC) - timestamp_unix| > 1 second.",
+            "timestamp": "2025-11-15T03:46:58Z"
+          },
+          {
+            "name": "crossfield_mismatch_indices",
+            "value": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              31,
+              32,
+              33,
+              34,
+              35,
+              36,
+              37,
+              38,
+              39,
+              40,
+              41,
+              42,
+              43,
+              44,
+              45,
+              46,
+              47,
+              48,
+              49,
+              50,
+              51,
+              52,
+              53,
+              54,
+              55,
+              56,
+              57,
+              58,
+              59,
+              60,
+              61,
+              62,
+              63,
+              64,
+              65,
+              66,
+              67,
+              68,
+              69,
+              70,
+              71,
+              72,
+              73,
+              74,
+              75,
+              76,
+              77,
+              78,
+              79,
+              80,
+              81,
+              82,
+              83,
+              84,
+              85,
+              86,
+              87,
+              88,
+              89,
+              90,
+              91,
+              92,
+              93,
+              94,
+              95,
+              96,
+              97,
+              98,
+              99,
+              100,
+              101,
+              102,
+              103,
+              104,
+              105,
+              106,
+              107,
+              108,
+              109,
+              110,
+              111,
+              112,
+              113,
+              114,
+              115,
+              116
+            ],
+            "description": "Row indices with |epoch(UTC) - timestamp_unix| > 1 second.",
+            "timestamp": "2025-11-15T03:46:58Z"
+          },
+          {
+            "name": "unparseable_timestamp_rows_count",
+            "value": 0,
+            "description": "Rows where either timestamp_unix or timestamp_utc failed to parse.",
+            "timestamp": "2025-11-15T03:46:58Z"
+          },
+          {
+            "name": "unparseable_timestamp_rows_indices",
+            "value": [],
+            "description": "Indices of rows with unparseable timestamps.",
+            "timestamp": "2025-11-15T03:46:58Z"
+          },
+          {
+            "name": "monotonic_violations_unix_count",
+            "value": 0,
+            "description": "Count of positions where timestamp_unix decreased vs previous row.",
+            "timestamp": "2025-11-15T03:46:58Z"
+          },
+          {
+            "name": "monotonic_violations_unix_indices",
+            "value": [],
+            "description": "Row indices where timestamp_unix decreased.",
+            "timestamp": "2025-11-15T03:46:58Z"
+          },
+          {
+            "name": "monotonic_violations_utc_count",
+            "value": 0,
+            "description": "Count of positions where epoch(UTC) decreased vs previous row.",
+            "timestamp": "2025-11-15T03:46:58Z"
+          },
+          {
+            "name": "monotonic_violations_utc_indices",
+            "value": [],
+            "description": "Row indices where epoch(UTC) decreased.",
+            "timestamp": "2025-11-15T03:46:58Z"
+          },
+          {
+            "name": "utc_time_range",
+            "value": {
+              "start": "2025-10-28T17:24:12+00:00",
+              "end": "2025-11-03T10:02:25+00:00"
+            },
+            "description": "Minimum and maximum timestamp_utc observed.",
+            "timestamp": "2025-11-15T03:46:58Z"
+          }
+        ],
+        "result_generated_at": "2025-11-15T03:46:58Z"
+      }
+------------------------------------------------------------
+
+ Task 6 of 7
+
+ Executing: generated_tasks/air_quality\traffic_freshness_indicator_no_no2_ratio.py
+   Start Time: 09:17:03
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.07 sec
+   Output (JSON):
+      {
+        "task_name": "traffic_freshness_indicator_no_no2_ratio",
+        "description": "Compute NO/NO2 ratio per reading and classify source freshness: >1.0 fresh-traffic, 0.3–1.0 mixed, <0.3 aged/oxidized; optionally smooth using a 2-point median.",
+        "result_summary": [
+          {
+            "name": "valid_points",
+            "value": 117,
+            "description": "Number of readings with valid NO/NO2 ratio.",
+            "timestamp": "2025-11-15T03:47:04.508153+00:00"
+          },
+          {
+            "name": "mean_ratio_raw",
+            "value": 0.0644,
+            "description": "Mean NO/NO2 ratio across valid readings.",
+            "timestamp": "2025-11-15T03:47:04.508153+00:00"
+          },
+          {
+            "name": "median_ratio_raw",
+            "value": 0.0509,
+            "description": "Median NO/NO2 ratio across valid readings.",
+            "timestamp": "2025-11-15T03:47:04.508153+00:00"
+          },
+          {
+            "name": "pct_fresh_traffic",
+            "value": 0.0,
+            "description": "Percentage of readings classified as fresh-traffic (ratio > 1.0).",
+            "timestamp": "2025-11-15T03:47:04.508153+00:00"
+          },
+          {
+            "name": "pct_mixed",
+            "value": 0.0,
+            "description": "Percentage of readings classified as mixed (0.3–1.0).",
+            "timestamp": "2025-11-15T03:47:04.508153+00:00"
+          },
+          {
+            "name": "pct_aged_oxidized",
+            "value": 100.0,
+            "description": "Percentage of readings classified as aged/oxidized (<0.3).",
+            "timestamp": "2025-11-15T03:47:04.508153+00:00"
+          },
+          {
+            "name": "last_ratio_raw",
+            "value": 0.2361,
+            "description": "NO/NO2 ratio for the latest reading (raw).",
+            "timestamp": "2025-11-03T10:02:25+00:00"
+          },
+          {
+            "name": "last_class_raw",
+            "value": "aged/oxidized",
+            "description": "Freshness class for the latest reading (raw).",
+            "timestamp": "2025-11-03T10:02:25+00:00"
+          },
+          {
+            "name": "last_ratio_smoothed_med2",
+            "value": 0.2274,
+            "description": "NO/NO2 ratio for the latest reading after 2-point median smoothing.",
+            "timestamp": "2025-11-03T10:02:25+00:00"
+          },
+          {
+            "name": "last_class_smoothed_med2",
+            "value": "aged/oxidized",
+            "description": "Freshness class for the latest reading after 2-point median smoothing.",
+            "timestamp": "2025-11-03T10:02:25+00:00"
+          }
+        ],
+        "result_generated_at": "2025-11-15T03:47:04.508153+00:00"
+      }
+------------------------------------------------------------
+
+ Task 7 of 7
+
+ Executing: generated_tasks/air_quality\ventilation_advice_now.py
+   Start Time: 09:17:09
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.16 sec
+   Output:
+      {
+        "task_name": "ventilation_advice_now",
+        "description": "Recommend whether itâ€™s currently safe to ventilate based on PM2.5 and O3 staying below thresholds for the last M intervals and no recent spike detected.",
+        "result_summary": [
+          {
+            "name": "ventilation_recommended_now",
+            "value": "no",
+            "description": "Overall recommendation to ventilate now based on thresholds and spike checks.",
+            "tiemstamp": "2025-11-15T03:47:09.865606+00:00"
+          },
+          {
+            "name": "pm25_recent_max_ugm3",
+            "value": 66.9,
+            "description": "Maximum PM2.5 over the last M intervals (ug/m3).",
+            "tiemstamp": "2025-11-15T03:47:09.865606+00:00"
+          },
+          {
+            "name": "o3_recent_max_ugm3",
+            "value": 80.31,
+            "description": "Maximum O3 over the last M intervals (ug/m3).",
+            "tiemstamp": "2025-11-15T03:47:09.865606+00:00"
+          },
+          {
+            "name": "recent_spike_detected",
+            "value": false,
+            "description": "Whether a recent pollutant spike was detected between the last two readings.",
+            "tiemstamp": "2025-11-15T03:47:09.865606+00:00"
+          },
+          {
+            "name": "intervals_checked",
+            "value": 3,
+            "description": "Number of recent intervals considered (M).",
+            "tiemstamp": "2025-11-15T03:47:09.865606+00:00"
+          },
+          {
+            "name": "latest_reading_time_utc",
+            "value": "2025-11-03 10:02:25",
+            "description": "Timestamp of the latest sensor reading (UTC).",
+            "tiemstamp": "2025-11-15T03:47:09.865606+00:00"
+          },
+          {
+            "name": "latest_coords",
+            "value": {
+              "lat": 28.0,
+              "lon": 77.0
+            },
+            "description": "Latitude and longitude of the latest reading.",
+            "tiemstamp": "2025-11-15T03:47:09.865606+00:00"
+          },
+          {
+            "name": "reasons",
+            "value": "PM2.5 recent max 66.90 ug/m3 exceeds threshold 35.00.",
+            "description": "Human-readable explanation supporting the recommendation.",
+            "tiemstamp": "2025-11-15T03:47:09.865606+00:00"
+          }
+        ],
+        "result_generated_at": "2025-11-15T03:47:09.865606+00:00"
+      }
+      Saved result to: output\air_quality\ventilation_advice_now_result.json
+------------------------------------------------------------
+
+ All tasks executed. Check the log file for details.
+Log file saved at: logs\edge_execution_20251115_091633.log

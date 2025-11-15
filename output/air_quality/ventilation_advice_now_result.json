@@ -1,0 +1,58 @@
+{
+  "task_name": "ventilation_advice_now",
+  "description": "Recommend whether it’s currently safe to ventilate based on PM2.5 and O3 staying below thresholds for the last M intervals and no recent spike detected.",
+  "result_summary": [
+    {
+      "name": "ventilation_recommended_now",
+      "value": "no",
+      "description": "Overall recommendation to ventilate now based on thresholds and spike checks.",
+      "tiemstamp": "2025-11-15T03:47:09.865606+00:00"
+    },
+    {
+      "name": "pm25_recent_max_ugm3",
+      "value": 66.9,
+      "description": "Maximum PM2.5 over the last M intervals (ug/m3).",
+      "tiemstamp": "2025-11-15T03:47:09.865606+00:00"
+    },
+    {
+      "name": "o3_recent_max_ugm3",
+      "value": 80.31,
+      "description": "Maximum O3 over the last M intervals (ug/m3).",
+      "tiemstamp": "2025-11-15T03:47:09.865606+00:00"
+    },
+    {
+      "name": "recent_spike_detected",
+      "value": false,
+      "description": "Whether a recent pollutant spike was detected between the last two readings.",
+      "tiemstamp": "2025-11-15T03:47:09.865606+00:00"
+    },
+    {
+      "name": "intervals_checked",
+      "value": 3,
+      "description": "Number of recent intervals considered (M).",
+      "tiemstamp": "2025-11-15T03:47:09.865606+00:00"
+    },
+    {
+      "name": "latest_reading_time_utc",
+      "value": "2025-11-03 10:02:25",
+      "description": "Timestamp of the latest sensor reading (UTC).",
+      "tiemstamp": "2025-11-15T03:47:09.865606+00:00"
+    },
+    {
+      "name": "latest_coords",
+      "value": {
+        "lat": 28.0,
+        "lon": 77.0
+      },
+      "description": "Latitude and longitude of the latest reading.",
+      "tiemstamp": "2025-11-15T03:47:09.865606+00:00"
+    },
+    {
+      "name": "reasons",
+      "value": "PM2.5 recent max 66.90 ug/m3 exceeds threshold 35.00.",
+      "description": "Human-readable explanation supporting the recommendation.",
+      "tiemstamp": "2025-11-15T03:47:09.865606+00:00"
+    }
+  ],
+  "result_generated_at": "2025-11-15T03:47:09.865606+00:00"
+}

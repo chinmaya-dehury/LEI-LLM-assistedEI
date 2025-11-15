@@ -1,5 +1,5 @@
 """
-edge_executor.py
+edge_scheduler_sequential.py
 ----------------
 This script simulates the behavior of an Edge Device in an LLM-assisted
 Edge Intelligence architecture. It automatically executes all generated
