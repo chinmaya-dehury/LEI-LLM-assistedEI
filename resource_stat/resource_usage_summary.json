@@ -1,24 +1,24 @@
 {
-  "generated_at": "2025-10-28T17:29:29.803179",
-  "last_checked": "2025-10-28T17:29:29.803179",
+  "generated_at": "2025-11-17T14:47:59.982391",
+  "last_checked": "2025-11-17T14:47:59.982398",
   "summary_windows": {
     "1m": {
-      "avg_cpu": 6.02,
-      "avg_mem": 63.18
+      "avg_cpu": 0.0,
+      "avg_mem": 3.1
     },
     "5m": {
-      "avg_cpu": 6.23,
-      "avg_mem": 62.68
+      "avg_cpu": 0.0,
+      "avg_mem": 3.1
     },
     "10m": {
-      "avg_cpu": 6.3,
-      "avg_mem": 62.48
+      "avg_cpu": 0.01,
+      "avg_mem": 3.11
     },
     "30m": {
-      "avg_cpu": 6.61,
-      "avg_mem": 62.34
+      "avg_cpu": 0.01,
+      "avg_mem": 3.11
     }
   },
-  "total_cpu_capacity_cores": 28,
-  "total_memory_capacity_gb": 31.71
+  "total_cpu_capacity_cores": 4,
+  "total_memory_capacity_gb": 15.84
 }

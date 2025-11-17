@@ -17,12 +17,13 @@ SUMMARY_WINDOWS = {
     "10m": timedelta(minutes=10),
     "30m": timedelta(minutes=30),
 }
-# Output files
-OUTPUT_JSON = os.environ.get("OUTPUT_JSON", "resource_usage_summary.json")
-PID_FILE = os.environ.get("MONITOR_PID_FILE", "monitor.pid")
+# Updated correct path Output files
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+OUTPUT_JSON = os.environ.get("OUTPUT_JSON", os.path.join(SCRIPT_DIR, "resource_usage_summary.json"))
+PID_FILE = os.environ.get("MONITOR_PID_FILE", os.path.join(SCRIPT_DIR, "monitor.pid"))
 
 # Optional run duration (seconds) for testing; if not set, run forever
-RUN_DURATION_SECONDS = int(os.environ.get("RUN_DURATION_SECONDS", "0"))
+RUN_DURATION_SECONDS = int(os.environ.get("RUN_DURATION_SECONDS", "0")) 
 
 
 def summarize(samples, window_td):
