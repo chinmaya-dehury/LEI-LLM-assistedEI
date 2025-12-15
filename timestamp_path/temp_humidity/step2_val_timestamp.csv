@@ -1,0 +1,4 @@
+step,script_start_time_utc,script_end_time_utc,script_duration_sec,llm_start_time_utc,llm_end_time_utc,llm_duration_sec,prompt_tokens,completion_tokens,total_tokens,prompt_tokens_per_sec,completion_tokens_per_sec,model,task_name,attempt
+llm_call,2025-12-14T17:36:47.254600+00:00,,,2025-12-14T17:36:48.977467+00:00,2025-12-14T17:39:41.033156+00:00,172.0556633999804,2355,1415,3770,13.687430878257672,8.224082672074141,qwen3:8b,next_hour_forecast,1
+llm_call,2025-12-14T17:36:47.254600+00:00,,,2025-12-14T17:39:46.732287+00:00,2025-12-14T17:42:11.703696+00:00,144.97135390000767,2463,1340,3803,16.989563342967923,9.243205391626883,qwen3:8b,dew_point_calculation,1
+script,2025-12-14T17:36:47.254600+00:00,2025-12-14T17:42:13.088559+00:00,325.8339583000052,,,,,,,,,,,

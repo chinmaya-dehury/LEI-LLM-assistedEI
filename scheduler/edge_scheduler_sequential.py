@@ -9,11 +9,12 @@ errors, and execution times in a timestamped log file.
 Author: Dr. Chinmaya Dehury
 Date: 2025-10-09
 
-Last Modified: 15-11-2025
+Last Modified: 14-12-2025
 """
 
 import os
 import sys
+import csv
 # Add parent directory to path so we can import config
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if parent_dir not in sys.path:
@@ -21,7 +22,7 @@ if parent_dir not in sys.path:
 
 import subprocess
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from config import DATA_TYPE
 import json
 
@@ -33,6 +34,14 @@ os.makedirs(LOG_DIR, exist_ok=True)
 # Create a timestamped log file
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 log_file = os.path.join(LOG_DIR, f"edge_execution_{timestamp}.log")
+TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
+# Per-run CSV path (requested: step3_<timestamp>.csv)
+RUN_ID = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+STEP3_CSV = os.path.join(TIMESTAMP_PATH, f"step3_{RUN_ID}.csv")
+
+# Script-level timing
+SCRIPT_START_TIME = datetime.now(timezone.utc).isoformat()
+SCRIPT_START_PERF = time.perf_counter()
 
 def log(msg):
     """Helper function to append messages to the log file and print them."""
@@ -40,9 +49,33 @@ def log(msg):
     with open(log_file, "a", encoding="utf-8") as f:
         f.write(msg + "\n")
 
+
+def _append_step3_rows(rows):
+    os.makedirs(TIMESTAMP_PATH, exist_ok=True)
+    file_exists = os.path.exists(STEP3_CSV) and os.path.getsize(STEP3_CSV) > 0
+    fieldnames = [
+        "step",
+        "task_name",
+        "script_start_time_utc",
+        "script_end_time_utc",
+        "script_duration_sec",
+        "status",
+        "return_code",
+    ]
+
+    with open(STEP3_CSV, "a", newline="", encoding="utf-8") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        if not file_exists:
+            writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
+
 def execute_task(task_path):
     """Execute a single Python task and log results."""
-    start_time = time.time()
+    start_time_utc = datetime.now(timezone.utc).isoformat()
+    start_perf = time.perf_counter()
+    status = "unknown"
+    return_code = None
     log(f"\n Executing: {task_path}")
     log(f"   Start Time: {datetime.now().strftime('%H:%M:%S')}")
     log(f"   Scheduler python: {sys.executable}")
@@ -85,10 +118,11 @@ def execute_task(task_path):
             timeout=120,  # seconds
             env=os.environ
         )
-        duration = time.time() - start_time
+        duration = time.perf_counter() - start_perf
 
         stdout = (result.stdout or "").strip()
         stderr = (result.stderr or "").strip()
+        return_code = result.returncode
 
         parsed_json = None
         if stdout:
@@ -105,11 +139,13 @@ def execute_task(task_path):
                 log(f"   Duration: {duration:.2f} sec")
                 log("   Output (JSON):")
                 log_multiline("      ", json.dumps(parsed_json, ensure_ascii=False, indent=2))
+                status = "success"
             else:
                 log("    Status: FAILED")
                 log(f"   Duration: {duration:.2f} sec")
                 log("   Error (JSON):")
                 log_multiline("      ", json.dumps(parsed_json, ensure_ascii=False, indent=2))
+                status = "failed"
         else:
             detected_error = looks_like_error(stdout, stderr)
             success = (result.returncode == 0) and (not detected_error)
@@ -120,6 +156,7 @@ def execute_task(task_path):
                 if stdout:
                     log("   Output:")
                     log_multiline("      ", stdout)
+                status = "success"
             else:
                 log("   Status: FAILED")
                 log(f"   Duration: {duration:.2f} sec")
@@ -129,11 +166,30 @@ def execute_task(task_path):
                 elif stdout:
                     log("   Error (stdout):")
                     log_multiline("      ", stdout)
+                status = "failed"
 
     except subprocess.TimeoutExpired:
         log("    Status: TIMEOUT (script exceeded 120s)")
+        status = "timeout"
+        return_code = -1
     except Exception as e:
         log(f"    Unexpected Error: {str(e)}")
+        status = "error"
+        return_code = -1
+
+    end_time_utc = datetime.now(timezone.utc).isoformat()
+    duration = time.perf_counter() - start_perf
+    _append_step3_rows([
+        {
+            "step": "task_run",
+            "task_name": os.path.splitext(os.path.basename(task_path))[0],
+            "script_start_time_utc": start_time_utc,
+            "script_end_time_utc": end_time_utc,
+            "script_duration_sec": duration,
+            "status": status,
+            "return_code": return_code if return_code is not None else "",
+        }
+    ])
 
     log("-" * 60)
 
@@ -148,7 +204,7 @@ def main():
     task_files = [f for f in os.listdir(TASKS_DIR) if f.endswith(".py")]
 
     if not task_files:
-        log(" No Python tasks found in {TASKS_DIR}. Exiting.")
+        log(f" No Python tasks found in {TASKS_DIR}. Exiting.")
         return
 
     log(f"Found {len(task_files)} tasks to execute.")

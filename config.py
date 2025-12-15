@@ -12,11 +12,10 @@ load_dotenv()
 
 # DATA_TYPE available options: "temp_humidity", "air_quality"
 DATA_TYPE = "air_quality"  # change only this line to switch data type
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OLLAMA_SERVER_URL = os.getenv("OLLAMA_SERVER_URL")
 
-if not OPENAI_API_KEY:
-    raise RuntimeError("OPENAI_API_KEY not found. Add it to your .env or set the environment variable.")
+if not OLLAMA_SERVER_URL:
+    raise RuntimeError("OLLAMA_SERVER_URL not found. Add it to your .env or set the environment variable.")
 
-NO_OF_TASKS = 1
-parallel_execution = False
-parallel_execution_limit = 2  # Max number of parallel tasks if parallel_execution is True, DEFAULT value is 1
+if not DATA_TYPE:
+    raise RuntimeError("DATA_TYPE is not set. Please set it in config.py.")

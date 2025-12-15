@@ -1,0 +1,19 @@
+Given the comprehensive existing tasks and the current low resource usage on the edge device, additional tasks would likely overlap with existing functionality or exceed computational limits. However, a few novel insights could be introduced with minimal resource impact:
+
+**1. `hourly_pollutant_spike_forecast`**  
+**Description**: Use historical 1-hour PM2.5/O3 data to predict short-term spikes (e.g., 2-hour windows) using simple threshold-based heuristics (e.g., 20% increase from baseline).  
+**Rationale**: Enhances short-term alert systems by leveraging temporal patterns without requiring complex models.  
+
+**2. `pollutant_ratio_analysis`**  
+**Description**: Calculate the CO:NO2 ratio to infer traffic vs. industrial dominance, with thresholds to flag anomalies (e.g., ratios > 1.5 suggesting industrial activity).  
+**Rationale**: Refines source inference by focusing on specific pollutant interactions, improving accuracy for mixed-source scenarios.  
+
+**3. `weekday_vs_weekend_comparison`**  
+**Description**: Compare average pollutant levels (e.g., PM2.5) between weekdays and weekends to detect traffic-related patterns.  
+**Rationale**: Identifies diurnal trends tied to human activity without requiring external data, supporting localized source analysis.  
+
+**4. `low_pollution_optimization`**  
+**Description**: Generate energy-saving alerts (e.g., "Air quality is optimal for outdoor activities") during periods of low AQI, using pre-defined thresholds.  
+**Rationale**: Adds value to health alerts by promoting positive behaviors during clean air windows.  
+
+These tasks maintain efficiency, avoid redundancy, and align with the edge device's capabilities while expanding actionable insights.

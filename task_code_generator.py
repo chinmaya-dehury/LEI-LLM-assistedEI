@@ -18,8 +18,10 @@ import os
 import json
 import sys
 import time
+import csv
+from datetime import datetime, timezone
 from openai import OpenAI
-from config import OPENAI_API_KEY, DATA_TYPE
+from config import OLLAMA_SERVER_URL, DATA_TYPE
 from string import Template
 from prompts.get_single_task_code import SYSTEM_PROMPT
 from typing import List
@@ -32,7 +34,7 @@ if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
 # Initialize the LLM client
-client = OpenAI(api_key=OPENAI_API_KEY)
+client = OpenAI(base_url=OLLAMA_SERVER_URL, api_key="ollama")
 
 # Paths
 BASE_PATH = f"data/{DATA_TYPE}/"
@@ -41,12 +43,44 @@ META_PATH = os.path.join(BASE_PATH, "metadata.json")
 CONTEXT_PATH = os.path.join(BASE_PATH, "context.txt")
 OUTPUT_DIR = os.path.join("generated_tasks", DATA_TYPE)
 TASK_LIST_PATH = os.path.join(OUTPUT_DIR, "new_tasks.json")
+TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
+# Per-run CSV path (requested: step2_<timestamp>.csv)
+RUN_ID = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+STEP2_CSV = os.path.join(TIMESTAMP_PATH, f"step2_{RUN_ID}.csv")
 
-FALLBACK_MODELS: List[str] = [
-    "gpt-5",        # try first (if your account supports Responses/Chat for this model)
-    "gpt-4o-mini",  # common lightweight fallback
-    "gpt-4o",       # heavier fallback
-]
+
+def _append_timing_rows(rows: list[dict]) -> None:
+    os.makedirs(TIMESTAMP_PATH, exist_ok=True)
+    file_exists = os.path.exists(STEP2_CSV) and os.path.getsize(STEP2_CSV) > 0
+    fieldnames = [
+        "step",
+        "script_start_time_utc",
+        "script_end_time_utc",
+        "script_duration_sec",
+        "llm_start_time_utc",
+        "llm_end_time_utc",
+        "llm_duration_sec",
+        "prompt_tokens",
+        "completion_tokens",
+        "total_tokens",
+        "prompt_tokens_per_sec",
+        "completion_tokens_per_sec",
+        "model",
+        "tasks",
+    ]
+
+    with open(STEP2_CSV, "a", newline="", encoding="utf-8") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        if not file_exists:
+            writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
+
+MODEL_NAME = "qwen3:8b"  # aligned with llm_orchestrator_adaptive_resource
+
+# Step-level timing (for entire script)
+SCRIPT_START_TIME = datetime.now(timezone.utc).isoformat()
+SCRIPT_START_PERF = time.perf_counter()
 
 
 def _truncate(text: str, max_chars: int) -> str:
@@ -131,36 +165,61 @@ Tasks (<=2):
 {task_list_payload}
 """.strip()
 
-    # Model fallback
+    # Single-model call with timing capture
     response = None
-    used_model = None
+    used_model = MODEL_NAME
     errors = []
-    start_all = time.perf_counter()
-    for mdl in FALLBACK_MODELS:
-        try:
-            start = time.perf_counter()
-            # Only pass temperature if not gpt-5 (since error shows gpt-5 disallows 0.0)
-            kwargs = dict(
-                model=mdl,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
-            )
-            if "gpt-5" not in mdl:  # safe heuristic
-                kwargs["temperature"] = 0.0
-            response = client.chat.completions.create(**kwargs)
-            used_model = mdl
-            break
-        except Exception as e:
-            errors.append(f"{mdl}: {repr(e)}")
-            continue
+    llm_start_time = ""
+    llm_end_time = ""
+    llm_start_perf = None
+    llm_duration = 0.0
+    try:
+        llm_start_time = datetime.now(timezone.utc).isoformat()
+        llm_start_perf = time.perf_counter()
+        response = client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.0,
+        )
+    except Exception as e:
+        errors.append(f"{MODEL_NAME}: {repr(e)}")
 
-    elapsed_all = time.perf_counter() - start_all
+    if llm_start_perf is not None:
+        llm_end_perf = time.perf_counter()
+        llm_end_time = datetime.now(timezone.utc).isoformat()
+        llm_duration = llm_end_perf - llm_start_perf
+
     if response is None:
-        print("[Generator] All model attempts failed (%.2fs)." % elapsed_all)
+        print("[Generator] Model call failed (%.2fs)." % llm_duration)
         for line in errors:
             print(" -", line)
+
+        script_end_time = datetime.now(timezone.utc).isoformat()
+        script_duration = time.perf_counter() - SCRIPT_START_PERF
+
+        # Log failed call timing
+        _append_timing_rows([
+            {
+                "step": "llm_call_failed",
+                "script_start_time_utc": SCRIPT_START_TIME,
+                "script_end_time_utc": script_end_time,
+                "script_duration_sec": script_duration,
+                # Do not populate llm_* timestamps when no response is received
+                "llm_start_time_utc": "",
+                "llm_end_time_utc": "",
+                "llm_duration_sec": 0,
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
+                "total_tokens": 0,
+                "prompt_tokens_per_sec": 0,
+                "completion_tokens_per_sec": 0,
+                "model": MODEL_NAME,
+                "tasks": ",".join([t.get("task_name", "") for t in task_payload.get("tasks", [])]) if isinstance(task_payload, dict) else "",
+            }
+        ])
         return None
 
     raw_output = ""
@@ -169,7 +228,43 @@ Tasks (<=2):
     except Exception:
         raw_output = str(response)
 
-    print(f"[Generator] Model '{used_model}' success in {elapsed_all:.2f}s. Raw length={len(raw_output)}")
+    usage = getattr(response, "usage", None) or {}
+    if isinstance(usage, dict):
+        prompt_tokens = usage.get("prompt_tokens") or usage.get("input_tokens") or 0
+        completion_tokens = usage.get("completion_tokens") or usage.get("output_tokens") or 0
+        total_tokens = usage.get("total_tokens") or (prompt_tokens + completion_tokens)
+    else:
+        prompt_tokens = getattr(usage, "prompt_tokens", 0)
+        completion_tokens = getattr(usage, "completion_tokens", 0)
+        total_tokens = getattr(usage, "total_tokens", prompt_tokens + completion_tokens)
+
+    prompt_tps = prompt_tokens / llm_duration if llm_duration > 0 else 0
+    completion_tps = completion_tokens / llm_duration if llm_duration > 0 else 0
+
+    script_end_time = datetime.now(timezone.utc).isoformat()
+    script_duration = time.perf_counter() - SCRIPT_START_PERF
+
+    # Log successful call timing
+    _append_timing_rows([
+        {
+            "step": "llm_call",
+            "script_start_time_utc": SCRIPT_START_TIME,
+            "script_end_time_utc": script_end_time,
+            "script_duration_sec": script_duration,
+            "llm_start_time_utc": llm_start_time,
+            "llm_end_time_utc": llm_end_time,
+            "llm_duration_sec": llm_duration,
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": completion_tokens,
+            "total_tokens": total_tokens,
+            "prompt_tokens_per_sec": prompt_tps,
+            "completion_tokens_per_sec": completion_tps,
+            "model": used_model,
+            "tasks": ",".join([t.get("task_name", "") for t in task_payload.get("tasks", [])]) if isinstance(task_payload, dict) else "",
+        }
+    ])
+
+    print(f"[Generator] Model '{used_model}' success in {llm_duration:.2f}s. Raw length={len(raw_output)}")
 
     # Attempt strict JSON parse
     def parse_json(text: str):

@@ -1,0 +1,16 @@
+This sample dataset represents soil conditions at various depths for agricultural or environmental monitoring.
+The IoT edge device collects soil temperature and moisture readings at multiple depth levels every hour.
+The purpose is to monitor soil health, irrigation needs, and root zone conditions for optimal crop management or ecosystem analysis.
+
+Typical insights could include (but not limited to):
+- Soil moisture gradient analysis – water distribution across depth layers (0-1cm to 27-81cm)
+- Temperature stratification – thermal profile from surface (0cm) to deeper layers (54cm)
+- Irrigation efficiency – detecting moisture penetration depth after watering events
+- Drought stress detection – identifying low moisture zones critical for plant roots
+- Temporal moisture trends – daily or seasonal soil water availability patterns
+- Optimal watering time recommendation – based on surface vs subsurface moisture balance
+- Root zone health assessment – moisture and temperature suitability for plant growth
+- Evaporation rate estimation – surface moisture loss patterns
+
+The LLM should generate small, efficient Python programs suitable for execution on the edge device.
+Each program should focus on one insight at a time and be optimized for limited computational resources.

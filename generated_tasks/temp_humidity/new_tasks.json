@@ -1,56 +1,14 @@
 {
   "tasks": [
     {
-      "task_name": "wet_bulb_temperature_stull",
-      "description": "Estimate wet-bulb temperature (°C) per reading using Stull’s empirical formula from temperature_c and humidity_percent; output WBT and simple heat stress bands (e.g., <20 safe, 20–24 caution, 24–26 high caution, >26 danger).",
+      "task_name": "next_hour_forecast",
+      "description": "Predict next-hour temperature and humidity using a simple moving average of the last 5-minute intervals.",
       "data_type": "temp_humidity",
       "status": "code_generated"
     },
     {
-      "task_name": "vapor_pressure_deficit_kpa",
-      "description": "Compute saturation vapor pressure (es) from temperature_c (Magnus), actual vapor pressure (ea = es * RH/100), and VPD = es - ea (kPa); classify humidity dryness bands (<0.6 humid, 0.6–1.2 moderate, >1.2 dry).",
-      "data_type": "temp_humidity",
-      "status": "code_generated"
-    },
-    {
-      "task_name": "overheating_degree_minutes_temperature",
-      "description": "Accumulate degree-minutes above a configurable comfort setpoint (default 26.0°C) using 5-minute intervals: sum(max(0, temperature_c - setpoint) * 5) to quantify overheating burden.",
-      "data_type": "temp_humidity",
-      "status": "code_generated"
-    },
-    {
-      "task_name": "comfort_compliance_rate",
-      "description": "Compute percent of time within a simplified comfort box (temperature_c in [22, 26] and humidity_percent in [30, 60]); report compliance %, compliant minutes, and longest continuous non-compliance streak.",
-      "data_type": "temp_humidity",
-      "status": "code_generated"
-    },
-    {
-      "task_name": "monotonic_ramp_event_detector",
-      "description": "Detect monotonic ramp events where temperature_c increases by ≥0.2°C per step for ≥3 consecutive readings or humidity_percent increases by ≥1.0% per step; output start/end timestamps and total change.",
-      "data_type": "temp_humidity",
-      "status": "code_generated"
-    },
-    {
-      "task_name": "humidity_cusum_drift_detector",
-      "description": "Apply one-sided CUSUM to humidity_percent to flag sustained upward drift (e.g., k=0.5, h=3.0 in % units); return drift start/end times and peak CUSUM.",
-      "data_type": "temp_humidity",
-      "status": "code_generated"
-    },
-    {
-      "task_name": "condensation_risk_indicator",
-      "description": "Compute dewpoint depression (temperature_c − dew_point_c) and classify condensation risk (high <2°C, moderate 2–4°C, low >4°C); optionally flag if dew_point_c ≥ (temperature_c − 2.0) to indicate potential surface condensation.",
-      "data_type": "temp_humidity",
-      "status": "code_generated"
-    },
-    {
-      "task_name": "temp_humidity_rolling_correlation",
-      "description": "Calculate rolling Pearson correlation (window=6) and overall correlation between temperature_c and humidity_percent; flag windows where |corr| > 0.6 as strong coupling periods.",
-      "data_type": "temp_humidity",
-      "status": "code_generated"
-    },
-    {
-      "task_name": "time_to_threshold_estimator",
-      "description": "Using a linear fit on the last N readings (default N=6), estimate minutes until temperature_c > 30.0°C or humidity_percent > 65.0% if the slope is positive; output predicted breach time or None.",
+      "task_name": "dew_point_calculation",
+      "description": "Calculate the dew point from temperature_c and humidity_percent to provide additional insight into moisture levels and potential condensation risks.",
       "data_type": "temp_humidity",
       "status": "code_generated"
     }

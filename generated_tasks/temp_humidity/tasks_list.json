@@ -1,16 +1,34 @@
 {
   "tasks": [
     {
-      "task_name": "parse_csv_validate_schema",
-      "description": "Load the CSV, parse timestamps to datetime, enforce float types for temperature and humidity, and verify 5-minute sampling intervals."
+      "task_name": "hourly_averages",
+      "description": "Calculate hourly average temperature and humidity from 5-minute intervals to identify trends in environmental conditions.",
+      "data_type": "temp_humidity"
     },
     {
-      "task_name": "comfort_index_humidex",
-      "description": "Compute Humidex from temperature and relative humidity and assign comfort categories (e.g., comfortable, some discomfort, great discomfort)."
+      "task_name": "comfort_threshold_alert",
+      "description": "Trigger alerts if temperature exceeds 29\u00b0C or humidity surpasses 70%, indicating potential discomfort or system malfunctions.",
+      "data_type": "temp_humidity"
     },
     {
-      "task_name": "discomfort_index_thom",
-      "description": "Calculate Thom\u2019s Discomfort Index (DI) using temperature and humidity and label comfort risk levels."
+      "task_name": "rolling_zscore_anomalies",
+      "description": "Detect anomalies in temperature and humidity using a rolling z-score (window=5) to identify sudden deviations from normal patterns.",
+      "data_type": "temp_humidity"
+    },
+    {
+      "task_name": "comfort_index_estimation",
+      "description": "Compute a simplified heat index from temperature_c and humidity_percent to assess human comfort levels in real-time.",
+      "data_type": "temp_humidity"
+    },
+    {
+      "task_name": "next_hour_forecast",
+      "description": "Predict next-hour temperature and humidity using a simple moving average of the last 5-minute intervals.",
+      "data_type": "temp_humidity"
+    },
+    {
+      "task_name": "dew_point_calculation",
+      "description": "Calculate the dew point from temperature_c and humidity_percent to provide additional insight into moisture levels and potential condensation risks.",
+      "data_type": "temp_humidity"
     }
   ]
 }

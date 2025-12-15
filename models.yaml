@@ -1,0 +1,8 @@
+models:
+  - codegemma:7b
+  - codellama:7b
+  - deepseek-coder:6.7b
+  - deepseek-r1:7b
+  - mistral:7b
+  - qwen2.5-coder:7b
+  - starcoder2:7b 

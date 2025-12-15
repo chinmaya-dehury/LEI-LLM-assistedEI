@@ -1,0 +1,71 @@
+ Edge Executor started at 2025-12-14 23:41:37
+Scanning directory: generated_tasks/temp_humidity
+Found 2 tasks to execute.
+============================================================
+
+ Task 1 of 2
+
+ Executing: generated_tasks/temp_humidity\dew_point_calculation.py
+   Start Time: 23:41:37
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-OLLAMA\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.22 sec
+   Output (JSON):
+      {
+        "task_name": "dew_point_calculation",
+        "description": "Calculate dew point from temperature and humidity",
+        "result_summary": [
+          {
+            "name": "dew_point_c_avg",
+            "value": 20.540631901860056,
+            "description": "Average dew point temperature",
+            "timestamp": "2025-12-14T23:41:38.377693"
+          },
+          {
+            "name": "dew_point_c_min",
+            "value": 18.019803538560744,
+            "description": "Minimum dew point temperature",
+            "timestamp": "2025-12-14T23:41:38.377792"
+          },
+          {
+            "name": "dew_point_c_max",
+            "value": 22.741221736378346,
+            "description": "Maximum dew point temperature",
+            "timestamp": "2025-12-14T23:41:38.377848"
+          }
+        ],
+        "result_generated_at": "2025-12-14T23:41:38.377852"
+      }
+------------------------------------------------------------
+
+ Task 2 of 2
+
+ Executing: generated_tasks/temp_humidity\next_hour_forecast.py
+   Start Time: 23:41:43
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Self\LEI-OLLAMA\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.39 sec
+   Output (JSON):
+      {
+        "task_name": "next_hour_forecast",
+        "description": "Predict next-hour temperature and humidity using simple moving average",
+        "result_summary": [
+          {
+            "name": "predicted_temperature_c",
+            "value": 25.366666666666664,
+            "description": "Average temperature for next hour",
+            "timestamp": "2025-10-10T00:55:00"
+          },
+          {
+            "name": "predicted_humidity_percent",
+            "value": 69.54166666666666,
+            "description": "Average humidity for next hour",
+            "timestamp": "2025-10-10T00:55:00"
+          }
+        ],
+        "result_generated_at": "2025-12-14T23:41:44.774479"
+      }
+------------------------------------------------------------
+
+ All tasks executed. Check the log file for details.
+Log file saved at: logs\edge_execution_20251214_234137.log

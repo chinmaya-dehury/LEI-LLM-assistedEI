@@ -1,0 +1,69 @@
+{
+  "data_source": "IoT Wind Sensors",
+  "sampling_interval": "1 hour",
+  "data_format": "CSV",
+  "columns": {
+    "date": {
+      "type": "datetime",
+      "description": "Time at which the reading was recorded (UTC)."
+    },
+    "wind_speed_10m": {
+      "type": "float",
+      "unit": "m/s",
+      "description": "Wind speed measured at 10m height."
+    },
+    "wind_speed_80m": {
+      "type": "float",
+      "unit": "m/s",
+      "description": "Wind speed measured at 80m height."
+    },
+    "wind_speed_120m": {
+      "type": "float",
+      "unit": "m/s",
+      "description": "Wind speed measured at 120m height."
+    },
+    "wind_speed_180m": {
+      "type": "float",
+      "unit": "m/s",
+      "description": "Wind speed measured at 180m height."
+    },
+    "wind_direction_10m": {
+      "type": "float",
+      "unit": "degrees",
+      "range": [0, 360],
+      "description": "Wind direction at 10m height (0=North, 90=East)."
+    },
+    "wind_direction_80m": {
+      "type": "float",
+      "unit": "degrees",
+      "range": [0, 360],
+      "description": "Wind direction at 80m height."
+    },
+    "wind_direction_120m": {
+      "type": "float",
+      "unit": "degrees",
+      "range": [0, 360],
+      "description": "Wind direction at 120m height."
+    },
+    "wind_direction_180m": {
+      "type": "float",
+      "unit": "degrees",
+      "range": [0, 360],
+      "description": "Wind direction at 180m height."
+    },
+    "wind_gusts_10m": {
+      "type": "float",
+      "unit": "m/s",
+      "description": "Maximum wind gust speed recorded at 10m height."
+    }
+  },
+  "data_quality": {
+    "missing_values": "none",
+    "sensor_accuracy": "±0.1 m/s, ±2 degrees"
+  },
+  "device_specs": {
+    "edge_device_model": "Raspberry Pi 4",
+    "compute_capability": "Quad-core ARM, 4GB RAM"
+  },
+  "storage": "Local CSV logs with periodic sync"
+}

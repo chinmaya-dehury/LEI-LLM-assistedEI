@@ -1,0 +1,32 @@
+{
+  "task_name": "aqi_trend_analysis",
+  "description": "Calculate daily AQI trends and classify air quality",
+  "result_summary": [
+    {
+      "date": "2025-10-28",
+      "average_aqi": 4.0,
+      "category": "Good"
+    },
+    {
+      "date": "2025-10-29",
+      "average_aqi": 4.75,
+      "category": "Good"
+    },
+    {
+      "date": "2025-10-30",
+      "average_aqi": 4.52,
+      "category": "Good"
+    },
+    {
+      "date": "2025-10-31",
+      "average_aqi": 3.0,
+      "category": "Good"
+    },
+    {
+      "date": "2025-11-03",
+      "average_aqi": 4.0,
+      "category": "Good"
+    }
+  ],
+  "result_generated_at": "2025-12-14T23:42:27.602753"
+}
