@@ -1,0 +1,5 @@
+run_id,step,script,start_time_utc,end_time_utc,duration_sec,status,return_code
+20251216_034122,step1_orchestrator,C:\Users\siddh\OneDrive\Desktop\Self\LEI-OLLAMA\llm_orchestrator_adaptive_resource.py,2025-12-16T03:41:22.172041+00:00,2025-12-16T03:45:32.114209+00:00,249.9421086999937,success,0
+20251216_034122,step2_generator,C:\Users\siddh\OneDrive\Desktop\Self\LEI-OLLAMA\task_code_generator.py,2025-12-16T03:45:32.117764+00:00,2025-12-16T03:53:25.941126+00:00,473.8233353999676,success,0
+20251216_034122,step3_validator,C:\Users\siddh\OneDrive\Desktop\Self\LEI-OLLAMA\validator.py,2025-12-16T03:53:25.943579+00:00,2025-12-16T04:29:45.307224+00:00,2179.363611799956,success,0
+20251216_034122,step4_scheduler,C:\Users\siddh\OneDrive\Desktop\Self\LEI-OLLAMA\scheduler\edge_scheduler_sequential.py,2025-12-16T04:29:45.308983+00:00,2025-12-16T04:29:51.320369+00:00,6.011368200008292,success,0

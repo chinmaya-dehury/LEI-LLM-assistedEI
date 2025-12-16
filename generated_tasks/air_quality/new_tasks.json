@@ -3,17 +3,20 @@
     {
       "task_name": "health_risk_mapping",
       "description": "Map pollutant concentrations (e.g., PM2.5, O3) to health risk levels using WHO guidelines for respiratory and cardiovascular hazards.",
-      "data_type": "air_quality"
+      "data_type": "air_quality",
+      "status": "code_generated"
     },
     {
       "task_name": "seasonal_pollution_trend",
       "description": "Analyze monthly pollution patterns to identify seasonal variations in AQI and key pollutant concentrations.",
-      "data_type": "air_quality"
+      "data_type": "air_quality",
+      "status": "code_generated"
     },
     {
       "task_name": "pollutant_spike_anomaly",
       "description": "Detect sudden spikes in PM2.5 or NO2 levels (above 95th percentile) that may indicate industrial events or wildfires.",
-      "data_type": "air_quality"
+      "data_type": "air_quality",
+      "status": "failed to generate correct code"
     }
   ]
 }

@@ -1,14 +1,19 @@
 {
   "tasks": [
     {
-      "task_name": "aqi_trend_analysis",
-      "status": "passed",
-      "message": "Executed successfully"
-    },
-    {
-      "task_name": "pollutant_contribution_analysis",
+      "task_name": "health_risk_mapping",
       "status": "failed",
       "message": "Failed after 2 correction attempts"
+    },
+    {
+      "task_name": "seasonal_pollution_trend",
+      "status": "failed",
+      "message": "Script file not found"
+    },
+    {
+      "task_name": "pollutant_spike_anomaly",
+      "status": "failed",
+      "message": "Script file not found"
     }
   ]
 }

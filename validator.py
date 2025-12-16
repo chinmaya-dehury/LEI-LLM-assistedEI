@@ -20,6 +20,7 @@ from typing import Dict, List
 import shutil
 from datetime import datetime, timezone
 import re
+import httpx
 
 from openai import OpenAI
 
@@ -32,7 +33,7 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
-CLIENT_TIMEOUT = 180  # seconds
+CLIENT_TIMEOUT = 120  # seconds
 client = OpenAI(base_url=OLLAMA_SERVER_URL, api_key="ollama", timeout=CLIENT_TIMEOUT)
 
 MODEL_NAME = "qwen3:8b"
@@ -48,7 +49,11 @@ DEFAULT_SCRIPTS_DIR = os.path.join("generated_tasks", DATA_TYPE)
 ERROR_LOG_PATH = os.path.join(DEFAULT_SCRIPTS_DIR, "error.txt")
 
 
+TIMING_ROWS_WRITTEN = 0
+
+
 def _append_timing_rows(rows: List[dict]) -> None:
+    global TIMING_ROWS_WRITTEN
     os.makedirs(TIMESTAMP_PATH, exist_ok=True)
     file_exists = os.path.exists(STEP2_VAL_CSV) and os.path.getsize(STEP2_VAL_CSV) > 0
     fieldnames = [
@@ -75,6 +80,7 @@ def _append_timing_rows(rows: List[dict]) -> None:
             writer.writeheader()
         for row in rows:
             writer.writerow(row)
+            TIMING_ROWS_WRITTEN += 1
 
 
 # Script-level timing
@@ -203,6 +209,50 @@ Provide corrected code following the response format specified in the system pro
 """.strip()
 
 
+def _ollama_native_base_url() -> str:
+    """Derive Ollama base URL (without /v1) from OLLAMA_SERVER_URL."""
+    url = (OLLAMA_SERVER_URL or "").strip()
+    if url.endswith("/v1"):
+        url = url[:-3]
+    return url.rstrip("/")
+
+
+def _call_ollama_native_chat(system_prompt: str, user_prompt: str) -> dict:
+    """Call Ollama's native /api/chat endpoint to obtain token counts."""
+    base = _ollama_native_base_url()
+    if not base:
+        raise RuntimeError("OLLAMA_SERVER_URL is empty")
+
+    url = f"{base}/api/chat"
+    payload = {
+        "model": MODEL_NAME,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        "stream": False,
+        "options": {"temperature": 0.0},
+    }
+
+    with httpx.Client(timeout=CLIENT_TIMEOUT) as http:
+        resp = http.post(url, json=payload)
+        resp.raise_for_status()
+        data = resp.json()
+
+    message = data.get("message") or {}
+    content = message.get("content") or ""
+    prompt_tokens = int(data.get("prompt_eval_count") or 0)
+    completion_tokens = int(data.get("eval_count") or 0)
+    model = data.get("model") or MODEL_NAME
+    return {
+        "content": content,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "model": model,
+        "raw": data,
+    }
+
+
 def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, assets: Dict, attempt: int) -> Dict:
     datatype = task.get("data_type", DATA_TYPE)
     system_prompt = Template(SYSTEM_PROMPT).substitute(DATA_TYPE=datatype)
@@ -212,15 +262,41 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
     llm_start_perf = time.perf_counter()
 
     try:
-        response = client.chat.completions.create(
-            model=MODEL_NAME,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            temperature=0.0,
-            timeout=CLIENT_TIMEOUT,
-        )
+        native = _call_ollama_native_chat(system_prompt, user_prompt)
+    except (httpx.TimeoutException, httpx.ReadTimeout) as e:
+        llm_end_perf = time.perf_counter()
+        llm_end_time = datetime.now(timezone.utc).isoformat()
+        llm_duration = llm_end_perf - llm_start_perf
+
+        script_end_time = datetime.now(timezone.utc).isoformat()
+        script_duration = time.perf_counter() - SCRIPT_START_PERF
+        _append_timing_rows([
+            {
+                "step": "llm_call_timeout",
+                "script_start_time_utc": SCRIPT_START_TIME,
+                "script_end_time_utc": script_end_time,
+                "script_duration_sec": script_duration,
+                "llm_start_time_utc": llm_start_time,
+                "llm_end_time_utc": llm_end_time,
+                "llm_duration_sec": llm_duration,
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
+                "total_tokens": 0,
+                "prompt_tokens_per_sec": 0,
+                "completion_tokens_per_sec": 0,
+                "model": MODEL_NAME,
+                "task_name": task.get("task_name", ""),
+                "attempt": attempt,
+            }
+        ])
+        print(f"[Validator] LLM call timed out: {e}")
+        return {
+            "task_name": task.get("task_name"),
+            "is_valid": False,
+            "error_message": f"LLM call timed out: {e}",
+            "corrected_code": "",
+        }
+
     except Exception as e:
         llm_end_perf = time.perf_counter()
         llm_end_time = datetime.now(timezone.utc).isoformat()
@@ -230,7 +306,7 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
         script_duration = time.perf_counter() - SCRIPT_START_PERF
         _append_timing_rows([
             {
-                "step": "llm_call",
+                "step": "llm_call_failed",
                 "script_start_time_utc": SCRIPT_START_TIME,
                 "script_end_time_utc": script_end_time,
                 "script_duration_sec": script_duration,
@@ -258,24 +334,15 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
     llm_end_perf = time.perf_counter()
     llm_end_time = datetime.now(timezone.utc).isoformat()
     llm_duration = llm_end_perf - llm_start_perf
-    usage = getattr(response, "usage", None) or {}
-    if isinstance(usage, dict):
-        prompt_tokens = usage.get("prompt_tokens") or usage.get("input_tokens") or 0
-        completion_tokens = usage.get("completion_tokens") or usage.get("output_tokens") or 0
-        total_tokens = usage.get("total_tokens") or (prompt_tokens + completion_tokens)
-    else:
-        prompt_tokens = getattr(usage, "prompt_tokens", 0)
-        completion_tokens = getattr(usage, "completion_tokens", 0)
-        total_tokens = getattr(usage, "total_tokens", prompt_tokens + completion_tokens)
+
+    prompt_tokens = int(native.get("prompt_tokens") or 0)
+    completion_tokens = int(native.get("completion_tokens") or 0)
+    total_tokens = prompt_tokens + completion_tokens
 
     prompt_tps = prompt_tokens / llm_duration if llm_duration > 0 else 0
     completion_tps = completion_tokens / llm_duration if llm_duration > 0 else 0
 
-    raw = ""
-    try:
-        raw = response.choices[0].message.content if hasattr(response, "choices") else str(response)
-    except Exception:
-        raw = str(response)
+    raw = native.get("content") or ""
 
     _append_timing_rows([
         {
@@ -291,7 +358,7 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
             "total_tokens": total_tokens,
             "prompt_tokens_per_sec": prompt_tps,
             "completion_tokens_per_sec": completion_tps,
-            "model": MODEL_NAME,
+            "model": native.get("model") or MODEL_NAME,
             "task_name": task.get("task_name", ""),
             "attempt": attempt,
         }
@@ -460,6 +527,27 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
     task_info["code"] = original_code
     assets = _load_context_for(datatype)
 
+    # Log initial attempt (attempt 0) with no LLM interaction
+    _append_timing_rows([
+        {
+            "step": "initial_run",
+            "script_start_time_utc": SCRIPT_START_TIME,
+            "script_end_time_utc": datetime.now(timezone.utc).isoformat(),
+            "script_duration_sec": time.perf_counter() - SCRIPT_START_PERF,
+            "llm_start_time_utc": "",
+            "llm_end_time_utc": "",
+            "llm_duration_sec": "",
+            "prompt_tokens": "",
+            "completion_tokens": "",
+            "total_tokens": "",
+            "prompt_tokens_per_sec": "",
+            "completion_tokens_per_sec": "",
+            "model": "",
+            "task_name": task_name,
+            "attempt": 0,
+        }
+    ])
+
     for attempt in range(1, MAX_RETRIES + 1):
         print(f"[Validator] Retry {attempt}/{MAX_RETRIES} for {task_name}...")
 
@@ -578,12 +666,39 @@ def validate_all_generated_tasks(tasks_file: str, scripts_dir: str) -> Dict[str,
 
 def main() -> None:
     os.makedirs(DEFAULT_SCRIPTS_DIR, exist_ok=True)
+
+    # Ensure CSV exists (at least header) even if no LLM calls happen.
+    _append_timing_rows([])
+
     summary = validate_all_generated_tasks(DEFAULT_TASKS_FILE, DEFAULT_SCRIPTS_DIR)
 
     summary_path = os.path.join(DEFAULT_SCRIPTS_DIR, "validation_summary.json")
     with open(summary_path, "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=2)
     print(f"[Validator] Summary saved to {summary_path}")
+
+    # If no timing rows were written (all tasks passed, no correction attempts),
+    # add a single run-level record so the CSV isn't header-only.
+    if TIMING_ROWS_WRITTEN == 0:
+        _append_timing_rows([
+            {
+                "step": "validator_run",
+                "script_start_time_utc": SCRIPT_START_TIME,
+                "script_end_time_utc": datetime.now(timezone.utc).isoformat(),
+                "script_duration_sec": time.perf_counter() - SCRIPT_START_PERF,
+                "llm_start_time_utc": "",
+                "llm_end_time_utc": "",
+                "llm_duration_sec": "",
+                "prompt_tokens": "",
+                "completion_tokens": "",
+                "total_tokens": "",
+                "prompt_tokens_per_sec": "",
+                "completion_tokens_per_sec": "",
+                "model": "",
+                "task_name": "",
+                "attempt": "",
+            }
+        ])
 
 
 if __name__ == "__main__":

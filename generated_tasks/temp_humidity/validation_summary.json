@@ -3,12 +3,12 @@
     {
       "task_name": "next_hour_forecast",
       "status": "passed",
-      "message": "Fixed after 1 attempt(s)"
+      "message": "Executed successfully"
     },
     {
       "task_name": "dew_point_calculation",
       "status": "passed",
-      "message": "Fixed after 1 attempt(s)"
+      "message": "Executed successfully"
     }
   ]
 }

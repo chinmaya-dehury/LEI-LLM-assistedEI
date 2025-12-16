@@ -1,0 +1,2 @@
+step,script_start_time_utc,script_end_time_utc,script_duration_sec,llm_start_time_utc,llm_end_time_utc,llm_duration_sec,prompt_tokens,completion_tokens,total_tokens,prompt_tokens_per_sec,completion_tokens_per_sec,model,task_name,attempt
+validator_run,2025-12-16T04:54:44.061113+00:00,2025-12-16T04:54:46.045727+00:00,1.9846056000096723,,,,,,,,,,,
