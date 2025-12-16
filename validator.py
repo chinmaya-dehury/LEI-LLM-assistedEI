@@ -18,7 +18,7 @@ import csv
 from string import Template
 from typing import Dict, List
 import shutil
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import re
 import httpx
 
@@ -40,7 +40,8 @@ MODEL_NAME = "qwen3:8b"
 
 TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
 # Per-run CSV path (requested: step3_val_<timestamp>.csv)
-RUN_ID = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+IST = timezone(timedelta(hours=5, minutes=30))
+RUN_ID = datetime.now(IST).strftime("%Y%m%d_%H%M%S")
 STEP2_VAL_CSV = os.path.join(TIMESTAMP_PATH, f"step3_val_{RUN_ID}.csv")
 
 MAX_RETRIES = 2
@@ -58,11 +59,11 @@ def _append_timing_rows(rows: List[dict]) -> None:
     file_exists = os.path.exists(STEP2_VAL_CSV) and os.path.getsize(STEP2_VAL_CSV) > 0
     fieldnames = [
         "step",
-        "script_start_time_utc",
-        "script_end_time_utc",
+        "script_start_time_ist",
+        "script_end_time_ist",
         "script_duration_sec",
-        "llm_start_time_utc",
-        "llm_end_time_utc",
+        "llm_start_time_ist",
+        "llm_end_time_ist",
         "llm_duration_sec",
         "prompt_tokens",
         "completion_tokens",
@@ -84,7 +85,7 @@ def _append_timing_rows(rows: List[dict]) -> None:
 
 
 # Script-level timing
-SCRIPT_START_TIME = datetime.now(timezone.utc).isoformat()
+SCRIPT_START_TIME = datetime.now(IST).isoformat()
 SCRIPT_START_PERF = time.perf_counter()
 
 
@@ -258,26 +259,26 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
     system_prompt = Template(SYSTEM_PROMPT).substitute(DATA_TYPE=datatype)
     user_prompt = _build_correction_prompt(task, runtime_error, exit_code, assets)
 
-    llm_start_time = datetime.now(timezone.utc).isoformat()
+    llm_start_time = datetime.now(IST).isoformat()
     llm_start_perf = time.perf_counter()
 
     try:
         native = _call_ollama_native_chat(system_prompt, user_prompt)
     except (httpx.TimeoutException, httpx.ReadTimeout) as e:
         llm_end_perf = time.perf_counter()
-        llm_end_time = datetime.now(timezone.utc).isoformat()
+        llm_end_time = datetime.now(IST).isoformat()
         llm_duration = llm_end_perf - llm_start_perf
 
-        script_end_time = datetime.now(timezone.utc).isoformat()
+        script_end_time = datetime.now(IST).isoformat()
         script_duration = time.perf_counter() - SCRIPT_START_PERF
         _append_timing_rows([
             {
                 "step": "llm_call_timeout",
-                "script_start_time_utc": SCRIPT_START_TIME,
-                "script_end_time_utc": script_end_time,
+                "script_start_time_ist": SCRIPT_START_TIME,
+                "script_end_time_ist": script_end_time,
                 "script_duration_sec": script_duration,
-                "llm_start_time_utc": llm_start_time,
-                "llm_end_time_utc": llm_end_time,
+                "llm_start_time_ist": llm_start_time,
+                "llm_end_time_ist": llm_end_time,
                 "llm_duration_sec": llm_duration,
                 "prompt_tokens": 0,
                 "completion_tokens": 0,
@@ -299,19 +300,19 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
 
     except Exception as e:
         llm_end_perf = time.perf_counter()
-        llm_end_time = datetime.now(timezone.utc).isoformat()
+        llm_end_time = datetime.now(IST).isoformat()
         llm_duration = llm_end_perf - llm_start_perf
 
-        script_end_time = datetime.now(timezone.utc).isoformat()
+        script_end_time = datetime.now(IST).isoformat()
         script_duration = time.perf_counter() - SCRIPT_START_PERF
         _append_timing_rows([
             {
                 "step": "llm_call_failed",
-                "script_start_time_utc": SCRIPT_START_TIME,
-                "script_end_time_utc": script_end_time,
+                "script_start_time_ist": SCRIPT_START_TIME,
+                "script_end_time_ist": script_end_time,
                 "script_duration_sec": script_duration,
-                "llm_start_time_utc": llm_start_time,
-                "llm_end_time_utc": llm_end_time,
+                "llm_start_time_ist": llm_start_time,
+                "llm_end_time_ist": llm_end_time,
                 "llm_duration_sec": llm_duration,
                 "prompt_tokens": 0,
                 "completion_tokens": 0,
@@ -332,7 +333,7 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
         }
 
     llm_end_perf = time.perf_counter()
-    llm_end_time = datetime.now(timezone.utc).isoformat()
+    llm_end_time = datetime.now(IST).isoformat()
     llm_duration = llm_end_perf - llm_start_perf
 
     prompt_tokens = int(native.get("prompt_tokens") or 0)
@@ -347,11 +348,11 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
     _append_timing_rows([
         {
             "step": "llm_call",
-            "script_start_time_utc": SCRIPT_START_TIME,
-            "script_end_time_utc": datetime.now(timezone.utc).isoformat(),
+            "script_start_time_ist": SCRIPT_START_TIME,
+            "script_end_time_ist": datetime.now(IST).isoformat(),
             "script_duration_sec": time.perf_counter() - SCRIPT_START_PERF,
-            "llm_start_time_utc": llm_start_time,
-            "llm_end_time_utc": llm_end_time,
+            "llm_start_time_ist": llm_start_time,
+            "llm_end_time_ist": llm_end_time,
             "llm_duration_sec": llm_duration,
             "prompt_tokens": prompt_tokens,
             "completion_tokens": completion_tokens,
@@ -531,11 +532,11 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
     _append_timing_rows([
         {
             "step": "initial_run",
-            "script_start_time_utc": SCRIPT_START_TIME,
-            "script_end_time_utc": datetime.now(timezone.utc).isoformat(),
+                "script_start_time_ist": SCRIPT_START_TIME,
+                "script_end_time_ist": datetime.now(IST).isoformat(),
             "script_duration_sec": time.perf_counter() - SCRIPT_START_PERF,
-            "llm_start_time_utc": "",
-            "llm_end_time_utc": "",
+                "llm_start_time_ist": "",
+                "llm_end_time_ist": "",
             "llm_duration_sec": "",
             "prompt_tokens": "",
             "completion_tokens": "",
@@ -683,11 +684,11 @@ def main() -> None:
         _append_timing_rows([
             {
                 "step": "validator_run",
-                "script_start_time_utc": SCRIPT_START_TIME,
-                "script_end_time_utc": datetime.now(timezone.utc).isoformat(),
+                "script_start_time_ist": SCRIPT_START_TIME,
+                "script_end_time_ist": datetime.now(IST).isoformat(),
                 "script_duration_sec": time.perf_counter() - SCRIPT_START_PERF,
-                "llm_start_time_utc": "",
-                "llm_end_time_utc": "",
+                "llm_start_time_ist": "",
+                "llm_end_time_ist": "",
                 "llm_duration_sec": "",
                 "prompt_tokens": "",
                 "completion_tokens": "",

@@ -1,2 +1,0 @@
-step,script_start_time_utc,script_end_time_utc,script_duration_sec,llm_start_time_utc,llm_end_time_utc,llm_duration_sec,prompt_tokens,completion_tokens,total_tokens,prompt_tokens_per_sec,completion_tokens_per_sec,model
-llm_call,2025-12-16T03:41:26.821041+00:00,2025-12-16T03:45:31.817812+00:00,244.9967877000454,2025-12-16T03:41:26.870518+00:00,2025-12-16T03:45:31.815457+00:00,244.94491210003616,2953,1864,4817,12.0557719475879,7.609874334677903,qwen3:8b

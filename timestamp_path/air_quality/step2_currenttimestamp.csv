@@ -1,4 +1,0 @@
-step,script_start_time_utc,script_end_time_utc,script_duration_sec,llm_start_time_utc,llm_end_time_utc,llm_duration_sec,prompt_tokens,completion_tokens,total_tokens,prompt_tokens_per_sec,completion_tokens_per_sec,model,tasks
-llm_call,2025-12-14T15:49:03.208474+00:00,,,2025-12-14T15:49:03.212909+00:00,2025-12-14T15:52:59.074817+00:00,235.86188290000428,2181,1810,3991,9.246937119231996,7.673982661994458,qwen3:8b,"real_time_health_alert_generator,daily_pollution_peak_timing_analysis"
-llm_call,2025-12-14T15:49:03.208474+00:00,,,2025-12-14T15:52:59.089959+00:00,2025-12-14T15:57:25.282085+00:00,266.19210420001764,2156,2453,4609,8.099413791702757,9.215149365049564,qwen3:8b,"aqi_trend_analysis,pollutant_contribution_analysis"
-script,2025-12-14T15:49:03.208474+00:00,2025-12-14T15:57:25.328678+00:00,502.12020410000696,,,,,,,,,,

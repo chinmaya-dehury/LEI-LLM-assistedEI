@@ -23,7 +23,7 @@ import os
 import json
 import time
 import csv
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from openai import OpenAI
 from string import Template
 from config import DATA_TYPE, OLLAMA_SERVER_URL
@@ -48,11 +48,11 @@ def write_timing_csv(
 
     fieldnames = [
         "step",
-        "script_start_time_utc",
-        "script_end_time_utc",
+        "script_start_time_ist",
+        "script_end_time_ist",
         "script_duration_sec",
-        "llm_start_time_utc",
-        "llm_end_time_utc",
+        "llm_start_time_ist",
+        "llm_end_time_ist",
         "llm_duration_sec",
         "prompt_tokens",
         "completion_tokens",
@@ -73,11 +73,11 @@ def write_timing_csv(
         writer.writerow(
             {
                 "step": "llm_call",
-                "script_start_time_utc": script_start_time,
-                "script_end_time_utc": script_end_time,
+                "script_start_time_ist": script_start_time,
+                "script_end_time_ist": script_end_time,
                 "script_duration_sec": script_duration,
-                "llm_start_time_utc": llm_start_time,
-                "llm_end_time_utc": llm_end_time,
+                "llm_start_time_ist": llm_start_time,
+                "llm_end_time_ist": llm_end_time,
                 "llm_duration_sec": llm_duration,
                 "prompt_tokens": prompt_tokens,
                 "completion_tokens": completion_tokens,
@@ -104,11 +104,12 @@ TASK_LIST_PATH = OUTPUT_DIR+"/tasks_list.json"
 TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
 
 # Per-run CSV path (requested: step1_<timestamp>.csv)
-RUN_ID = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+IST = timezone(timedelta(hours=5, minutes=30))
+RUN_ID = datetime.now(IST).strftime("%Y%m%d_%H%M%S")
 STEP1_CSV_PATH = os.path.join(TIMESTAMP_PATH, f"step1_{RUN_ID}.csv")
 
 # Script-wide timing start
-script_start_time = datetime.now(timezone.utc).isoformat()
+script_start_time = datetime.now(IST).isoformat()
 script_start_perf = time.perf_counter()
 
 # Read all inputs
@@ -157,7 +158,7 @@ existing_tasks_json = json.loads(existing_tasks)
 print(f"{len(existing_tasks_json['tasks'])} no. of existing tasks are sent to LLM.")
 
 # Call the LLM with timing
-llm_start_time = datetime.now(timezone.utc).isoformat()
+llm_start_time = datetime.now(IST).isoformat()
 llm_start_perf = time.perf_counter()
 response = client.chat.completions.create(
     model="qwen3:8b",  # you can change to other model available in your OLLAMA server
@@ -167,7 +168,7 @@ response = client.chat.completions.create(
     ]
 )
 llm_end_perf = time.perf_counter()
-llm_end_time = datetime.now(timezone.utc).isoformat()
+llm_end_time = datetime.now(IST).isoformat()
 
 # Extract token usage metrics from response
 usage = getattr(response, "usage", None) or {}
@@ -193,7 +194,7 @@ if not str(raw_output).strip():
     with open(os.path.join(OUTPUT_DIR, "raw_output.txt"), "wb") as f:
         f.write(raw_bytes)
 
-    script_end_time = datetime.now(timezone.utc).isoformat()
+    script_end_time = datetime.now(IST).isoformat()
     script_end_perf = time.perf_counter()
     script_duration = script_end_perf - script_start_perf
     llm_duration = llm_end_perf - llm_start_perf
@@ -223,7 +224,7 @@ except json.JSONDecodeError:
         f.write(raw_bytes)
 
     # Script end timing and CSV logging before exit
-    script_end_time = datetime.now(timezone.utc).isoformat()
+    script_end_time = datetime.now(IST).isoformat()
     script_end_perf = time.perf_counter()
     script_duration = script_end_perf - script_start_perf
     llm_duration = llm_end_perf - llm_start_perf
@@ -248,7 +249,7 @@ if len(tasks_data.get("tasks", [])) == 0:
     print("No new tasks were generated. Reason: " + reason)
 
     # Script end timing and CSV logging before exit
-    script_end_time = datetime.now(timezone.utc).isoformat()
+    script_end_time = datetime.now(IST).isoformat()
     script_end_perf = time.perf_counter()
     script_duration = script_end_perf - script_start_perf
     llm_duration = llm_end_perf - llm_start_perf
@@ -291,7 +292,7 @@ with open(TASK_LIST_PATH, "w", encoding="utf-8") as f:
 print("The list of all tasks with their description are successfully saved in "+TASK_LIST_PATH)
 
 # Final script end timing and CSV logging
-script_end_time = datetime.now(timezone.utc).isoformat()
+script_end_time = datetime.now(IST).isoformat()
 script_end_perf = time.perf_counter()
 script_duration = script_end_perf - script_start_perf
 llm_duration = llm_end_perf - llm_start_perf

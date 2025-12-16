@@ -1,3 +1,0 @@
-step,task_name,script_start_time_utc,script_end_time_utc,script_duration_sec,status,return_code
-task_run,aqi_trend_analysis,2025-12-14T18:12:26.137177+00:00,2025-12-14T18:12:27.798642+00:00,1.6614506000187248,success,0
-script,,2025-12-14T18:12:26.131558+00:00,2025-12-14T18:12:32.806780+00:00,6.675237699993886,completed,

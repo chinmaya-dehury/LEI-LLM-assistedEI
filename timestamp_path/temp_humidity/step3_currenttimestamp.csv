@@ -1,4 +1,0 @@
-step,task_name,script_start_time_utc,script_end_time_utc,script_duration_sec,status,return_code
-task_run,dew_point_calculation,2025-12-14T18:11:37.280200+00:00,2025-12-14T18:11:38.538391+00:00,1.2581949000013992,success,0
-task_run,next_hour_forecast,2025-12-14T18:11:43.543221+00:00,2025-12-14T18:11:44.974471+00:00,1.431268899992574,success,0
-script,,2025-12-14T18:11:37.274514+00:00,2025-12-14T18:11:49.995887+00:00,12.721380300004967,completed,

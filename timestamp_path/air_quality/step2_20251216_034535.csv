@@ -1,3 +1,0 @@
-step,script_start_time_utc,script_end_time_utc,script_duration_sec,llm_start_time_utc,llm_end_time_utc,llm_duration_sec,prompt_tokens,completion_tokens,total_tokens,prompt_tokens_per_sec,completion_tokens_per_sec,model,tasks
-llm_call,2025-12-16T03:45:35.038151+00:00,2025-12-16T03:49:03.518110+00:00,208.47994140000083,2025-12-16T03:45:35.040679+00:00,2025-12-16T03:49:03.518070+00:00,208.4773586000083,2159,1702,3861,10.35604064872258,8.163956083430215,qwen3:8b,"health_risk_mapping,seasonal_pollution_trend"
-llm_call,2025-12-16T03:45:35.038151+00:00,2025-12-16T03:53:25.645641+00:00,470.60747219994664,2025-12-16T03:49:03.532266+00:00,2025-12-16T03:53:25.645595+00:00,262.11330570001155,2112,2585,4697,8.057584083187223,9.862147185151029,qwen3:8b,pollutant_spike_anomaly

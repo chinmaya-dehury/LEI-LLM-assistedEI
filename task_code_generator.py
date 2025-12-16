@@ -19,7 +19,7 @@ import json
 import sys
 import time
 import csv
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from openai import OpenAI
 from config import OLLAMA_SERVER_URL, DATA_TYPE
 from string import Template
@@ -45,7 +45,8 @@ OUTPUT_DIR = os.path.join("generated_tasks", DATA_TYPE)
 TASK_LIST_PATH = os.path.join(OUTPUT_DIR, "new_tasks.json")
 TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
 # Per-run CSV path (requested: step2_<timestamp>.csv)
-RUN_ID = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+IST = timezone(timedelta(hours=5, minutes=30))
+RUN_ID = datetime.now(IST).strftime("%Y%m%d_%H%M%S")
 STEP2_CSV = os.path.join(TIMESTAMP_PATH, f"step2_{RUN_ID}.csv")
 
 
@@ -54,11 +55,11 @@ def _append_timing_rows(rows: list[dict]) -> None:
     file_exists = os.path.exists(STEP2_CSV) and os.path.getsize(STEP2_CSV) > 0
     fieldnames = [
         "step",
-        "script_start_time_utc",
-        "script_end_time_utc",
+        "script_start_time_ist",
+        "script_end_time_ist",
         "script_duration_sec",
-        "llm_start_time_utc",
-        "llm_end_time_utc",
+        "llm_start_time_ist",
+        "llm_end_time_ist",
         "llm_duration_sec",
         "prompt_tokens",
         "completion_tokens",
@@ -79,7 +80,7 @@ def _append_timing_rows(rows: list[dict]) -> None:
 MODEL_NAME = "qwen3:8b"  # aligned with llm_orchestrator_adaptive_resource
 
 # Step-level timing (for entire script)
-SCRIPT_START_TIME = datetime.now(timezone.utc).isoformat()
+SCRIPT_START_TIME = datetime.now(IST).isoformat()
 SCRIPT_START_PERF = time.perf_counter()
 
 
@@ -174,7 +175,7 @@ Tasks (<=2):
     llm_start_perf = None
     llm_duration = 0.0
     try:
-        llm_start_time = datetime.now(timezone.utc).isoformat()
+        llm_start_time = datetime.now(IST).isoformat()
         llm_start_perf = time.perf_counter()
         response = client.chat.completions.create(
             model=MODEL_NAME,
@@ -189,7 +190,7 @@ Tasks (<=2):
 
     if llm_start_perf is not None:
         llm_end_perf = time.perf_counter()
-        llm_end_time = datetime.now(timezone.utc).isoformat()
+        llm_end_time = datetime.now(IST).isoformat()
         llm_duration = llm_end_perf - llm_start_perf
 
     if response is None:
@@ -197,19 +198,19 @@ Tasks (<=2):
         for line in errors:
             print(" -", line)
 
-        script_end_time = datetime.now(timezone.utc).isoformat()
+        script_end_time = datetime.now(IST).isoformat()
         script_duration = time.perf_counter() - SCRIPT_START_PERF
 
         # Log failed call timing
         _append_timing_rows([
             {
                 "step": "llm_call_failed",
-                "script_start_time_utc": SCRIPT_START_TIME,
-                "script_end_time_utc": script_end_time,
+                "script_start_time_ist": SCRIPT_START_TIME,
+                "script_end_time_ist": script_end_time,
                 "script_duration_sec": script_duration,
                 # Do not populate llm_* timestamps when no response is received
-                "llm_start_time_utc": "",
-                "llm_end_time_utc": "",
+                "llm_start_time_ist": "",
+                "llm_end_time_ist": "",
                 "llm_duration_sec": 0,
                 "prompt_tokens": 0,
                 "completion_tokens": 0,
@@ -241,18 +242,18 @@ Tasks (<=2):
     prompt_tps = prompt_tokens / llm_duration if llm_duration > 0 else 0
     completion_tps = completion_tokens / llm_duration if llm_duration > 0 else 0
 
-    script_end_time = datetime.now(timezone.utc).isoformat()
+    script_end_time = datetime.now(IST).isoformat()
     script_duration = time.perf_counter() - SCRIPT_START_PERF
 
     # Log successful call timing
     _append_timing_rows([
         {
             "step": "llm_call",
-            "script_start_time_utc": SCRIPT_START_TIME,
-            "script_end_time_utc": script_end_time,
+            "script_start_time_ist": SCRIPT_START_TIME,
+            "script_end_time_ist": script_end_time,
             "script_duration_sec": script_duration,
-            "llm_start_time_utc": llm_start_time,
-            "llm_end_time_utc": llm_end_time,
+            "llm_start_time_ist": llm_start_time,
+            "llm_end_time_ist": llm_end_time,
             "llm_duration_sec": llm_duration,
             "prompt_tokens": prompt_tokens,
             "completion_tokens": completion_tokens,
