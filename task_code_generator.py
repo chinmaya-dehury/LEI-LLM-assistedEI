@@ -21,7 +21,7 @@ import time
 import csv
 from datetime import datetime, timezone, timedelta
 from openai import OpenAI
-from config import OLLAMA_SERVER_URL, DATA_TYPE
+from config import OLLAMA_SERVER_URL, DATA_TYPE, MODEL_NAME
 from string import Template
 from prompts.get_single_task_code import SYSTEM_PROMPT
 from typing import List
@@ -76,8 +76,6 @@ def _append_timing_rows(rows: list[dict]) -> None:
             writer.writeheader()
         for row in rows:
             writer.writerow(row)
-
-MODEL_NAME = "qwen3:8b"  # aligned with llm_orchestrator_adaptive_resource
 
 # Step-level timing (for entire script)
 SCRIPT_START_TIME = datetime.now(IST).isoformat()

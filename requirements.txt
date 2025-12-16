@@ -6,3 +6,4 @@ numpy
 psutil
 python-dotenv
 ollama
+pyyaml

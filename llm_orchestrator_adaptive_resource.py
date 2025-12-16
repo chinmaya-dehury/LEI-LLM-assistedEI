@@ -26,7 +26,7 @@ import csv
 from datetime import datetime, timezone, timedelta
 from openai import OpenAI
 from string import Template
-from config import DATA_TYPE, OLLAMA_SERVER_URL
+from config import DATA_TYPE, OLLAMA_SERVER_URL, MODEL_NAME
 from prompts.get_tasks_list_adaptive_resource import SYSTEM_PROMPT
 
 def write_timing_csv(
@@ -161,7 +161,7 @@ print(f"{len(existing_tasks_json['tasks'])} no. of existing tasks are sent to LL
 llm_start_time = datetime.now(IST).isoformat()
 llm_start_perf = time.perf_counter()
 response = client.chat.completions.create(
-    model="qwen3:8b",  # you can change to other model available in your OLLAMA server
+    model=MODEL_NAME,
     messages=[
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt}
@@ -181,7 +181,7 @@ else:
     completion_tokens = getattr(usage, "completion_tokens", 0)
     total_tokens = getattr(usage, "total_tokens", prompt_tokens + completion_tokens)
 
-model_name = getattr(response, "model", "qwen3:8b")
+model_name = getattr(response, "model", MODEL_NAME)
 
 # Extract response content (may be None/empty if the model failed)
 raw_output = response.choices[0].message.content or ""

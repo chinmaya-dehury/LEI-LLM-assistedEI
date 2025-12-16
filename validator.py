@@ -24,7 +24,7 @@ import httpx
 
 from openai import OpenAI
 
-from config import DATA_TYPE, OLLAMA_SERVER_URL
+from config import DATA_TYPE, OLLAMA_SERVER_URL, MODEL_NAME
 from prompts.get_validator import SYSTEM_PROMPT
 
 # Windows-safe stdout/stderr
@@ -36,8 +36,6 @@ if hasattr(sys.stderr, "reconfigure"):
 CLIENT_TIMEOUT = 120  # seconds
 client = OpenAI(base_url=OLLAMA_SERVER_URL, api_key="ollama", timeout=CLIENT_TIMEOUT)
 
-MODEL_NAME = "qwen3:8b"
-
 TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
 # Per-run CSV path (requested: step3_val_<timestamp>.csv)
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -48,7 +46,7 @@ MAX_RETRIES = 2
 DEFAULT_TASKS_FILE = os.path.join("generated_tasks", DATA_TYPE, "new_tasks.json")
 DEFAULT_SCRIPTS_DIR = os.path.join("generated_tasks", DATA_TYPE)
 ERROR_LOG_PATH = os.path.join(DEFAULT_SCRIPTS_DIR, "error.txt")
-
+DEFAULT_VALIDATOR_LOG = os.path.join("validator", DATA_TYPE)
 
 TIMING_ROWS_WRITTEN = 0
 
@@ -673,7 +671,10 @@ def main() -> None:
 
     summary = validate_all_generated_tasks(DEFAULT_TASKS_FILE, DEFAULT_SCRIPTS_DIR)
 
-    summary_path = os.path.join(DEFAULT_SCRIPTS_DIR, "validation_summary.json")
+    # Ensure validator log directory exists
+    os.makedirs(DEFAULT_VALIDATOR_LOG, exist_ok=True)
+    
+    summary_path = os.path.join(DEFAULT_VALIDATOR_LOG, f"validation_summary_{RUN_ID}.json")
     with open(summary_path, "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=2)
     print(f"[Validator] Summary saved to {summary_path}")
