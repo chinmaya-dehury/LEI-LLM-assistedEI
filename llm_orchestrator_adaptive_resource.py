@@ -16,7 +16,7 @@ This is resource-aware version. It provides the LLM with current
 resource usage summary of the edge device so that the LLM can decide
 whether to generate new tasks or not based on the resource constraints.
 
-last code updated on 14-12-2025
+last code updated on 17-12-2025
 """
 
 import os
@@ -29,6 +29,31 @@ from openai import OpenAI
 from string import Template
 from config import DATA_TYPE, OLLAMA_SERVER_URL, MODEL_NAME
 from prompts.get_tasks_list_adaptive_resource import SYSTEM_PROMPT
+
+
+def _extract_first_json_object(text: str) -> dict:
+    """Extract first JSON object from LLM output that may contain extra NL text."""
+    if not isinstance(text, str):
+        raise ValueError("LLM output is not a string")
+
+    s = text.strip()
+
+    # Strip ``` fences if present
+    if s.startswith("```"):
+        s = s.split("\n", 1)[1] if "\n" in s else ""
+        if "```" in s:
+            s = s.rsplit("```", 1)[0].strip()
+
+    start = s.find("{")
+    if start == -1:
+        raise ValueError("No JSON object start '{' found in LLM output")
+
+    decoder = json.JSONDecoder()
+    obj, _end = decoder.raw_decode(s[start:])
+    if not isinstance(obj, dict):
+        raise ValueError("Top-level JSON value is not an object")
+    return obj
+
 
 def write_timing_csv(
     csv_path: str,
@@ -214,11 +239,12 @@ if not str(raw_output).strip():
     )
     sys.exit(1)
 
-# Parse JSON safely
+# Parse JSON safely (handles extra NL text / code fences around JSON)
 try:
-    tasks_data = json.loads(raw_output)
-except json.JSONDecodeError:
-    print("The LLM response was not valid JSON. Saving raw output for review.")
+    tasks_data = _extract_first_json_object(raw_output)
+except (json.JSONDecodeError, ValueError) as e:
+    print(f"Could not extract JSON from LLM response: {e}")
+    print("Saving raw output for review.")
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     raw_bytes = str(raw_output).encode("utf-8", "replace")
     with open(os.path.join(OUTPUT_DIR, "raw_output.txt"), "wb") as f:
@@ -244,7 +270,7 @@ except json.JSONDecodeError:
     )
     sys.exit(1)
 
-# Guard against non-dict JSON (e.g., list/null)
+# _extract_first_json_object already guarantees dict, but double-check
 if not isinstance(tasks_data, dict):
     print("The LLM returned JSON that is not an object. Saving raw output for review.")
     os.makedirs(OUTPUT_DIR, exist_ok=True)

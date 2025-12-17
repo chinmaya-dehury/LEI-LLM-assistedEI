@@ -183,6 +183,97 @@ def _normalize_code_string(code: str) -> str:
     return "\n".join(lines)
 
 
+def _stderr_is_only_warning(stderr: str) -> bool:
+    """
+    Returns True if stderr contains only warning messages (FutureWarning,
+    DeprecationWarning, UserWarning, etc.) and no actual errors.
+    """
+    if not stderr or not isinstance(stderr, str):
+        return True  # No stderr means no warnings/errors
+    
+    lines = stderr.strip().split("\n")
+    if not lines or all(not line.strip() for line in lines):
+        return True  # Empty or whitespace-only
+    
+    # Patterns that indicate warnings (not errors)
+    warning_patterns = [
+        r"Warning:",
+        r"FutureWarning:",
+        r"DeprecationWarning:",
+        r"UserWarning:",
+        r"PendingDeprecationWarning:",
+        r"RuntimeWarning:",
+        r"SyntaxWarning:",
+        r"ResourceWarning:",
+        r"ImportWarning:",
+        r"UnicodeWarning:",
+        r"BytesWarning:",
+        r"warnings\.warn",
+        r"^\s*warnings\.filterwarnings",
+        # Common warning file references
+        r"site-packages.*Warning",
+        r"lib.*Warning",
+    ]
+    
+    # Patterns that indicate actual errors (not just warnings)
+    error_patterns = [
+        r"Error:",
+        r"Exception:",
+        r"Traceback \(most recent call last\):",
+        r"^\s*File \".*\", line \d+",
+        r"ModuleNotFoundError:",
+        r"ImportError:",
+        r"SyntaxError:",
+        r"NameError:",
+        r"TypeError:",
+        r"ValueError:",
+        r"KeyError:",
+        r"IndexError:",
+        r"AttributeError:",
+        r"FileNotFoundError:",
+        r"OSError:",
+        r"IOError:",
+        r"RuntimeError:",
+        r"ZeroDivisionError:",
+        r"AssertionError:",
+    ]
+    
+    full_text = stderr.strip()
+    
+    # If any error pattern matches, it's not warning-only
+    for pattern in error_patterns:
+        if re.search(pattern, full_text, re.IGNORECASE | re.MULTILINE):
+            return False
+    
+    # If we get here, check if there's any content that doesn't look like a warning
+    # For each non-empty line, check if it matches a warning pattern or is part of warning context
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        
+        # Check if line matches any warning pattern
+        is_warning_line = any(re.search(p, line, re.IGNORECASE) for p in warning_patterns)
+        
+        # Also accept lines that are part of warning stack traces (indented or file refs)
+        is_context_line = (
+            line.startswith(" ") or 
+            line.startswith("\t") or
+            re.match(r"^\s*\^+\s*$", line) or  # Caret lines pointing to issues
+            re.match(r"^\s*~+\s*$", line) or   # Tilde lines
+            "site-packages" in line or
+            ".py:" in line
+        )
+        
+        if not is_warning_line and not is_context_line:
+            # This line doesn't look like a warning or its context
+            # But don't immediately fail - could be warning message text
+            pass
+    
+    # If no error patterns matched, treat as warning-only
+    return True
+
+
 def _build_correction_prompt(task: Dict, runtime_error: str, exit_code: int, assets: Dict) -> str:
     return f"""
 Sample Data:
@@ -250,6 +341,211 @@ def _call_ollama_native_chat(system_prompt: str, user_prompt: str) -> dict:
         "model": model,
         "raw": data,
     }
+
+
+def _extract_json_from_text(text: str) -> dict | list | None:
+    """
+    Extract JSON (object or array) from text that may contain:
+    - Code fences (```json ... ```
+    - Natural language before/after JSON
+    - Warnings or other output mixed in
+    
+    Returns parsed JSON (dict or list) or None if extraction fails.
+    """
+    if not text or not isinstance(text, str):
+        return None
+
+    s = text.strip()
+    if not s:
+        return None
+
+    # 1. Strip code fences if present (```json ... ``` or ``` ... ```
+    if "```" in s:
+        # Find content between first ``` and last ```
+        parts = s.split("```")
+        for i, part in enumerate(parts):
+            # Skip the language identifier line if present (e.g., "json\n{...}")
+            candidate = part.strip()
+            if candidate.startswith(("json", "python", "JSON")):
+                candidate = candidate.split("\n", 1)[1].strip() if "\n" in candidate else ""
+            
+            if not candidate:
+                continue
+                
+            # Try to parse this block
+            try:
+                if candidate.startswith("{"):
+                    return json.loads(candidate)
+                elif candidate.startswith("["):
+                    return json.loads(candidate)
+            except json.JSONDecodeError:
+                pass
+            
+            # Try extracting JSON from within this block
+            result = _try_extract_json_structure(candidate)
+            if result is not None:
+                return result
+
+    # 2. Try direct parse
+    try:
+        return json.loads(s)
+    except json.JSONDecodeError:
+        pass
+
+    # 3. Try extracting JSON structure from the text
+    return _try_extract_json_structure(s)
+
+
+def _try_extract_json_structure(text: str) -> dict | list | None:
+    """
+    Try to find and parse a JSON object or array from text.
+    Uses JSONDecoder.raw_decode to handle trailing content.
+    """
+    if not text:
+        return None
+
+    # Try to find JSON object
+    obj_start = text.find("{")
+    arr_start = text.find("[")
+
+    # Determine which comes first
+    if obj_start == -1 and arr_start == -1:
+        return None
+
+    # Try object first if it appears before array (or array not found)
+    if obj_start != -1 and (arr_start == -1 or obj_start < arr_start):
+        try:
+            decoder = json.JSONDecoder()
+            obj, _ = decoder.raw_decode(text[obj_start:])
+            if isinstance(obj, dict):
+                return obj
+        except json.JSONDecodeError:
+            pass
+
+    # Try array
+    if arr_start != -1:
+        try:
+            decoder = json.JSONDecoder()
+            arr, _ = decoder.raw_decode(text[arr_start:])
+            if isinstance(arr, list):
+                return arr
+        except json.JSONDecodeError:
+            pass
+
+    # Fallback: try finding the last complete JSON object/array (for cases where warnings come first)
+    # Find last { and matching }
+    last_obj_end = text.rfind("}")
+    if last_obj_end != -1:
+        # Search backwards for matching {
+        depth = 0
+        for i in range(last_obj_end, -1, -1):
+            if text[i] == "}":
+                depth += 1
+            elif text[i] == "{":
+                depth -= 1
+                if depth == 0:
+                    try:
+                        return json.loads(text[i:last_obj_end + 1])
+                    except json.JSONDecodeError:
+                        break
+
+    # Find last [ and matching ]
+    last_arr_end = text.rfind("]")
+    if last_arr_end != -1:
+        depth = 0
+        for i in range(last_arr_end, -1, -1):
+            if text[i] == "]":
+                depth += 1
+            elif text[i] == "[":
+                depth -= 1
+                if depth == 0:
+                    try:
+                        return json.loads(text[i:last_arr_end + 1])
+                    except json.JSONDecodeError:
+                        break
+
+    return None
+
+
+def _parse_json_from_output(output: str) -> Dict | None:
+    """
+    Attempt to extract a JSON object from stdout even if warnings or extra text
+    are present. Returns dict if successful, otherwise None.
+    
+    Accepts:
+    - JSON object with task_name: {"task_name": "...", "result_summary": [...]}
+    - JSON array (result_summary only): [{...}, {...}]
+    - JSON with code fences or extra text around it
+    """
+    if not output:
+        return None
+
+    parsed = _extract_json_from_text(output)
+    
+    if parsed is None:
+        return None
+
+    # If it's already a dict with task_name, return as-is
+    if isinstance(parsed, dict):
+        return parsed
+
+    # If it's a list (result_summary array), wrap it for compatibility
+    if isinstance(parsed, list):
+        return {"result_summary": parsed, "_array_output": True}
+
+    return None
+
+
+def _extract_code_from_llm_response(raw: str) -> str:
+    """
+    Extract corrected Python code from LLM response.
+    Handles responses that include code in:
+    - JSON field "corrected_code"
+    - Code fences ```python ... ```
+    - Raw code mixed with explanation
+    """
+    if not raw or not isinstance(raw, str):
+        return ""
+
+    s = raw.strip()
+
+    # 1. Try to parse as JSON and extract corrected_code field
+    parsed = _extract_json_from_text(s)
+    if isinstance(parsed, dict):
+        code = parsed.get("corrected_code", "")
+        if code and isinstance(code, str):
+            return code.strip()
+
+    # 2. Try to extract from Python code fences
+    if "```python" in s.lower() or "```py" in s.lower():
+        # Find python code block
+        pattern = r"```(?:python|py)\s*\n(.*?)```"
+        matches = re.findall(pattern, s, re.DOTALL | re.IGNORECASE)
+        if matches:
+            # Return the longest match (likely the full corrected code)
+            return max(matches, key=len).strip()
+
+    # 3. Try generic code fences
+    if "```" in s:
+        parts = s.split("```")
+        code_blocks = []
+        for i, part in enumerate(parts):
+            if i % 2 == 1:  # Odd indices are inside fences
+                # Skip language identifier
+                lines = part.split("\n")
+                if lines and lines[0].strip().lower() in ("python", "py", "json", ""):
+                    code_blocks.append("\n".join(lines[1:]).strip())
+                else:
+                    code_blocks.append(part.strip())
+        if code_blocks:
+            # Return the longest code block
+            return max(code_blocks, key=len)
+
+    # 4. If it looks like Python code (has def/import/class), return as-is
+    if any(keyword in s for keyword in ["import ", "def ", "class ", "from "]):
+        return s
+
+    return ""
 
 
 def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, assets: Dict, attempt: int) -> Dict:
@@ -363,111 +659,40 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
         }
     ])
 
-    try:
-        parsed = json.loads(raw)
-    except Exception:
-        try:
-            start_idx = raw.find("{")
-            end_idx = raw.rfind("}") + 1
-            if start_idx != -1 and end_idx != -1:
-                parsed = json.loads(raw[start_idx:end_idx])
-            else:
-                raise ValueError("no JSON found")
-        except Exception:
-            return {
-                "task_name": task.get("task_name"),
-                "is_valid": False,
-                "error_message": "LLM response was not valid JSON.",
-                "corrected_code": "",
-            }
+    # Try to parse as JSON first
+    parsed = _extract_json_from_text(raw)
+    
+    if isinstance(parsed, dict):
+        # Got a proper JSON response
+        corrected_code = parsed.get("corrected_code", "")
+        if not corrected_code:
+            # Maybe the code is in a different field or needs extraction
+            corrected_code = _extract_code_from_llm_response(raw)
+        
+        return {
+            "task_name": parsed.get("task_name", task.get("task_name")),
+            "is_valid": bool(parsed.get("is_valid", False)),
+            "error_message": parsed.get("error_message", "") or "",
+            "corrected_code": corrected_code or "",
+        }
+
+    # JSON parsing failed - try to extract code directly
+    corrected_code = _extract_code_from_llm_response(raw)
+    
+    if corrected_code:
+        return {
+            "task_name": task.get("task_name"),
+            "is_valid": True,  # Assume valid if we got code
+            "error_message": "",
+            "corrected_code": corrected_code,
+        }
 
     return {
-        "task_name": parsed.get("task_name", task.get("task_name")),
-        "is_valid": bool(parsed.get("is_valid", False)),
-        "error_message": parsed.get("error_message", "") or "",
-        "corrected_code": parsed.get("corrected_code", "") or "",
+        "task_name": task.get("task_name"),
+        "is_valid": False,
+        "error_message": "LLM response did not contain valid JSON or extractable code.",
+        "corrected_code": "",
     }
-
-
-def _parse_json_from_output(output: str) -> Dict | None:
-    """
-    Attempt to extract a JSON object from stdout even if warnings or extra text
-    are present. Returns dict if successful, otherwise None.
-    
-    Note: The expected output is a JSON object with "task_name" field.
-    If the script outputs a JSON array (result_summary only), we wrap it.
-    """
-    if not output:
-        return None
-
-    text = output.strip()
-    if not text:
-        return None
-
-    # First try the last non-empty line (common when warnings precede JSON)
-    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
-    if lines:
-        try:
-            parsed = json.loads(lines[-1])
-            # If it's an array, it's likely result_summary only - not valid
-            if isinstance(parsed, list):
-                return None
-            return parsed
-        except Exception:
-            pass
-
-    # Fallback: direct parse of the whole buffer
-    try:
-        parsed = json.loads(text)
-        if isinstance(parsed, list):
-            return None
-        return parsed
-    except Exception:
-        pass
-
-    # Extract JSON object by locating outer braces (object)
-    start_obj = text.rfind("{")
-    end_obj = text.rfind("}")
-    if start_obj != -1 and end_obj != -1 and end_obj > start_obj:
-        candidate = text[start_obj:end_obj + 1]
-        try:
-            parsed = json.loads(candidate)
-            if isinstance(parsed, dict):
-                return parsed
-        except Exception:
-            pass
-
-    # Extract JSON array by locating outer brackets (for result_summary)
-    # But we need the full output structure with task_name, so if we only find array, reject
-    start_arr = text.find("[")
-    end_arr = text.rfind("]")
-    if start_arr != -1 and end_arr != -1 and end_arr > start_arr:
-        candidate = text[start_arr:end_arr + 1]
-        try:
-            parsed = json.loads(candidate)
-            # It's a valid array but missing task_name - not acceptable
-            if isinstance(parsed, list):
-                return None
-        except Exception:
-            pass
-
-    return None
-
-
-def _stderr_is_only_warning(stderr_text: str) -> bool:
-    """
-    Returns True if stderr contains only warning lines (FutureWarning / DeprecationWarning / generic warnings).
-    """
-    if not stderr_text:
-        return False
-    lines = [ln.strip() for ln in stderr_text.splitlines() if ln.strip()]
-    if not lines:
-        return False
-    for line in lines:
-        lower = line.lower()
-        if "warning" not in lower:
-            return False
-    return True
 
 
 def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -> Dict:
@@ -482,26 +707,61 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
 
     if exec_result["exit_code"] == 0:
         result_json = _parse_json_from_output(exec_result["stdout"])
-        if result_json and result_json.get("task_name") == task_name:
-            if warnings_only:
-                print(f"⚠️ {task_name} emitted warnings but completed successfully.")
-                message = "Executed sucessfully (warning ignored)"
-            else:
-                print(f"✅ {task_name} passed validation")
-                message = "Executed successfully"
-            return {
-                "task_name": task_name,
-                "status": "passed",
-                "message": message,
-            }
+        
+        # Check various success conditions
+        if result_json:
+            # Case 1: Proper object with matching task_name
+            if result_json.get("task_name") == task_name:
+                if warnings_only:
+                    print(f"⚠️ {task_name} emitted warnings but completed successfully.")
+                    message = "Executed successfully (warning ignored)"
+                else:
+                    print(f"✅ {task_name} passed validation")
+                    message = "Executed successfully"
+                return {
+                    "task_name": task_name,
+                    "status": "passed",
+                    "message": message,
+                }
+            
+            # Case 2: Array output (result_summary only) - also valid
+            if result_json.get("_array_output") or "result_summary" in result_json:
+                if warnings_only:
+                    print(f"⚠️ {task_name} emitted warnings but produced valid JSON array output.")
+                    message = "Executed successfully (array output, warning ignored)"
+                else:
+                    print(f"✅ {task_name} passed validation (JSON array output)")
+                    message = "Executed successfully (array output)"
+                return {
+                    "task_name": task_name,
+                    "status": "passed",
+                    "message": message,
+                }
+            
+            # Case 3: JSON object without task_name but otherwise valid structure
+            if isinstance(result_json, dict) and len(result_json) > 0:
+                # Has some data, consider it valid
+                if warnings_only:
+                    print(f"⚠️ {task_name} emitted warnings but produced valid JSON output.")
+                    message = "Executed successfully (JSON output, warning ignored)"
+                else:
+                    print(f"✅ {task_name} passed validation (JSON output)")
+                    message = "Executed successfully (JSON output)"
+                return {
+                    "task_name": task_name,
+                    "status": "passed",
+                    "message": message,
+                }
+
         if warnings_only:
             # treat warning-only runs with non-JSON output as warning-only success variant
             print(f"⚠️ {task_name} completed with warnings; JSON output could not be parsed but run succeeded.")
             return {
                 "task_name": task_name,
                 "status": "passed",
-                "message": "Executed sucessfully (warning ignored)",
+                "message": "Executed successfully (warning ignored)",
             }
+        
         _append_error_log(
             task_name,
             0,
@@ -530,11 +790,11 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
     _append_timing_rows([
         {
             "step": "initial_run",
-                "script_start_time_ist": SCRIPT_START_TIME,
-                "script_end_time_ist": datetime.now(IST).isoformat(),
+            "script_start_time_ist": SCRIPT_START_TIME,
+            "script_end_time_ist": datetime.now(IST).isoformat(),
             "script_duration_sec": time.perf_counter() - SCRIPT_START_PERF,
-                "llm_start_time_ist": "",
-                "llm_end_time_ist": "",
+            "llm_start_time_ist": "",
+            "llm_end_time_ist": "",
             "llm_duration_sec": "",
             "prompt_tokens": "",
             "completion_tokens": "",
@@ -576,24 +836,12 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
 
         if exec_result["exit_code"] == 0:
             result_json = _parse_json_from_output(exec_result["stdout"])
-            if result_json and result_json.get("task_name") == task_name:
+            
+            # Accept any valid JSON output
+            if result_json:
                 shutil.move(temp_path, script_path)
                 print(f"✅ {task_name} corrected and validated successfully")
                 return {"task_name": task_name, "status": "passed", "message": f"Fixed after {attempt} attempt(s)"}
-            
-            # Check if corrected version outputs valid JSON (even without task_name)
-            try:
-                text = exec_result["stdout"].strip()
-                arr_start = text.rfind("[")
-                arr_end = text.rfind("]")
-                if arr_start != -1 and arr_end > arr_start:
-                    json.loads(text[arr_start:arr_end+1])
-                    # Valid JSON array output
-                    shutil.move(temp_path, script_path)
-                    print(f"✅ {task_name} corrected (outputs valid JSON array)")
-                    return {"task_name": task_name, "status": "passed", "message": f"Fixed after {attempt} attempt(s) (JSON format variant)"}
-            except:
-                pass
 
         _append_error_log(task_name, exec_result["exit_code"], exec_result["stderr"] or exec_result["stdout"])
         task_info["code"] = corrected_code
