@@ -1,5 +1,5 @@
 """
-task_code_generator.py
+code_generator.py
 -------------------
 This module contains functions to generate Python task code
 based on LLM responses for edge devices in an LLM-assisted edge computing system.
@@ -26,6 +26,18 @@ from string import Template
 from prompts.get_single_task_code import SYSTEM_PROMPT
 from typing import List
 import re
+from resource_monitor import log_resource_metrics
+
+
+def _sanitize_model_name(model: str) -> str:
+    """Sanitize model name for use in filenames."""
+    return (
+        (model or "model")
+        .replace(" ", "_")
+        .replace(":", "_")
+        .replace("/", "_")
+        .replace("\\", "_")
+    )
 
 # Ensure Unicode-safe stdout/stderr on Windows
 if hasattr(sys.stdout, "reconfigure"):
@@ -44,10 +56,12 @@ CONTEXT_PATH = os.path.join(BASE_PATH, "context.txt")
 OUTPUT_DIR = os.path.join("generated_tasks", DATA_TYPE)
 TASK_LIST_PATH = os.path.join(OUTPUT_DIR, "new_tasks.json")
 TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
-# Per-run CSV path (requested: step2_<timestamp>.csv)
+# Per-run CSV path with model name and run ID (requested: step2_<model>_<timestamp>.csv)
 IST = timezone(timedelta(hours=5, minutes=30))
-RUN_ID = datetime.now(IST).strftime("%Y%m%d_%H%M%S")
-STEP2_CSV = os.path.join(TIMESTAMP_PATH, f"step2_{RUN_ID}.csv")
+# Use RUN_ID from environment (passed from pipeline) or generate new one
+RUN_ID = os.environ.get("RUN_ID") or datetime.now(IST).strftime("%Y%m%d_%H%M%S")
+SANITIZED_MODEL = _sanitize_model_name(MODEL_NAME)
+STEP2_CSV = os.path.join(TIMESTAMP_PATH, f"step2_{SANITIZED_MODEL}_{RUN_ID}.csv")
 
 
 def _append_timing_rows(rows: list[dict]) -> None:
@@ -55,6 +69,7 @@ def _append_timing_rows(rows: list[dict]) -> None:
     file_exists = os.path.exists(STEP2_CSV) and os.path.getsize(STEP2_CSV) > 0
     fieldnames = [
         "step",
+        "model",
         "script_start_time_ist",
         "script_end_time_ist",
         "script_duration_sec",
@@ -66,7 +81,6 @@ def _append_timing_rows(rows: list[dict]) -> None:
         "total_tokens",
         "prompt_tokens_per_sec",
         "completion_tokens_per_sec",
-        "model",
         "tasks",
     ]
 
@@ -80,6 +94,10 @@ def _append_timing_rows(rows: list[dict]) -> None:
 # Step-level timing (for entire script)
 SCRIPT_START_TIME = datetime.now(IST).isoformat()
 SCRIPT_START_PERF = time.perf_counter()
+
+# Log resource metrics at start
+RESOURCE_CSV = os.path.join(TIMESTAMP_PATH, f"step2_resource_{SANITIZED_MODEL}_{RUN_ID}.csv")
+log_resource_metrics(RESOURCE_CSV, "step2_code_generator", "start", model_name=MODEL_NAME)
 
 
 def _truncate(text: str, max_chars: int) -> str:
@@ -438,3 +456,6 @@ for i in range(0, len(tasks_to_generate), 2):
         json.dump(tasks_payload, out_file, ensure_ascii=False, indent=2)
 
 print(f"\nAll requested batches processed. Check generated_tasks/{DATA_TYPE} for outputs.")
+
+# Log resource metrics at end
+log_resource_metrics(RESOURCE_CSV, "step2_code_generator", "end", model_name=MODEL_NAME)

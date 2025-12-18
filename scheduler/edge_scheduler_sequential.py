@@ -23,8 +23,22 @@ if parent_dir not in sys.path:
 import subprocess
 import time
 from datetime import datetime, timezone
-from config import DATA_TYPE
+from config import DATA_TYPE, MODEL_NAME
 import json
+
+
+def _sanitize_model_name(model: str) -> str:
+    """Sanitize model name for use in filenames."""
+    return (
+        (model or "model")
+        .replace(" ", "_")
+        .replace(":", "_")
+        .replace("/", "_")
+        .replace("\\", "_")
+    )
+
+
+from resource_monitor import log_resource_metrics
 
 # === Configuration ===
 TASKS_DIR = "generated_tasks/"+DATA_TYPE
@@ -35,13 +49,19 @@ os.makedirs(LOG_DIR, exist_ok=True)
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 log_file = os.path.join(LOG_DIR, f"edge_execution_{timestamp}.log")
 TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
-# Per-run CSV path (requested: step3_<timestamp>.csv)
-RUN_ID = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-STEP3_CSV = os.path.join(TIMESTAMP_PATH, f"step3_{RUN_ID}.csv")
+# Per-run CSV path with model name and run ID (step4 = scheduler)
+# Use RUN_ID from environment (passed from pipeline) or generate new one
+RUN_ID = os.environ.get("RUN_ID") or datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+SANITIZED_MODEL = _sanitize_model_name(MODEL_NAME)
+STEP4_CSV = os.path.join(TIMESTAMP_PATH, f"step4_{SANITIZED_MODEL}_{RUN_ID}.csv")
 
 # Script-level timing
 SCRIPT_START_TIME = datetime.now(timezone.utc).isoformat()
 SCRIPT_START_PERF = time.perf_counter()
+
+# Log resource metrics at start
+RESOURCE_CSV = os.path.join(TIMESTAMP_PATH, f"step4_resource_{SANITIZED_MODEL}_{RUN_ID}.csv")
+log_resource_metrics(RESOURCE_CSV, "step4_scheduler", "start", model_name=MODEL_NAME)
 
 def log(msg):
     """Helper function to append messages to the log file and print them."""
@@ -50,20 +70,21 @@ def log(msg):
         f.write(msg + "\n")
 
 
-def _append_step3_rows(rows):
+def _append_step4_rows(rows):
     os.makedirs(TIMESTAMP_PATH, exist_ok=True)
-    file_exists = os.path.exists(STEP3_CSV) and os.path.getsize(STEP3_CSV) > 0
+    file_exists = os.path.exists(STEP4_CSV) and os.path.getsize(STEP4_CSV) > 0
     fieldnames = [
         "step",
+        "model",
         "task_name",
-        "script_start_time_utc",
-        "script_end_time_utc",
+        "script_start_time_ist",
+        "script_end_time_ist",
         "script_duration_sec",
         "status",
         "return_code",
     ]
 
-    with open(STEP3_CSV, "a", newline="", encoding="utf-8") as csvfile:
+    with open(STEP4_CSV, "a", newline="", encoding="utf-8") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         if not file_exists:
             writer.writeheader()
@@ -177,14 +198,15 @@ def execute_task(task_path):
         status = "error"
         return_code = -1
 
-    end_time_utc = datetime.now(timezone.utc).isoformat()
+    end_time_ist = datetime.now(timezone.utc).isoformat()
     duration = time.perf_counter() - start_perf
-    _append_step3_rows([
+    _append_step4_rows([
         {
             "step": "task_run",
+            "model": MODEL_NAME,
             "task_name": os.path.splitext(os.path.basename(task_path))[0],
-            "script_start_time_utc": start_time_utc,
-            "script_end_time_utc": end_time_utc,
+            "script_start_time_ist": start_time_utc,
+            "script_end_time_ist": end_time_ist,
             "script_duration_sec": duration,
             "status": status,
             "return_code": return_code if return_code is not None else "",
@@ -219,6 +241,9 @@ def main():
 
     log("\n All tasks executed. Check the log file for details.")
     log(f"Log file saved at: {log_file}")
+
+    # Log resource metrics at end
+    log_resource_metrics(RESOURCE_CSV, "step4_scheduler", "end", model_name=MODEL_NAME)
 
 if __name__ == "__main__":
     main()

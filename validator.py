@@ -26,6 +26,18 @@ from openai import OpenAI
 
 from config import DATA_TYPE, OLLAMA_SERVER_URL, MODEL_NAME
 from prompts.get_validator import SYSTEM_PROMPT
+from resource_monitor import log_resource_metrics
+
+
+def _sanitize_model_name(model: str) -> str:
+    """Sanitize model name for use in filenames."""
+    return (
+        (model or "model")
+        .replace(" ", "_")
+        .replace(":", "_")
+        .replace("/", "_")
+        .replace("\\", "_")
+    )
 
 # Windows-safe stdout/stderr
 if hasattr(sys.stdout, "reconfigure"):
@@ -37,10 +49,12 @@ CLIENT_TIMEOUT = 120  # seconds
 client = OpenAI(base_url=OLLAMA_SERVER_URL, api_key="ollama", timeout=CLIENT_TIMEOUT)
 
 TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
-# Per-run CSV path (requested: step3_val_<timestamp>.csv)
+# Per-run CSV path with model name and run ID (step3 = validator)
 IST = timezone(timedelta(hours=5, minutes=30))
-RUN_ID = datetime.now(IST).strftime("%Y%m%d_%H%M%S")
-STEP2_VAL_CSV = os.path.join(TIMESTAMP_PATH, f"step3_val_{RUN_ID}.csv")
+# Use RUN_ID from environment (passed from pipeline) or generate new one
+RUN_ID = os.environ.get("RUN_ID") or datetime.now(IST).strftime("%Y%m%d_%H%M%S")
+SANITIZED_MODEL = _sanitize_model_name(MODEL_NAME)
+STEP3_CSV = os.path.join(TIMESTAMP_PATH, f"step3_{SANITIZED_MODEL}_{RUN_ID}.csv")
 
 MAX_RETRIES = 2
 DEFAULT_TASKS_FILE = os.path.join("generated_tasks", DATA_TYPE, "new_tasks.json")
@@ -50,13 +64,21 @@ DEFAULT_VALIDATOR_LOG = os.path.join("validator", DATA_TYPE)
 
 TIMING_ROWS_WRITTEN = 0
 
+# Log resource metrics at start
+RESOURCE_CSV = os.path.join(TIMESTAMP_PATH, f"step3_resource_{SANITIZED_MODEL}_{RUN_ID}.csv")
+log_resource_metrics(RESOURCE_CSV, "step3_validator", "start", model_name=MODEL_NAME)
+
 
 def _append_timing_rows(rows: List[dict]) -> None:
     global TIMING_ROWS_WRITTEN
     os.makedirs(TIMESTAMP_PATH, exist_ok=True)
-    file_exists = os.path.exists(STEP2_VAL_CSV) and os.path.getsize(STEP2_VAL_CSV) > 0
+    file_exists = os.path.exists(STEP3_CSV) and os.path.getsize(STEP3_CSV) > 0
     fieldnames = [
         "step",
+        "model",
+        "task_name",
+        "status",
+        "attempt",
         "script_start_time_ist",
         "script_end_time_ist",
         "script_duration_sec",
@@ -68,18 +90,37 @@ def _append_timing_rows(rows: List[dict]) -> None:
         "total_tokens",
         "prompt_tokens_per_sec",
         "completion_tokens_per_sec",
-        "model",
-        "task_name",
-        "attempt",
     ]
 
-    with open(STEP2_VAL_CSV, "a", newline="", encoding="utf-8") as csvfile:
+    with open(STEP3_CSV, "a", newline="", encoding="utf-8") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         if not file_exists:
             writer.writeheader()
         for row in rows:
             writer.writerow(row)
             TIMING_ROWS_WRITTEN += 1
+
+
+def _log_task_result(task_name: str, status: str, attempt: int = 0) -> None:
+    """Log a task validation result (passed/failed) to CSV without LLM timing."""
+    _append_timing_rows([{
+        "step": "validation",
+        "model": MODEL_NAME,
+        "task_name": task_name,
+        "status": status,
+        "attempt": attempt,
+        "script_start_time_ist": "",
+        "script_end_time_ist": "",
+        "script_duration_sec": "",
+        "llm_start_time_ist": "",
+        "llm_end_time_ist": "",
+        "llm_duration_sec": "",
+        "prompt_tokens": "",
+        "completion_tokens": "",
+        "total_tokens": "",
+        "prompt_tokens_per_sec": "",
+        "completion_tokens_per_sec": "",
+    }])
 
 
 # Script-level timing
@@ -568,6 +609,10 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
         _append_timing_rows([
             {
                 "step": "llm_call_timeout",
+                "model": MODEL_NAME,
+                "task_name": task.get("task_name", ""),
+                "status": "llm_timeout",
+                "attempt": attempt,
                 "script_start_time_ist": SCRIPT_START_TIME,
                 "script_end_time_ist": script_end_time,
                 "script_duration_sec": script_duration,
@@ -579,9 +624,6 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
                 "total_tokens": 0,
                 "prompt_tokens_per_sec": 0,
                 "completion_tokens_per_sec": 0,
-                "model": MODEL_NAME,
-                "task_name": task.get("task_name", ""),
-                "attempt": attempt,
             }
         ])
         print(f"[Validator] LLM call timed out: {e}")
@@ -602,6 +644,10 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
         _append_timing_rows([
             {
                 "step": "llm_call_failed",
+                "model": MODEL_NAME,
+                "task_name": task.get("task_name", ""),
+                "status": "llm_error",
+                "attempt": attempt,
                 "script_start_time_ist": SCRIPT_START_TIME,
                 "script_end_time_ist": script_end_time,
                 "script_duration_sec": script_duration,
@@ -613,9 +659,6 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
                 "total_tokens": 0,
                 "prompt_tokens_per_sec": 0,
                 "completion_tokens_per_sec": 0,
-                "model": MODEL_NAME,
-                "task_name": task.get("task_name", ""),
-                "attempt": attempt,
             }
         ])
         print(f"[Validator] LLM call failed: {e}")
@@ -642,6 +685,10 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
     _append_timing_rows([
         {
             "step": "llm_call",
+            "model": native.get("model") or MODEL_NAME,
+            "task_name": task.get("task_name", ""),
+            "status": "correction_attempt",
+            "attempt": attempt,
             "script_start_time_ist": SCRIPT_START_TIME,
             "script_end_time_ist": datetime.now(IST).isoformat(),
             "script_duration_sec": time.perf_counter() - SCRIPT_START_PERF,
@@ -653,9 +700,6 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
             "total_tokens": total_tokens,
             "prompt_tokens_per_sec": prompt_tps,
             "completion_tokens_per_sec": completion_tps,
-            "model": native.get("model") or MODEL_NAME,
-            "task_name": task.get("task_name", ""),
-            "attempt": attempt,
         }
     ])
 
@@ -718,6 +762,7 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
                 else:
                     print(f"✅ {task_name} passed validation")
                     message = "Executed successfully"
+                _log_task_result(task_name, "passed", 0)
                 return {
                     "task_name": task_name,
                     "status": "passed",
@@ -732,6 +777,7 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
                 else:
                     print(f"✅ {task_name} passed validation (JSON array output)")
                     message = "Executed successfully (array output)"
+                _log_task_result(task_name, "passed", 0)
                 return {
                     "task_name": task_name,
                     "status": "passed",
@@ -747,6 +793,7 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
                 else:
                     print(f"✅ {task_name} passed validation (JSON output)")
                     message = "Executed successfully (JSON output)"
+                _log_task_result(task_name, "passed", 0)
                 return {
                     "task_name": task_name,
                     "status": "passed",
@@ -756,6 +803,7 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
         if warnings_only:
             # treat warning-only runs with non-JSON output as warning-only success variant
             print(f"⚠️ {task_name} completed with warnings; JSON output could not be parsed but run succeeded.")
+            _log_task_result(task_name, "passed", 0)
             return {
                 "task_name": task_name,
                 "status": "passed",
@@ -790,6 +838,10 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
     _append_timing_rows([
         {
             "step": "initial_run",
+            "model": MODEL_NAME,
+            "task_name": task_name,
+            "status": "initial_validation",
+            "attempt": 0,
             "script_start_time_ist": SCRIPT_START_TIME,
             "script_end_time_ist": datetime.now(IST).isoformat(),
             "script_duration_sec": time.perf_counter() - SCRIPT_START_PERF,
@@ -801,9 +853,6 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
             "total_tokens": "",
             "prompt_tokens_per_sec": "",
             "completion_tokens_per_sec": "",
-            "model": "",
-            "task_name": task_name,
-            "attempt": 0,
         }
     ])
 
@@ -933,6 +982,10 @@ def main() -> None:
         _append_timing_rows([
             {
                 "step": "validator_run",
+                "model": MODEL_NAME,
+                "task_name": "",
+                "status": "no_corrections_needed",
+                "attempt": "",
                 "script_start_time_ist": SCRIPT_START_TIME,
                 "script_end_time_ist": datetime.now(IST).isoformat(),
                 "script_duration_sec": time.perf_counter() - SCRIPT_START_PERF,
@@ -944,11 +997,11 @@ def main() -> None:
                 "total_tokens": "",
                 "prompt_tokens_per_sec": "",
                 "completion_tokens_per_sec": "",
-                "model": "",
-                "task_name": "",
-                "attempt": "",
             }
         ])
+
+# Log resource metrics at end
+log_resource_metrics(RESOURCE_CSV, "step3_validator", "end", model_name=MODEL_NAME)
 
 
 if __name__ == "__main__":
