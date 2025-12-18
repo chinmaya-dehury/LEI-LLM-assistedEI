@@ -1,54 +1,24 @@
 {
   "tasks": [
     {
-      "task_name": "timestamp_crossfield_consistency_check",
-      "status": "passed",
-      "message": "Executed successfully (warnings ignored)"
-    },
-    {
-      "task_name": "pollutant_plausibility_and_constraints",
-      "status": "passed",
-      "message": "Executed successfully (warnings ignored)"
-    },
-    {
-      "task_name": "daq_band_duration_24h",
-      "status": "passed",
-      "message": "Fixed after 1 attempt(s)"
-    },
-    {
-      "task_name": "traffic_freshness_indicator_no_no2_ratio",
-      "status": "passed",
-      "message": "Fixed after 1 attempt(s)"
-    },
-    {
-      "task_name": "coarse_dust_event_detector",
+      "task_name": "aqi_band_classification",
       "status": "failed",
-      "message": "Failed after 2 correction attempts"
+      "message": "Script file not found"
     },
     {
-      "task_name": "o3_8h_time_weighted_average",
+      "task_name": "pollution_peak_hour_identification",
       "status": "failed",
-      "message": "Failed after 2 correction attempts"
+      "message": "Script file not found"
     },
     {
-      "task_name": "pm25_no2_rolling_correlation",
-      "status": "passed",
-      "message": "Executed successfully"
-    },
-    {
-      "task_name": "aqi_gap_fill_estimator_from_components",
-      "status": "passed",
-      "message": "Executed successfully"
-    },
-    {
-      "task_name": "unit_string_normalization_checker",
+      "task_name": "health_advisory_mapping",
       "status": "failed",
-      "message": "Failed after 2 correction attempts"
+      "message": "Script file not found"
     },
     {
-      "task_name": "pollutant_24h_extremes_reporter",
+      "task_name": "pm_ratio_analysis",
       "status": "failed",
-      "message": "Failed after 2 correction attempts"
+      "message": "Script file not found"
     }
   ]
 }

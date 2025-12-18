@@ -22,7 +22,7 @@ import re
 
 from openai import OpenAI
 
-from config import DATA_TYPE, OPENAI_API_KEY
+from config import DATA_TYPE, LLM_API_KEY, LLM_BASE_URL, VALIDATOR_MODEL
 from prompts.get_validator import SYSTEM_PROMPT
 
 # Windows-safe stdout/stderr
@@ -31,7 +31,7 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+client = OpenAI(api_key=LLM_API_KEY, base_url=LLM_BASE_URL)
 
 MAX_RETRIES = 2
 DEFAULT_TASKS_FILE = os.path.join("generated_tasks", DATA_TYPE, "new_tasks.json")
@@ -168,7 +168,7 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
     try:
         start = time.perf_counter()
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=VALIDATOR_MODEL,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},

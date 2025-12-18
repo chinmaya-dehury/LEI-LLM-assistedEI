@@ -27,10 +27,11 @@ STEP_2_SCRIPT = BASE_DIR / "task_code_generator.py"
 STEP_3_SCRIPT = BASE_DIR / "scheduler" / "edge_scheduler_sequential.py"
 
 
-def run_script(script_path: Path, cwd: Optional[Path] = None) -> None:
+
+def run_script(script_path: Path, cwd: Optional[Path] = None) -> bool:
 	"""Execute a Python script using the current interpreter."""
 
-	command = [sys.executable, script_path]
+	command = [sys.executable, str(script_path)]
 
 	# Prepare environment forcing UTF-8 for child Python process output
 	env = os.environ.copy()
@@ -47,7 +48,7 @@ def run_script(script_path: Path, cwd: Optional[Path] = None) -> None:
 			text=True,              # use text mode
 			encoding="utf-8",       # decode using UTF-8
 			errors="replace",       # replace undecodable bytes instead of raising
-			cwd=cwd,
+			cwd=str(cwd) if cwd else None,
 			env=env
 		)
 
@@ -71,13 +72,13 @@ def run_pipeline() -> None:
 	print("\n================ PIPELINE START ===============")
 	try:
 		print("\nStep 1/3: Generating task list via llm_orchestrator_adaptive_resource.py")
-		run_script(STEP_1_SCRIPT)
+		run_script(STEP_1_SCRIPT, cwd=BASE_DIR)
 
 		print("\nStep 2/3: Generating code via task_code_generator.py")
-		run_script(STEP_2_SCRIPT)
+		run_script(STEP_2_SCRIPT, cwd=BASE_DIR)
 
 		print("\nIntermediate Step: Validator run now\n");
-		run_script(BASE_DIR / "validator.py")
+		run_script(BASE_DIR / "validator.py", cwd=BASE_DIR)
 
 		print("\nStep 3/3: Executing generated tasks via edge_scheduler_sequential.py")
 		run_script(STEP_3_SCRIPT, cwd=BASE_DIR)
