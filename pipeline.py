@@ -24,7 +24,6 @@ from datetime import datetime, timezone, timedelta
 import importlib
 
 from config import DATA_TYPE
-from resource_monitor import log_resource_metrics
 
 
 # === Script Locations ===
@@ -106,13 +105,7 @@ def _append_pipeline_rows(rows):
 
 def run_script(step_name: str, script_path: Path, cwd: Optional[Path] = None, env_override: Optional[dict] = None) -> bool:
     """Execute a Python script using the current interpreter and log timing."""
-    
-    # Log resource metrics at start - Use step_name in filename
-    model_name = _sanitize_model_name(env_override.get("MODEL_NAME", "unknown")) if env_override else "unknown"
-    run_id = env_override.get("RUN_ID", "") if env_override else ""
-    RESOURCE_CSV = TIMESTAMP_DIR / f"{step_name}_resource_{model_name}_{run_id}.csv"
-    
-    log_resource_metrics(str(RESOURCE_CSV), step_name, "start", model_name=env_override.get("MODEL_NAME", "") if env_override else "")
+
 
     command = [sys.executable, str(script_path)]
 
@@ -142,9 +135,6 @@ def run_script(step_name: str, script_path: Path, cwd: Optional[Path] = None, en
         elapsed = time.perf_counter() - start_perf
         end_time_ist = datetime.now(IST).isoformat()
         
-        # Log resource metrics at end (success)
-        log_resource_metrics(str(RESOURCE_CSV), step_name, "end", model_name=env_override.get("MODEL_NAME", "") if env_override else "")
-        
         print(f"✅ Success. ({elapsed:.2f}s)")
 
         _append_pipeline_rows([
@@ -164,9 +154,6 @@ def run_script(step_name: str, script_path: Path, cwd: Optional[Path] = None, en
     except subprocess.CalledProcessError as e:
         elapsed = time.perf_counter() - start_perf
         end_time_ist = datetime.now(IST).isoformat()
-        
-        # Log resource metrics at end (failure)
-        log_resource_metrics(str(RESOURCE_CSV), step_name, "end", model_name=env_override.get("MODEL_NAME", "") if env_override else "")
         
         print(f"\n❌ ERROR: {script_path} failed (exit {e.returncode}).")
         print(f"--- Stderr ---\n{e.stderr}")

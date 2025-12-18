@@ -216,6 +216,9 @@ def execute_task(task_path):
     log("-" * 60)
 
 def main():
+    # Ensure CSV exists (at least header) even if no tasks run
+    _append_step4_rows([])
+    
     log(f" Edge Executor started at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     log(f"Scanning directory: {TASKS_DIR}")
 
