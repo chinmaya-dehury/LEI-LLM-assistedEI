@@ -187,7 +187,7 @@ script_start_perf = time.perf_counter()
 
 # Log resource metrics at start
 RESOURCE_CSV = os.path.join(TIMESTAMP_PATH, f"step1_resource_{SANITIZED_MODEL}_{RUN_ID}.csv")
-log_resource_metrics(RESOURCE_CSV, "step1_task_generator", "start", model_name=MODEL_NAME)
+log_resource_metrics(RESOURCE_CSV, "step1_task_generator", "start", model_name=MODEL_NAME, run_count=RUN_COUNT)
 
 # Read all inputs
 with open(DATA_PATH, "r") as f:
@@ -402,7 +402,7 @@ script_duration = script_end_perf - script_start_perf
 llm_duration = llm_end_perf - llm_start_perf
 
 # Log resource metrics at end
-log_resource_metrics(RESOURCE_CSV, "step1_task_generator", "end", model_name=MODEL_NAME)
+log_resource_metrics(RESOURCE_CSV, "step1_task_generator", "end", model_name=MODEL_NAME, run_count=RUN_COUNT)
 
 write_timing_csv(
     STEP1_CSV_PATH,

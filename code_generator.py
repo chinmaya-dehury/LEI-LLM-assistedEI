@@ -132,7 +132,7 @@ SCRIPT_START_PERF = time.perf_counter()
 
 # Log resource metrics at start
 RESOURCE_CSV = os.path.join(TIMESTAMP_PATH, f"step2_resource_{SANITIZED_MODEL}_{RUN_ID}.csv")
-log_resource_metrics(RESOURCE_CSV, "step2_code_generator", "start", model_name=MODEL_NAME)
+log_resource_metrics(RESOURCE_CSV, "step2_code_generator", "start", model_name=MODEL_NAME, run_count=RUN_COUNT)
 
 
 def _truncate(text: str, max_chars: int) -> str:
@@ -493,4 +493,4 @@ for i in range(0, len(tasks_to_generate), 2):
 print(f"\nAll requested batches processed. Check generated_tasks/{DATA_TYPE} for outputs.")
 
 # Log resource metrics at end
-log_resource_metrics(RESOURCE_CSV, "step2_code_generator", "end", model_name=MODEL_NAME)
+log_resource_metrics(RESOURCE_CSV, "step2_code_generator", "end", model_name=MODEL_NAME, run_count=RUN_COUNT)

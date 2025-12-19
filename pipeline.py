@@ -87,8 +87,7 @@ def _append_pipeline_rows(rows):
 		raise RuntimeError("PIPELINE_CSV not initialized")
 	file_exists = PIPELINE_CSV.exists() and PIPELINE_CSV.stat().st_size > 0
 	fieldnames = [
-			"run_id",
-			"run_count",
+			"run_id",		"model",			"run_count",
 		"step",
 		"script",
 		"start_time_ist",
@@ -145,6 +144,7 @@ def run_script(step_name: str, script_path: Path, cwd: Optional[Path] = None, en
 		_append_pipeline_rows([
 			{
 				"run_id": RUN_ID,
+				"model": env_override.get("MODEL_NAME", "") if env_override else "",
 				"run_count": env_override.get("RUN_COUNT") if env_override else os.environ.get("RUN_COUNT", ""),
 				"step": step_name,
 				"script": str(script_path),
@@ -168,6 +168,7 @@ def run_script(step_name: str, script_path: Path, cwd: Optional[Path] = None, en
 		_append_pipeline_rows([
 			{
 				"run_id": RUN_ID,
+				"model": env_override.get("MODEL_NAME", "") if env_override else "",
 				"run_count": env_override.get("RUN_COUNT") if env_override else os.environ.get("RUN_COUNT", ""),
 				"step": step_name,
 				"script": str(script_path),
@@ -188,6 +189,7 @@ def run_script(step_name: str, script_path: Path, cwd: Optional[Path] = None, en
 		_append_pipeline_rows([
 			{
 				"run_id": RUN_ID,
+				"model": env_override.get("MODEL_NAME", "") if env_override else "",
 				"run_count": env_override.get("RUN_COUNT") if env_override else os.environ.get("RUN_COUNT", ""),
 				"step": step_name,
 				"script": str(script_path),
@@ -214,7 +216,7 @@ def run_pipeline() -> None:
 	for model in models:
 		# Set RUN_ID once per model so all 10 runs append to the same CSV files
 		_set_pipeline_run(model)
-		for run_num in range(1, 2):
+		for run_num in range(1,11):
 			print(f"\nRunning pipeline for model {model} Run {run_num}")
 			# Clean generated tasks/output before each run
 			_clean_before_model_run()

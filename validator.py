@@ -53,6 +53,8 @@ TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
 IST = timezone(timedelta(hours=5, minutes=30))
 # Use RUN_ID from environment (passed from pipeline) or generate new one
 RUN_ID = os.environ.get("RUN_ID") or datetime.now(IST).strftime("%Y%m%d_%H%M%S")
+# Optional run count (passed from pipeline)
+RUN_COUNT = os.environ.get("RUN_COUNT") or ""
 SANITIZED_MODEL = _sanitize_model_name(MODEL_NAME)
 STEP3_CSV = os.path.join(TIMESTAMP_PATH, f"step3_{SANITIZED_MODEL}_{RUN_ID}.csv")
 
@@ -66,7 +68,7 @@ TIMING_ROWS_WRITTEN = 0
 
 # Log resource metrics at start
 RESOURCE_CSV = os.path.join(TIMESTAMP_PATH, f"step3_resource_{SANITIZED_MODEL}_{RUN_ID}.csv")
-log_resource_metrics(RESOURCE_CSV, "step3_validator", "start", model_name=MODEL_NAME)
+log_resource_metrics(RESOURCE_CSV, "step3_validator", "start", model_name=MODEL_NAME, run_count=RUN_COUNT)
 
 
 def _append_timing_rows(rows: List[dict]) -> None:
@@ -76,6 +78,7 @@ def _append_timing_rows(rows: List[dict]) -> None:
     fieldnames = [
         "step",
         "model",
+        "run_count",
         "task_name",
         "status",
         "attempt",
@@ -106,6 +109,7 @@ def _log_task_result(task_name: str, status: str, attempt: int = 0) -> None:
     _append_timing_rows([{
         "step": "validation",
         "model": MODEL_NAME,
+        "run_count": RUN_COUNT,
         "task_name": task_name,
         "status": status,
         "attempt": attempt,
@@ -610,6 +614,7 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
             {
                 "step": "llm_call_timeout",
                 "model": MODEL_NAME,
+                "run_count": RUN_COUNT,
                 "task_name": task.get("task_name", ""),
                 "status": "llm_timeout",
                 "attempt": attempt,
@@ -645,6 +650,7 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
             {
                 "step": "llm_call_failed",
                 "model": MODEL_NAME,
+                "run_count": RUN_COUNT,
                 "task_name": task.get("task_name", ""),
                 "status": "llm_error",
                 "attempt": attempt,
@@ -686,6 +692,7 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
         {
             "step": "llm_call",
             "model": native.get("model") or MODEL_NAME,
+            "run_count": RUN_COUNT,
             "task_name": task.get("task_name", ""),
             "status": "correction_attempt",
             "attempt": attempt,
@@ -839,6 +846,7 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
         {
             "step": "initial_run",
             "model": MODEL_NAME,
+            "run_count": RUN_COUNT,
             "task_name": task_name,
             "status": "initial_validation",
             "attempt": 0,
@@ -983,6 +991,7 @@ def main() -> None:
             {
                 "step": "validator_run",
                 "model": MODEL_NAME,
+                "run_count": RUN_COUNT,
                 "task_name": "",
                 "status": "no_corrections_needed",
                 "attempt": "",
@@ -1001,7 +1010,7 @@ def main() -> None:
         ])
 
 # Log resource metrics at end
-log_resource_metrics(RESOURCE_CSV, "step3_validator", "end", model_name=MODEL_NAME)
+log_resource_metrics(RESOURCE_CSV, "step3_validator", "end", model_name=MODEL_NAME, run_count=RUN_COUNT)
 
 
 if __name__ == "__main__":

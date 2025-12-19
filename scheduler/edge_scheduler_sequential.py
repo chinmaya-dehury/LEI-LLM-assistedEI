@@ -52,6 +52,8 @@ TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
 # Per-run CSV path with model name and run ID (step4 = scheduler)
 # Use RUN_ID from environment (passed from pipeline) or generate new one
 RUN_ID = os.environ.get("RUN_ID") or datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+# Optional run count (passed from pipeline)
+RUN_COUNT = os.environ.get("RUN_COUNT") or ""
 SANITIZED_MODEL = _sanitize_model_name(MODEL_NAME)
 STEP4_CSV = os.path.join(TIMESTAMP_PATH, f"step4_{SANITIZED_MODEL}_{RUN_ID}.csv")
 
@@ -61,7 +63,7 @@ SCRIPT_START_PERF = time.perf_counter()
 
 # Log resource metrics at start
 RESOURCE_CSV = os.path.join(TIMESTAMP_PATH, f"step4_resource_{SANITIZED_MODEL}_{RUN_ID}.csv")
-log_resource_metrics(RESOURCE_CSV, "step4_scheduler", "start", model_name=MODEL_NAME)
+log_resource_metrics(RESOURCE_CSV, "step4_scheduler", "start", model_name=MODEL_NAME, run_count=RUN_COUNT)
 
 def log(msg):
     """Helper function to append messages to the log file and print them."""
@@ -76,6 +78,7 @@ def _append_step4_rows(rows):
     fieldnames = [
         "step",
         "model",
+        "run_count",
         "task_name",
         "script_start_time_ist",
         "script_end_time_ist",
@@ -204,6 +207,7 @@ def execute_task(task_path):
         {
             "step": "task_run",
             "model": MODEL_NAME,
+            "run_count": RUN_COUNT,
             "task_name": os.path.splitext(os.path.basename(task_path))[0],
             "script_start_time_ist": start_time_utc,
             "script_end_time_ist": end_time_ist,
@@ -246,7 +250,7 @@ def main():
     log(f"Log file saved at: {log_file}")
 
     # Log resource metrics at end
-    log_resource_metrics(RESOURCE_CSV, "step4_scheduler", "end", model_name=MODEL_NAME)
+    log_resource_metrics(RESOURCE_CSV, "step4_scheduler", "end", model_name=MODEL_NAME, run_count=RUN_COUNT)
 
 if __name__ == "__main__":
     main()

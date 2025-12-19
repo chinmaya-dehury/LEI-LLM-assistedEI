@@ -87,6 +87,7 @@ def log_resource_metrics(
     event_type: str,  # "start" or "end"
     task_name: str = "",
     model_name: str = "",
+    run_count: str = "",
 ) -> None:
     """
     Log resource metrics to CSV.
@@ -101,6 +102,7 @@ def log_resource_metrics(
         "timestamp_ist",
         "step",
         "event_type",
+        "run_count",
         "task_name",
         "model_name",
         "cpu_percent",
@@ -123,6 +125,7 @@ def log_resource_metrics(
             "timestamp_ist": snapshot["timestamp_ist"],
             "step": step_name,
             "event_type": event_type,
+            "run_count": run_count,
             "task_name": task_name,
             "model_name": model_name,
             "cpu_percent": snapshot["cpu_percent"],
