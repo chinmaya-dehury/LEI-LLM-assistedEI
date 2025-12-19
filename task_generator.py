@@ -85,9 +85,11 @@ def write_timing_csv(
     prompt_tokens_per_sec = prompt_tokens / llm_duration if llm_duration > 0 else 0
     completion_tokens_per_sec = completion_tokens / llm_duration if llm_duration > 0 else 0
 
+    # Add run_count and resource summary fields from resource_stat/resource_usage_summary.json
     fieldnames = [
         "step",
         "model",
+        "run_count",
         "script_start_time_ist",
         "script_end_time_ist",
         "script_duration_sec",
@@ -99,6 +101,12 @@ def write_timing_csv(
         "total_tokens",
         "prompt_tokens_per_sec",
         "completion_tokens_per_sec",
+        "resource_generated_at",
+        "resource_last_checked",
+        "avg_cpu_1m",
+        "avg_mem_1m",
+        "avg_cpu_5m",
+        "avg_mem_5m",
     ]
 
     file_exists = os.path.exists(csv_path) and os.path.getsize(csv_path) > 0
@@ -108,11 +116,32 @@ def write_timing_csv(
         if not file_exists:
             writer.writeheader()
 
+        # Try to read resource summary values
+        resource_vals = {}
+        try:
+            with open(RESOURCE_SUMMARY_PATH, "r", encoding="utf-8") as rf:
+                rs = json.load(rf)
+                resource_vals["resource_generated_at"] = rs.get("generated_at", "")
+                resource_vals["resource_last_checked"] = rs.get("last_checked", "")
+                sw = rs.get("summary_windows", {}) or {}
+                w1 = sw.get("1m", {}) or {}
+                w5 = sw.get("5m", {}) or {}
+                resource_vals["avg_cpu_1m"] = w1.get("avg_cpu", "")
+                resource_vals["avg_mem_1m"] = w1.get("avg_mem", "")
+                resource_vals["avg_cpu_5m"] = w5.get("avg_cpu", "")
+                resource_vals["avg_mem_5m"] = w5.get("avg_mem", "")
+        except Exception:
+            # leave resource_vals empty if file missing or malformed
+            resource_vals = {k: "" for k in [
+                "resource_generated_at", "resource_last_checked", "avg_cpu_1m",
+                "avg_mem_1m", "avg_cpu_5m", "avg_mem_5m"]}
+
         # Dedicated LLM call timing row
         writer.writerow(
             {
                 "step": "llm_call",
                 "model": model_name,
+                "run_count": RUN_COUNT,
                 "script_start_time_ist": script_start_time,
                 "script_end_time_ist": script_end_time,
                 "script_duration_sec": script_duration,
@@ -124,6 +153,7 @@ def write_timing_csv(
                 "total_tokens": total_tokens,
                 "prompt_tokens_per_sec": prompt_tokens_per_sec,
                 "completion_tokens_per_sec": completion_tokens_per_sec,
+                **resource_vals,
             }
         )
 
@@ -146,6 +176,8 @@ TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
 IST = timezone(timedelta(hours=5, minutes=30))
 # Use RUN_ID from environment (passed from pipeline) or generate new one
 RUN_ID = os.environ.get("RUN_ID") or datetime.now(IST).strftime("%Y%m%d_%H%M%S")
+# Optional run count (passed from pipeline)
+RUN_COUNT = os.environ.get("RUN_COUNT") or ""
 SANITIZED_MODEL = _sanitize_model_name(MODEL_NAME)
 STEP1_CSV_PATH = os.path.join(TIMESTAMP_PATH, f"step1_{SANITIZED_MODEL}_{RUN_ID}.csv")
 

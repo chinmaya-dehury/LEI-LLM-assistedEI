@@ -10,6 +10,7 @@ and finally schedules and executes these tasks on an edge device simulator.
 The pipeline is designed to be modular and extensible, allowing for easy updates and improvements
 to individual components without affecting the entire workflow.
 
+Last Modfified: 19-12-2025
 """
 
 import os
@@ -86,7 +87,8 @@ def _append_pipeline_rows(rows):
 		raise RuntimeError("PIPELINE_CSV not initialized")
 	file_exists = PIPELINE_CSV.exists() and PIPELINE_CSV.stat().st_size > 0
 	fieldnames = [
-		"run_id",
+			"run_id",
+			"run_count",
 		"step",
 		"script",
 		"start_time_ist",
@@ -104,92 +106,99 @@ def _append_pipeline_rows(rows):
 
 
 def run_script(step_name: str, script_path: Path, cwd: Optional[Path] = None, env_override: Optional[dict] = None) -> bool:
-    """Execute a Python script using the current interpreter and log timing."""
+	"""Execute a Python script using the current interpreter and log timing.
 
+	This function uses a consistent 4-space indentation style and records
+	`run_count` (if provided via `env_override`) into the pipeline CSV rows.
+	"""
 
-    command = [sys.executable, str(script_path)]
+	command = [sys.executable, str(script_path)]
 
-    # Prepare environment forcing UTF-8 for child Python process output
-    env = os.environ.copy()
-    env["PYTHONIOENCODING"] = "utf-8"
-    if env_override:
-        env.update(env_override)
+	# Prepare environment forcing UTF-8 for child Python process output
+	env = os.environ.copy()
+	env["PYTHONIOENCODING"] = "utf-8"
+	if env_override:
+		env.update(env_override)
 
-    start_time_ist = datetime.now(IST).isoformat()
-    start_perf = time.perf_counter()
+	start_time_ist = datetime.now(IST).isoformat()
+	start_perf = time.perf_counter()
 
-    try:
-        print(f"\n🚀 Starting: {script_path} (CWD: {cwd if cwd else os.getcwd()})")
+	try:
+		print(f"\n🚀 Starting: {script_path} (CWD: {cwd if cwd else os.getcwd()})")
 
-        result = subprocess.run(
-            command,
-            check=True,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            cwd=cwd,
-            env=env
-        )
+		result = subprocess.run(
+			command,
+			check=True,
+			capture_output=True,
+			text=True,
+			encoding="utf-8",
+			errors="replace",
+			cwd=cwd,
+			env=env,
+		)
 
-        elapsed = time.perf_counter() - start_perf
-        end_time_ist = datetime.now(IST).isoformat()
-        
-        print(f"✅ Success. ({elapsed:.2f}s)")
+		elapsed = time.perf_counter() - start_perf
+		end_time_ist = datetime.now(IST).isoformat()
 
-        _append_pipeline_rows([
-            {
-                "run_id": RUN_ID,
-                "step": step_name,
-                "script": str(script_path),
-                "start_time_ist": start_time_ist,
-                "end_time_ist": end_time_ist,
-                "duration_sec": elapsed,
-                "status": "success",
-                "return_code": result.returncode,
-            }
-        ])
-        return True
+		print(f"✅ Success. ({elapsed:.2f}s)")
 
-    except subprocess.CalledProcessError as e:
-        elapsed = time.perf_counter() - start_perf
-        end_time_ist = datetime.now(IST).isoformat()
-        
-        print(f"\n❌ ERROR: {script_path} failed (exit {e.returncode}).")
-        print(f"--- Stderr ---\n{e.stderr}")
-        print(f"--- Stdout ---\n{e.stdout}")
+		_append_pipeline_rows([
+			{
+				"run_id": RUN_ID,
+				"run_count": env_override.get("RUN_COUNT") if env_override else os.environ.get("RUN_COUNT", ""),
+				"step": step_name,
+				"script": str(script_path),
+				"start_time_ist": start_time_ist,
+				"end_time_ist": end_time_ist,
+				"duration_sec": elapsed,
+				"status": "success",
+				"return_code": result.returncode,
+			}
+		])
+		return True
 
-        _append_pipeline_rows([
-            {
-                "run_id": RUN_ID,
-                "step": step_name,
-                "script": str(script_path),
-                "start_time_ist": start_time_ist,
-                "end_time_ist": end_time_ist,
-                "duration_sec": elapsed,
-                "status": "failed",
-                "return_code": e.returncode,
-            }
-        ])
-        raise
-    except FileNotFoundError:
-        elapsed = time.perf_counter() - start_perf
-        end_time_ist = datetime.now(IST).isoformat()
-        print(f"\n❌ ERROR: Script not found at {script_path}")
+	except subprocess.CalledProcessError as e:
+		elapsed = time.perf_counter() - start_perf
+		end_time_ist = datetime.now(IST).isoformat()
 
-        _append_pipeline_rows([
-            {
-                "run_id": RUN_ID,
-                "step": step_name,
-                "script": str(script_path),
-                "start_time_ist": start_time_ist,
-                "end_time_ist": end_time_ist,
-                "duration_sec": elapsed,
-                "status": "missing",
-                "return_code": "",
-            }
-        ])
-        raise
+		print(f"\n❌ ERROR: {script_path} failed (exit {e.returncode}).")
+		print(f"--- Stderr ---\n{e.stderr}")
+		print(f"--- Stdout ---\n{e.stdout}")
+
+		_append_pipeline_rows([
+			{
+				"run_id": RUN_ID,
+				"run_count": env_override.get("RUN_COUNT") if env_override else os.environ.get("RUN_COUNT", ""),
+				"step": step_name,
+				"script": str(script_path),
+				"start_time_ist": start_time_ist,
+				"end_time_ist": end_time_ist,
+				"duration_sec": elapsed,
+				"status": "failed",
+				"return_code": e.returncode,
+			}
+		])
+		raise
+
+	except FileNotFoundError:
+		elapsed = time.perf_counter() - start_perf
+		end_time_ist = datetime.now(IST).isoformat()
+		print(f"\n❌ ERROR: Script not found at {script_path}")
+
+		_append_pipeline_rows([
+			{
+				"run_id": RUN_ID,
+				"run_count": env_override.get("RUN_COUNT") if env_override else os.environ.get("RUN_COUNT", ""),
+				"step": step_name,
+				"script": str(script_path),
+				"start_time_ist": start_time_ist,
+				"end_time_ist": end_time_ist,
+				"duration_sec": elapsed,
+				"status": "missing",
+				"return_code": "",
+			}
+		])
+		raise
 
 
 def run_pipeline() -> None:
@@ -203,28 +212,32 @@ def run_pipeline() -> None:
 	print("\n================ PIPELINE START ===============")
 	failures: list[str] = []
 	for model in models:
-		print(f"\n=== Running pipeline for model: {model} ===")
-		_clean_before_model_run()
+		# Set RUN_ID once per model so all 10 runs append to the same CSV files
 		_set_pipeline_run(model)
-		env_override = {"MODEL_NAME": model, "RUN_ID": RUN_ID}
-		try:
-			print("\nStep 1/4: Generating task list via task_generator.py")
-			run_script("step1_task_generator", STEP_1_SCRIPT, env_override=env_override)
+		for run_num in range(1, 2):
+			print(f"\nRunning pipeline for model {model} Run {run_num}")
+			# Clean generated tasks/output before each run
+			_clean_before_model_run()
+			env_override = {"MODEL_NAME": model, "RUN_ID": RUN_ID, "RUN_COUNT": str(run_num)}
+			try:
+				print("\nStep 1/4: Generating task list via task_generator.py")
+				run_script("step1_task_generator", STEP_1_SCRIPT, env_override=env_override)
 
-			print("\nStep 2/4: Generating code via code_generator.py")
-			run_script("step2_code_generator", STEP_2_SCRIPT, env_override=env_override)
+				print("\nStep 2/4: Generating code via code_generator.py")
+				run_script("step2_code_generator", STEP_2_SCRIPT, env_override=env_override)
 
-			print("\nStep 3/4: Validator run")
-			run_script("step3_validator", BASE_DIR / "validator.py", env_override=env_override)
+				print("\nStep 3/4: Validator run")
+				run_script("step3_validator", BASE_DIR / "validator.py", env_override=env_override)
 
-			print("\nStep 4/4: Executing generated tasks via edge_scheduler_sequential.py")
-			run_script("step4_scheduler", STEP_3_SCRIPT, cwd=BASE_DIR, env_override=env_override)
+				print("\nStep 4/4: Executing generated tasks via edge_scheduler_sequential.py")
+				run_script("step4_scheduler", STEP_3_SCRIPT, cwd=BASE_DIR, env_override=env_override)
 
-		except Exception as exc:
-			failures.append(f"{model}: {exc}")
-			print("\n Pipeline aborted for this model due to failure.")
-			print(f"Reason: {exc}")
-			continue
+			except Exception as exc:
+				failures.append(f"{model} run {run_num}: {exc}")
+				print("\n Pipeline aborted for this run due to failure.")
+				print(f"Reason: {exc}")
+				# continue to next run
+				continue
 
 	print("\n Pipeline completed for all models.")
 	print("================= PIPELINE END =================\n")

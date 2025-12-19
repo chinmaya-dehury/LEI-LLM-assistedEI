@@ -60,6 +60,10 @@ TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
 IST = timezone(timedelta(hours=5, minutes=30))
 # Use RUN_ID from environment (passed from pipeline) or generate new one
 RUN_ID = os.environ.get("RUN_ID") or datetime.now(IST).strftime("%Y%m%d_%H%M%S")
+# Optional run count (passed from pipeline)
+RUN_COUNT = os.environ.get("RUN_COUNT") or ""
+# Path to resource summary JSON
+RESOURCE_SUMMARY_PATH = "resource_stat/resource_usage_summary.json"
 SANITIZED_MODEL = _sanitize_model_name(MODEL_NAME)
 STEP2_CSV = os.path.join(TIMESTAMP_PATH, f"step2_{SANITIZED_MODEL}_{RUN_ID}.csv")
 
@@ -67,9 +71,11 @@ STEP2_CSV = os.path.join(TIMESTAMP_PATH, f"step2_{SANITIZED_MODEL}_{RUN_ID}.csv"
 def _append_timing_rows(rows: list[dict]) -> None:
     os.makedirs(TIMESTAMP_PATH, exist_ok=True)
     file_exists = os.path.exists(STEP2_CSV) and os.path.getsize(STEP2_CSV) > 0
+    # Add run_count and resource summary fields from resource_stat/resource_usage_summary.json
     fieldnames = [
         "step",
         "model",
+        "run_count",
         "script_start_time_ist",
         "script_end_time_ist",
         "script_duration_sec",
@@ -82,13 +88,42 @@ def _append_timing_rows(rows: list[dict]) -> None:
         "prompt_tokens_per_sec",
         "completion_tokens_per_sec",
         "tasks",
+        "resource_generated_at",
+        "resource_last_checked",
+        "avg_cpu_1m",
+        "avg_mem_1m",
+        "avg_cpu_5m",
+        "avg_mem_5m",
     ]
+
+    # Try to read resource summary values
+    resource_vals = {}
+    try:
+        with open(RESOURCE_SUMMARY_PATH, "r", encoding="utf-8") as rf:
+            rs = json.load(rf)
+            resource_vals["resource_generated_at"] = rs.get("generated_at", "")
+            resource_vals["resource_last_checked"] = rs.get("last_checked", "")
+            sw = rs.get("summary_windows", {}) or {}
+            w1 = sw.get("1m", {}) or {}
+            w5 = sw.get("5m", {}) or {}
+            resource_vals["avg_cpu_1m"] = w1.get("avg_cpu", "")
+            resource_vals["avg_mem_1m"] = w1.get("avg_mem", "")
+            resource_vals["avg_cpu_5m"] = w5.get("avg_cpu", "")
+            resource_vals["avg_mem_5m"] = w5.get("avg_mem", "")
+    except Exception:
+        # leave resource_vals empty if file missing or malformed
+        resource_vals = {k: "" for k in [
+            "resource_generated_at", "resource_last_checked", "avg_cpu_1m",
+            "avg_mem_1m", "avg_cpu_5m", "avg_mem_5m"]}
 
     with open(STEP2_CSV, "a", newline="", encoding="utf-8") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         if not file_exists:
             writer.writeheader()
         for row in rows:
+            # Add run_count and resource_vals to each row
+            row["run_count"] = row.get("run_count", RUN_COUNT)
+            row.update(resource_vals)
             writer.writerow(row)
 
 # Step-level timing (for entire script)
