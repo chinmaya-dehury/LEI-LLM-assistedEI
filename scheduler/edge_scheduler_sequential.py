@@ -45,16 +45,17 @@ TASKS_DIR = "generated_tasks/"+DATA_TYPE
 LOG_DIR = "logs"
 os.makedirs(LOG_DIR, exist_ok=True)
 
-# Create a timestamped log file
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-log_file = os.path.join(LOG_DIR, f"edge_execution_{timestamp}.log")
-TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
-# Per-run CSV path with model name and run ID (step4 = scheduler)
 # Use RUN_ID from environment (passed from pipeline) or generate new one
 RUN_ID = os.environ.get("RUN_ID") or datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
 # Optional run count (passed from pipeline)
 RUN_COUNT = os.environ.get("RUN_COUNT") or ""
 SANITIZED_MODEL = _sanitize_model_name(MODEL_NAME)
+
+# Create a timestamped log file with model name and run count
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+log_file = os.path.join(LOG_DIR, f"edge_execution_{SANITIZED_MODEL}_run{RUN_COUNT}_{timestamp}.log")
+TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
+# Per-run CSV path with model name and run ID (step4 = scheduler)
 STEP4_CSV = os.path.join(TIMESTAMP_PATH, f"step4_{SANITIZED_MODEL}_{RUN_ID}.csv")
 
 # Script-level timing

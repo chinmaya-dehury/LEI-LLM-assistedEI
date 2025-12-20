@@ -927,7 +927,7 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
     }
 
 
-def validate_all_generated_tasks(tasks_file: str, scripts_dir: str) -> Dict[str, List[Dict]]:
+def validate_all_generated_tasks(tasks_file: str, scripts_dir: str) -> Dict[str, object]:
     print("\n" + "=" * 60)
     print("VALIDATING GENERATED TASK SCRIPTS")
     print("=" * 60)
@@ -937,7 +937,7 @@ def validate_all_generated_tasks(tasks_file: str, scripts_dir: str) -> Dict[str,
             tasks_data = json.load(f)
     except Exception as e:
         print(f"❌ Failed to load tasks file: {e}")
-        return {"tasks": []}
+        return {"tasks": [], "run_count": RUN_COUNT, "model": MODEL_NAME}
 
     results: List[Dict] = []
     for task in tasks_data.get("tasks", []):
@@ -965,7 +965,16 @@ def validate_all_generated_tasks(tasks_file: str, scripts_dir: str) -> Dict[str,
     print(f"VALIDATION COMPLETE: {passed} passed, {failed} failed")
     print("=" * 60 + "\n")
 
-    return {"tasks": results}
+    return {
+        "run_count": RUN_COUNT,
+        "model": MODEL_NAME,
+        "tasks": results,
+        "summary": {
+            "total": len(results),
+            "passed": passed,
+            "failed": failed,
+        },
+    }
 
 
 def main() -> None:
