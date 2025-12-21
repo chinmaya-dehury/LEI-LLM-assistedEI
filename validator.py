@@ -988,10 +988,53 @@ def main() -> None:
     # Ensure validator log directory exists
     os.makedirs(DEFAULT_VALIDATOR_LOG, exist_ok=True)
     
-    summary_path = os.path.join(DEFAULT_VALIDATOR_LOG, f"validation_summary_{RUN_ID}.json")
-    with open(summary_path, "w", encoding="utf-8") as f:
+    # Save individual run summary with model name and RUN_COUNT in filename
+    individual_summary_path = os.path.join(DEFAULT_VALIDATOR_LOG, f"validation_summary_{SANITIZED_MODEL}_{RUN_ID}_run{RUN_COUNT}.json")
+    with open(individual_summary_path, "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=2)
-    print(f"[Validator] Summary saved to {summary_path}")
+    print(f"[Validator] Individual run summary saved to {individual_summary_path}")
+    
+    # Accumulate results in master summary file (appends across all runs)
+    master_summary_path = os.path.join(DEFAULT_VALIDATOR_LOG, f"validation_summary_{SANITIZED_MODEL}_{RUN_ID}_all_runs.json")
+    all_runs_data = {}
+    
+    # Load existing master summary if it exists
+    if os.path.exists(master_summary_path):
+        try:
+            with open(master_summary_path, "r", encoding="utf-8") as f:
+                all_runs_data = json.load(f)
+        except Exception:
+            all_runs_data = {"run_count": RUN_COUNT, "model": MODEL_NAME, "runs": {}}
+    else:
+        all_runs_data = {"run_count": RUN_COUNT, "model": MODEL_NAME, "runs": {}}
+    
+    # Add current run's results
+    all_runs_data["run_count"] = RUN_COUNT  # Update to latest run count
+    all_runs_data["model"] = MODEL_NAME
+    if "runs" not in all_runs_data:
+        all_runs_data["runs"] = {}
+    all_runs_data["runs"][str(RUN_COUNT)] = summary.get("tasks", [])
+    
+    # Update overall summary with aggregate counts
+    total_tasks = 0
+    total_passed = 0
+    total_failed = 0
+    for run_tasks in all_runs_data.get("runs", {}).values():
+        total_tasks += len(run_tasks)
+        total_passed += sum(1 for t in run_tasks if t.get("status") == "passed")
+        total_failed += sum(1 for t in run_tasks if t.get("status") == "failed")
+    
+    all_runs_data["summary"] = {
+        "total_tasks": total_tasks,
+        "total_passed": total_passed,
+        "total_failed": total_failed,
+        "total_runs": len(all_runs_data.get("runs", {}))
+    }
+    
+    # Save master summary
+    with open(master_summary_path, "w", encoding="utf-8") as f:
+        json.dump(all_runs_data, f, ensure_ascii=False, indent=2)
+    print(f"[Validator] Master summary saved to {master_summary_path}")
 
     # If no timing rows were written (all tasks passed, no correction attempts),
     # add a single run-level record so the CSV isn't header-only.
