@@ -18,22 +18,19 @@ import os
 import json
 import sys
 import time
-from openai import OpenAI
-from config import DATA_TYPE, LLM_API_KEY, LLM_BASE_URL, TASK_CODE_MODELS
+from config import DATA_TYPE, TASK_CODE_MODELS
 from string import Template
 from prompts.get_single_task_code import SYSTEM_PROMPT
 from typing import List
 import re
 from pathlib import Path
+from llm_client import chat_completion
 
 # Ensure Unicode-safe stdout/stderr on Windows
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
-
-# Initialize the LLM client (DeepSeek/OpenAI compatible)
-client = OpenAI(api_key=LLM_API_KEY, base_url=LLM_BASE_URL)
 
 # Paths
 BASE_PATH = f"data/{DATA_TYPE}/"
@@ -139,12 +136,12 @@ Tasks (<=2):
             kwargs["max_tokens"] = TASK_CODE_MAX_TOKENS
             # Prefer structured JSON when supported by the provider; fallback if rejected.
             try:
-                response = client.chat.completions.create(
+                response = chat_completion(
                     **kwargs,
                     response_format={"type": "json_object"},
                 )
             except Exception:
-                response = client.chat.completions.create(**kwargs)
+                response = chat_completion(**kwargs)
             used_model = mdl
             break
         except Exception as e:

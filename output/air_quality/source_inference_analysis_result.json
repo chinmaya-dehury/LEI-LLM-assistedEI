@@ -1,0 +1,31 @@
+{
+  "task_name": "source_inference_analysis",
+  "description": "Analyze pollutant patterns to infer likely sources (traffic, industry, agriculture, or mixed) based on ratios like NO2/SO2 and specific pollutant dominance.",
+  "result_summary": [
+    {
+      "name": "NO2/SO2 Ratio",
+      "value": 1.36,
+      "description": "Ratio > 1.5 suggests Traffic, < 0.5 suggests Industry",
+      "timestamp": "2025-12-18T17:13:11.535693"
+    },
+    {
+      "name": "NH3 Dominance",
+      "value": false,
+      "description": "True if NH3 > 5.0 (Agriculture indicator)",
+      "timestamp": "2025-12-18T17:13:11.535693"
+    },
+    {
+      "name": "PM2.5/PM10 Ratio",
+      "value": 0.89,
+      "description": "Ratio > 0.7 suggests fine particles (combustion), < 0.4 suggests coarse (dust)",
+      "timestamp": "2025-12-18T17:13:11.535693"
+    },
+    {
+      "name": "Inferred Sources",
+      "value": "Mixed Traffic/Industry, Combustion/Fine Particles (High PM2.5)",
+      "description": "Likely pollution sources based on analysis",
+      "timestamp": "2025-12-18T17:13:11.535693"
+    }
+  ],
+  "result_generated_at": "2025-12-18T17:13:11.535693"
+}

@@ -1,0 +1,162 @@
+ Edge Executor started at 2025-12-18 17:12:52
+Scanning directory: generated_tasks/air_quality
+Found 4 tasks to execute.
+============================================================
+
+ Task 1 of 4
+
+ Executing: generated_tasks/air_quality\daily_pollution_trend_analysis.py
+   Start Time: 17:12:52
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Code Object\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.12 sec
+   Output (JSON):
+      {
+        "task_name": "daily_pollution_trend_analysis",
+        "description": "Calculate daily pollution trends by aggregating data into time-of-day periods to identify morning/evening rush hour patterns.",
+        "result_summary": [
+          {
+            "name": "Peak Pollution Period",
+            "value": "Morning (6-12)",
+            "description": "Time of day with the highest average AQI.",
+            "timestamp": "2025-12-18T17:12:53.155681"
+          },
+          {
+            "name": "Peak AQI Value",
+            "value": 4.62,
+            "description": "The average AQI value recorded during the peak period.",
+            "timestamp": "2025-12-18T17:12:53.155687"
+          },
+          {
+            "name": "Trend Data",
+            "value": [
+              {
+                "period": "Morning (6-12)",
+                "aqi_uk": 4.615384615384615,
+                "pm2_5": 94.16948717948718,
+                "pm10": 107.61897435897437,
+                "no2": 5.887948717948718
+              },
+              {
+                "period": "Afternoon (12-18)",
+                "aqi_uk": 4.153846153846154,
+                "pm2_5": 67.04371794871794,
+                "pm10": 74.44371794871795,
+                "no2": 4.59525641025641
+              }
+            ],
+            "description": "Aggregated average values for each time period.",
+            "timestamp": "2025-12-18T17:12:53.157907"
+          }
+        ],
+        "result_generated_at": "2025-12-18T17:12:53.157913"
+      }
+------------------------------------------------------------
+
+ Task 2 of 4
+
+ Executing: generated_tasks/air_quality\main_pollutant_identification.py
+   Start Time: 17:12:58
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Code Object\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.07 sec
+   Output (JSON):
+      {
+        "task_name": "main_pollutant_identification",
+        "description": "Identify the dominant pollutant contributing to poor air quality by finding which component has the highest concentration relative to its typical background levels.",
+        "result_summary": [
+          {
+            "name": "Dominant Pollutant",
+            "value": "NH3",
+            "description": "Pollutant with highest relative concentration (Score: 11.41)",
+            "timestamp": "2025-12-18T17:12:59.264460"
+          },
+          {
+            "name": "Concentration",
+            "value": 10.88,
+            "description": "Latest concentration of nh3 in µg/m3",
+            "timestamp": "2025-12-18T17:12:59.264468"
+          }
+        ],
+        "result_generated_at": "2025-12-18T17:12:59.264470"
+      }
+------------------------------------------------------------
+
+ Task 3 of 4
+
+ Executing: generated_tasks/air_quality\so2_pm2_5_correlation_monitor.py
+   Start Time: 17:13:04
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Code Object\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.17 sec
+   Output (JSON):
+      {
+        "task_name": "so2_pm2_5_correlation_monitor",
+        "description": "Monitor SO2 and PM2.5 correlation to detect industrial vs. traffic pollution sources.",
+        "result_summary": [
+          {
+            "name": "Pearson Correlation (SO2 vs PM2.5)",
+            "value": 0.4641,
+            "description": "Measure of linear relationship between SO2 and PM2.5.",
+            "timestamp": "2025-12-18T17:13:05.440436"
+          },
+          {
+            "name": "Average SO2/PM2.5 Ratio",
+            "value": 0.0495,
+            "description": "Ratio indicating relative dominance of SO2 over PM2.5.",
+            "timestamp": "2025-12-18T17:13:05.440444"
+          },
+          {
+            "name": "Source Inference",
+            "value": "Moderate correlation. Source mixed or unclear.",
+            "description": "Heuristic interpretation of correlation and ratio.",
+            "timestamp": "2025-12-18T17:13:05.440446"
+          }
+        ],
+        "result_generated_at": "2025-12-18T17:13:05.432034"
+      }
+------------------------------------------------------------
+
+ Task 4 of 4
+
+ Executing: generated_tasks/air_quality\source_inference_analysis.py
+   Start Time: 17:13:10
+   Scheduler python: C:\Users\siddh\OneDrive\Desktop\Code Object\LEI-LLM-assistedEI\.edge\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.09 sec
+   Output (JSON):
+      {
+        "task_name": "source_inference_analysis",
+        "description": "Analyze pollutant patterns to infer likely sources (traffic, industry, agriculture, or mixed) based on ratios like NO2/SO2 and specific pollutant dominance.",
+        "result_summary": [
+          {
+            "name": "NO2/SO2 Ratio",
+            "value": 1.36,
+            "description": "Ratio > 1.5 suggests Traffic, < 0.5 suggests Industry",
+            "timestamp": "2025-12-18T17:13:11.535693"
+          },
+          {
+            "name": "NH3 Dominance",
+            "value": false,
+            "description": "True if NH3 > 5.0 (Agriculture indicator)",
+            "timestamp": "2025-12-18T17:13:11.535693"
+          },
+          {
+            "name": "PM2.5/PM10 Ratio",
+            "value": 0.89,
+            "description": "Ratio > 0.7 suggests fine particles (combustion), < 0.4 suggests coarse (dust)",
+            "timestamp": "2025-12-18T17:13:11.535693"
+          },
+          {
+            "name": "Inferred Sources",
+            "value": "Mixed Traffic/Industry, Combustion/Fine Particles (High PM2.5)",
+            "description": "Likely pollution sources based on analysis",
+            "timestamp": "2025-12-18T17:13:11.535693"
+          }
+        ],
+        "result_generated_at": "2025-12-18T17:13:11.535693"
+      }
+------------------------------------------------------------
+
+ All tasks executed. Check the log file for details.
+Log file saved at: logs\edge_execution_20251218_171252.log

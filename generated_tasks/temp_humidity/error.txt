@@ -1,0 +1,26 @@
+[2025-12-18T17:23:55.399709] TASK: hourly_averages | exit_code=0
+Exit 0 but invalid/missing JSON output.
+Stdout:
+Hourly averages stored in data\temp_humidity\insights.db
+Result written to output\temp_humidity\hourly_averages_result.json
+
+Stderr:
+C:\Users\siddh\OneDrive\Desktop\Code Object\LEI-LLM-assistedEI\generated_tasks\temp_humidity\hourly_averages.py:14: FutureWarning: 'H' is deprecated and will be removed in a future version, please use 'h' instead.
+  df["hour"] = df["timestamp"].dt.floor("H")
+C:\Users\siddh\OneDrive\Desktop\Code Object\LEI-LLM-assistedEI\generated_tasks\temp_humidity\hourly_averages.py:48: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "timestamp": datetime.utcnow().isoformat() + "Z"
+C:\Users\siddh\OneDrive\Desktop\Code Object\LEI-LLM-assistedEI\generated_tasks\temp_humidity\hourly_averages.py:51: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "result_generated_at": datetime.utcnow().isoformat() + "Z"
+------------------------------------------------------------
+[2025-12-18T17:24:20.619814] TASK: rolling_moving_average | exit_code=1
+File "C:\Users\siddh\OneDrive\Desktop\Code Object\LEI-LLM-assistedEI\generated_tasks\temp_humidity\rolling_moving_average.py", line 6
+    data_type = \"temp_humidity\"
+                 ^
+SyntaxError: unexpected character after line continuation character
+------------------------------------------------------------
+[2025-12-18T17:24:40.710148] TASK: comfort_level_classification | exit_code=1
+File "C:\Users\siddh\OneDrive\Desktop\Code Object\LEI-LLM-assistedEI\generated_tasks\temp_humidity\comfort_level_classification.py", line 5
+    DATA_TYPE = \"temp_humidity\"
+                 ^
+SyntaxError: unexpected character after line continuation character
+------------------------------------------------------------

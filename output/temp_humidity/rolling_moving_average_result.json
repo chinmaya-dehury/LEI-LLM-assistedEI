@@ -1,0 +1,25 @@
+{
+  "task_name": "rolling_moving_average",
+  "description": "Compute a 3-sample (15\u2011minute) moving average for temperature and humidity and append the values to the data stream for smoothing.",
+  "result_summary": [
+    {
+      "name": "rows_processed",
+      "value": 288,
+      "description": "Number of rows after adding moving averages",
+      "timestamp": "2025-12-18T11:55:17Z"
+    },
+    {
+      "name": "latest_temperature_c_ma",
+      "value": 24.87,
+      "description": "Most recent temperature moving average",
+      "timestamp": "2025-12-18T11:55:17Z"
+    },
+    {
+      "name": "latest_humidity_percent_ma",
+      "value": 70.37,
+      "description": "Most recent humidity moving average",
+      "timestamp": "2025-12-18T11:55:17Z"
+    }
+  ],
+  "result_generated_at": "2025-12-18T11:55:17Z"
+}

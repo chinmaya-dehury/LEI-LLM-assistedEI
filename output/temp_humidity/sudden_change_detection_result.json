@@ -1,0 +1,13 @@
+{
+  "task_name": "sudden_change_detection",
+  "description": "Detect abrupt changes where temperature shifts >2\u202f\u00b0C or humidity shifts >5\u202f% within a 10\u2011minute window and raise a local alert.",
+  "result_summary": [
+    {
+      "name": "alerts",
+      "value": [],
+      "description": "List of detected abrupt change events",
+      "timestamp": "2025-12-18T11:55:29.358915+00:00"
+    }
+  ],
+  "result_generated_at": "2025-12-18T11:55:29.358929+00:00"
+}

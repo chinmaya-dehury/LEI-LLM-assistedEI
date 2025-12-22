@@ -1,0 +1,13 @@
+{
+  "task_name": "hourly_averages",
+  "description": "Calculate the average temperature and humidity for each hour and store the results in the local SQLite database.",
+  "result_summary": [
+    {
+      "name": "hours_computed",
+      "value": 24,
+      "description": "Number of hourly average records stored.",
+      "timestamp": "2025-12-18T11:55:10.814107+00:00"
+    }
+  ],
+  "result_generated_at": "2025-12-18T11:55:10.814128+00:00"
+}

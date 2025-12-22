@@ -1,0 +1,31 @@
+{
+  "task_name": "comfort_level_classification",
+  "description": "Classify each reading into comfort bands using simplified heat index.",
+  "result_summary": [
+    {
+      "name": "total_readings",
+      "value": 288,
+      "description": "Total number of readings processed",
+      "timestamp": "2025-12-18T11:55:04.649978+00:00"
+    },
+    {
+      "name": "comfortable_count",
+      "value": 0,
+      "description": "Number of readings classified as comfortable",
+      "timestamp": "2025-12-18T11:55:04.649978+00:00"
+    },
+    {
+      "name": "warm_count",
+      "value": 0,
+      "description": "Number of readings classified as warm",
+      "timestamp": "2025-12-18T11:55:04.649978+00:00"
+    },
+    {
+      "name": "hot_count",
+      "value": 288,
+      "description": "Number of readings classified as hot",
+      "timestamp": "2025-12-18T11:55:04.649978+00:00"
+    }
+  ],
+  "result_generated_at": "2025-12-18T11:55:04.649978+00:00"
+}

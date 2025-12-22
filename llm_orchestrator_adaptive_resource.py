@@ -21,13 +21,10 @@ last code updated on 15-11-2025
 
 import os
 import json
-from openai import OpenAI
 from string import Template
-from config import DATA_TYPE, LLM_API_KEY, LLM_BASE_URL, TASK_LIST_MODEL
+from config import DATA_TYPE, TASK_LIST_MODEL
+from llm_client import chat_completion
 from prompts.get_tasks_list_adaptive_resource import SYSTEM_PROMPT
-
-# Initialize the LLM client (DeepSeek/OpenAI compatible)
-client = OpenAI(api_key=LLM_API_KEY, base_url=LLM_BASE_URL)
 
 
 def _extract_first_json_object(text: str) -> dict:
@@ -116,7 +113,7 @@ existing_tasks_json = json.loads(existing_tasks)
 print(f"{len(existing_tasks_json['tasks'])} no. of existing tasks are sent to LLM.")
 
 # Call the LLM
-response = client.chat.completions.create(
+response = chat_completion(
     model=TASK_LIST_MODEL,
     messages=[
         {"role": "system", "content": system_prompt},

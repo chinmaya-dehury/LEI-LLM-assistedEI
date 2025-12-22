@@ -1,24 +1,24 @@
 {
   "tasks": [
     {
-      "task_name": "aqi_band_classification",
-      "status": "failed",
-      "message": "Script file not found"
+      "task_name": "main_pollutant_identification",
+      "status": "passed",
+      "message": "Fixed after 1 attempt(s)"
     },
     {
-      "task_name": "pollution_peak_hour_identification",
-      "status": "failed",
-      "message": "Script file not found"
+      "task_name": "source_inference_analysis",
+      "status": "passed",
+      "message": "Fixed after 1 attempt(s)"
     },
     {
-      "task_name": "health_advisory_mapping",
-      "status": "failed",
-      "message": "Script file not found"
+      "task_name": "daily_pollution_trend_analysis",
+      "status": "passed",
+      "message": "Fixed after 1 attempt(s)"
     },
     {
-      "task_name": "pm_ratio_analysis",
-      "status": "failed",
-      "message": "Script file not found"
+      "task_name": "so2_pm2_5_correlation_monitor",
+      "status": "passed",
+      "message": "Fixed after 1 attempt(s)"
     }
   ]
 }

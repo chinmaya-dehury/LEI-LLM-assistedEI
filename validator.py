@@ -20,18 +20,15 @@ import shutil
 from datetime import datetime
 import re
 
-from openai import OpenAI
-
-from config import DATA_TYPE, LLM_API_KEY, LLM_BASE_URL, VALIDATOR_MODEL
+from config import DATA_TYPE, VALIDATOR_MODEL
 from prompts.get_validator import SYSTEM_PROMPT
+from llm_client import chat_completion
 
 # Windows-safe stdout/stderr
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
-
-client = OpenAI(api_key=LLM_API_KEY, base_url=LLM_BASE_URL)
 
 MAX_RETRIES = 2
 DEFAULT_TASKS_FILE = os.path.join("generated_tasks", DATA_TYPE, "new_tasks.json")
@@ -167,7 +164,7 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
 
     try:
         start = time.perf_counter()
-        response = client.chat.completions.create(
+        response = chat_completion(
             model=VALIDATOR_MODEL,
             messages=[
                 {"role": "system", "content": system_prompt},

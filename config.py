@@ -15,28 +15,52 @@ DATA_TYPE = "temp_humidity"  # change only this line to switch data type
 
 OPENROUTER_BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_HTTP_REFERER = os.getenv("OPENROUTER_HTTP_REFERER", "")
+OPENROUTER_TITLE = os.getenv("OPENROUTER_TITLE", "")
+OPENROUTER_DATA_COLLECTION_OPT_IN = os.getenv("OPENROUTER_DATA_COLLECTION_OPT_IN")
 
-# OpenRouter is OpenAI-compatible.
-LLM_BASE_URL = OPENROUTER_BASE_URL
-LLM_API_KEY = OPENROUTER_API_KEY
+GEMINI_BASE_URL = os.getenv("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# OpenRouter requires a fully-qualified model id like: "deepseek/deepseek-r1-0528:free".
-def _normalize_openrouter_model_id(model_id: str) -> str:
+LLM_PROVIDER = os.getenv("LLM_PROVIDER")
+if not LLM_PROVIDER:
+	if GEMINI_API_KEY:
+		LLM_PROVIDER = "google"
+	elif OPENROUTER_API_KEY:
+		LLM_PROVIDER = "openrouter"
+	else:
+		LLM_PROVIDER = "google"
+
+if LLM_PROVIDER == "openrouter":
+	LLM_BASE_URL = OPENROUTER_BASE_URL
+	LLM_API_KEY = OPENROUTER_API_KEY
+	if OPENROUTER_DATA_COLLECTION_OPT_IN is None:
+		OPENROUTER_DATA_COLLECTION_OPT_IN = "true"
+else:
+	LLM_PROVIDER = "google"
+	LLM_BASE_URL = GEMINI_BASE_URL
+	LLM_API_KEY = GEMINI_API_KEY
+	OPENROUTER_DATA_COLLECTION_OPT_IN = OPENROUTER_DATA_COLLECTION_OPT_IN or ""
+
+def _sanitize_model_id(model_id: str) -> str:
 	if not isinstance(model_id, str):
 		return ""
-	m = model_id.strip()
-	if not m:
+	model = model_id.strip()
+	if not model:
 		return ""
-	# If user provides shorthand like "deepseek-r1-0528:free", add provider prefix.
-	if "/" not in m and m.lower().startswith("google/"):
-		m = f"google/{m}"
-	return m
+	if LLM_PROVIDER == "openrouter" and "/" not in model:
+		model = f"openai/{model}"
+	return model
 
 # Requested model for the whole project
-DEFAULT_MODEL = _normalize_openrouter_model_id(
-	#os.getenv("OPENROUTER_MODEL", "deepseek/deepseek-r1-0528:free")
-	os.getenv("OPENROUTER_MODEL", "allenai/olmo-3.1-32b-think:free")
-)
+if LLM_PROVIDER == "openrouter":
+	DEFAULT_MODEL = _sanitize_model_id(
+		os.getenv("OPENROUTER_MODEL", "openai/gpt-oss-120b:free")
+	)
+else:
+	DEFAULT_MODEL = _sanitize_model_id(
+		os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
+	)
 
 # Used by llm_orchestrator_* (task list generation)
 TASK_LIST_MODEL = DEFAULT_MODEL
@@ -49,14 +73,22 @@ TASK_CODE_MODELS = [
 # Used by validator.py (LLM-based correction)
 VALIDATOR_MODEL = DEFAULT_MODEL
 
+MODEL_RATE_LIMITS = {
+	"requests_per_minute": 10,
+	"input_tokens_per_minute": 250_000,
+	"requests_per_day": 20,
+}
+
+MIN_REQUEST_INTERVAL_SECONDS = 6.1  # Small buffer over 60 / 10 RPM
+
 if not LLM_API_KEY:
 	raise RuntimeError(
-		"OPENROUTER_API_KEY not found. Add it to your .env or set the environment variable."
+		"LLM API key not found. Set GEMINI_API_KEY or OPENROUTER_API_KEY in your environment."
 	)
 
 if not LLM_BASE_URL:
 	raise RuntimeError(
-		"OPENROUTER_BASE_URL not found. Set OPENROUTER_BASE_URL (e.g., https://openrouter.ai/api/v1)."
+		"LLM base URL not configured. Set GEMINI_BASE_URL or OPENROUTER_BASE_URL."
 	)
 
 NO_OF_TASKS = 1
