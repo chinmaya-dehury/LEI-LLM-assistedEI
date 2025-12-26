@@ -56,7 +56,7 @@ Keep in mind the constraints of edge devices, such as limited memory and process
 You may suggest not to generate any new tasks if the existing ones are sufficient or if the resource constraints are too tight. 
 For example, if CPU usage is high and memory usage is above 90%, it may be wise to avoid adding new tasks.
 
-Your response should be in JSON format like this, if you are generating new tasks:
+Your response should be in only JSON format (no extra text) like this, if you are generating new tasks:
 
 {
   "tasks": [

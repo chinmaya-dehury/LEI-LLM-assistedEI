@@ -9,7 +9,7 @@ Each generated task code will be saved as a separate .py file in the `generated_
 
 Notes:
 - Validator removed: this script only generates code.
-- Processes up to 2 tasks per LLM call (batched).
+- Processes 1 task per LLM call (more reliable with OpenRouter/free routes).
 - Skips tasks whose .py already exists.
 - Updates new_tasks.json statuses (code_generated / failed to generate correct code).
 """
@@ -141,25 +141,10 @@ def _truncate(text: str, max_chars: int) -> str:
     return text if len(text) <= max_chars else (text[:max_chars] + "\n... [truncated] ...")
 
 
-def _extract_json_blob(raw: str) -> str | None:
-    # Try to extract a single JSON object from free-form text
-    if not raw:
-        return None
-    try:
-        # simple heuristic: take between first '{' and last '}'
-        start = raw.find("{")
-        end = raw.rfind("}")
-        if start != -1 and end != -1 and end > start:
-            return raw[start:end+1]
-    except Exception:
-        pass
-    return None
-
-
 def call_llm_for_task_code(task_payload: dict) -> dict:
     """
-    Send up to two tasks (payload={"tasks":[...]} ) to the LLM and return parsed JSON.
-    Returns dict with {"tasks":[{"task_name":..., "code":..., "description":...}, ...]} or None on failure.
+    Send a task (payload={"tasks":[...]}) to the LLM and return parsed JSON.
+    Returns dict with {"tasks":[{"task_name":..., "code":...}]} or None on failure.
     """
     # Determine per-batch DATA_TYPE
     if isinstance(task_payload, dict) and task_payload.get("tasks"):
@@ -196,7 +181,13 @@ def call_llm_for_task_code(task_payload: dict) -> dict:
     meta_text = _truncate(json.dumps(metadata, ensure_ascii=False, indent=2), 3000)
 
     user_prompt = f"""
-Return ONLY JSON. No prose. Schema:
+Return ONLY JSON. No prose.
+
+IMPORTANT:
+- The very first character of your response MUST be '{{'.
+- Put any extra text AFTER the JSON object (but ideally output only JSON).
+
+Schema:
 {{"tasks":[{{"task_name":"<name1>","code":"<python code string>"}},{{"task_name":"<name2>","code":"<python code string>"}}]}}
 
 Rules:
@@ -274,9 +265,26 @@ Tasks (<=2):
         ])
         return None
 
-    raw_output = ""
+    # Capture finish reason for diagnostics
+    finish_reason = getattr(response.choices[0], "finish_reason", None) if getattr(response, "choices", None) else None
+    print(f"[Generator] finish_reason={finish_reason!r}")
+
+    raw_output = _get_llm_text_from_chat_completion(response)
+    print(f"[Generator] Raw length={len(raw_output)}")
+
+    # If empty, dump the full response for inspection and return None (caller will mark failed)
+    if not raw_output.strip():
+        _debug_dump_response(response, Path("output") / "debug", prefix="task_codegen_empty_content")
+        print(
+            "[Generator] Empty LLM output. Check finish_reason/max_tokens and OpenRouter model availability. "
+            "Saved debug response to output/debug/task_codegen_empty_content.json"
+        )
+        return None
+
+    # Parse using extract-first-json (tolerate extra text)
+    tasks_json = None
     try:
-        raw_output = response.choices[0].message.content
+        tasks_json = _extract_first_json_object(raw_output)
     except Exception:
         raw_output = str(response)
 
@@ -332,24 +340,31 @@ Tasks (<=2):
             tasks_data = parse_json(blob)
 
     # Fallback: synthesize JSON if model returned code blocks instead of JSON
-    if not tasks_data:
+    if not tasks_json:
         code_blocks = re.findall(r"```(?:python)?\s*(.+?)```", raw_output, flags=re.DOTALL | re.IGNORECASE)
         names = [t.get("task_name") for t in task_payload.get("tasks", [])]
         synthesized = []
         for idx, code in enumerate(code_blocks[:len(names)]):
             synthesized.append({"task_name": names[idx], "code": code.strip()})
         if synthesized:
-            tasks_data = {"tasks": synthesized}
+            tasks_json = {"tasks": synthesized}
 
-    if not tasks_data or "tasks" not in tasks_data or not isinstance(tasks_data["tasks"], list):
+    if not tasks_json or "tasks" not in tasks_json or not isinstance(tasks_json["tasks"], list):
         print("[Generator] Could not parse LLM output into tasks JSON.")
+        _debug_dump_response(response, Path("output") / "debug", prefix="task_codegen_unparseable")
+        try:
+            out_dir = Path("output") / "debug"
+            out_dir.mkdir(parents=True, exist_ok=True)
+            (out_dir / "task_codegen_unparseable_raw.txt").write_text(raw_output, encoding="utf-8")
+        except Exception:
+            pass
         return None
 
     # Clean / filter tasks (only keep ones with a name)
     cleaned = []
     requested_names = {t.get("task_name") for t in task_payload.get("tasks", [])}
     requested_order = [t.get("task_name") for t in task_payload.get("tasks", [])]
-    for t in tasks_data["tasks"]:
+    for t in tasks_json["tasks"]:
         tn = (t.get("task_name") or "").strip()
         code = t.get("code") or ""
         if not tn or tn not in requested_names:
@@ -357,8 +372,8 @@ Tasks (<=2):
         cleaned.append({"task_name": tn, "code": code})
 
     # If names don’t match but counts do, map by index as a fallback
-    if not cleaned and isinstance(tasks_data.get("tasks"), list):
-        src = tasks_data["tasks"]
+    if not cleaned and isinstance(tasks_json.get("tasks"), list):
+        src = tasks_json["tasks"]
         n = min(len(src), len(requested_order))
         if n > 0:
             cleaned = [
@@ -397,79 +412,145 @@ def normalize_code_string(code: str) -> str:
         s = s.replace("\\r\\n", "\n").replace("\\n", "\n").replace("\\t", "\t")
     return s
 
-# Read inputs
-# ensure output dir exists
-if not os.path.exists(OUTPUT_DIR):
+def _extract_first_json_object(text: str) -> dict:
+    if not isinstance(text, str):
+        raise ValueError("LLM output is not a string")
+
+    s = text.strip()
+
+    # Strip ``` fences if present
+    if s.startswith("```"):
+        s = s.split("\n", 1)[1] if "\n" in s else ""
+        if "```" in s:
+            s = s.rsplit("```", 1)[0].strip()
+
+    start = s.find("{")
+    if start == -1:
+        raise ValueError("No JSON object start '{' found in LLM output")
+
+    decoder = json.JSONDecoder()
+    obj, _end = decoder.raw_decode(s[start:])
+    if not isinstance(obj, dict):
+        raise ValueError("Top-level JSON value is not an object")
+    return obj
+
+
+def _get_llm_text_from_chat_completion(response) -> str:
+    """
+    OpenRouter/OpenAI-compatible responses sometimes put the payload in tool_calls.
+    This returns the best-effort textual payload to parse.
+    """
+    if not getattr(response, "choices", None):
+        return ""
+
+    choice0 = response.choices[0]
+    msg = getattr(choice0, "message", None)
+    if msg is None:
+        return ""
+
+    # Normal path
+    content = getattr(msg, "content", None)
+    if isinstance(content, str) and content.strip():
+        return content
+
+    # Some reasoning models/providers return text in a separate field
+    reasoning = getattr(msg, "reasoning", None)
+    if isinstance(reasoning, str) and reasoning.strip():
+        return reasoning
+
+    # Tool-call path (JSON is often in function.arguments)
+    tool_calls = getattr(msg, "tool_calls", None) or []
+    if tool_calls:
+        tc0 = tool_calls[0]
+        fn = getattr(tc0, "function", None)
+        args = getattr(fn, "arguments", None) if fn else None
+        if isinstance(args, str) and args.strip():
+            return args
+
+    # Last resort: inspect the raw dict (captures provider-specific fields)
+    try:
+        if hasattr(response, "model_dump"):
+            dump = response.model_dump()
+            ch0 = (dump.get("choices") or [{}])[0]
+            msgd = ch0.get("message") or {}
+            return (msgd.get("content") or msgd.get("reasoning") or "").strip()
+    except Exception:
+        pass
+
+    # Nothing usable
+    return ""
+
+
+def _debug_dump_response(response, out_dir: Path, prefix: str = "llm_response") -> None:
+    try:
+        out_dir.mkdir(parents=True, exist_ok=True)
+        p = out_dir / f"{prefix}.json"
+        # OpenAI SDK objects support model_dump_json() (pydantic) in recent versions
+        if hasattr(response, "model_dump_json"):
+            p.write_text(response.model_dump_json(indent=2), encoding="utf-8")
+        else:
+            # fallback
+            p.write_text(json.dumps(response, default=str, indent=2), encoding="utf-8")
+    except Exception:
+        # don't crash the pipeline due to debug logging
+        pass
+
+def main() -> None:
+    # ensure output dir exists
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# ensure task list exists before trying to read it
-if not os.path.exists(TASK_LIST_PATH):
-    print(f"❌ Task list not found: {TASK_LIST_PATH}")
-    print("Create the new_tasks.json (or ensure pipeline writes it) and re-run.")
-    sys.exit(1)
+    # ensure task list exists before trying to read it
+    if not os.path.exists(TASK_LIST_PATH):
+        print(f"❌ Task list not found: {TASK_LIST_PATH}")
+        print("Create the new_tasks.json (or ensure pipeline writes it) and re-run.")
+        sys.exit(1)
 
-with open(TASK_LIST_PATH, "r", encoding="utf-8") as f:
-    tasks_payload = json.load(f)
+    with open(TASK_LIST_PATH, "r", encoding="utf-8") as f:
+        tasks_payload = json.load(f)
 
-pending_tasks = tasks_payload.get("tasks", [])
+    pending_tasks = tasks_payload.get("tasks", [])
 
-# Build list of tasks that need generation, skip existing files
-tasks_to_generate = []
-for task_info in pending_tasks:
-    name = task_info.get("task_name")
-    if not name:
-        print(f" Skipping task with missing name: {task_info}")
-        # can't update by name (it's missing) — mark the entry directly
-        task_info["status"] = "failed to generate correct code"
-        continue
+    # Build list of tasks that need generation, skip existing files
+    tasks_to_generate = []
+    for task_info in pending_tasks:
+        name = task_info.get("task_name")
+        if not name:
+            print(f" Skipping task with missing name: {task_info}")
+            task_info["status"] = "failed to generate correct code"
+            continue
 
-    existing_task_path = os.path.join(OUTPUT_DIR, f"{name}.py")
-    if os.path.exists(existing_task_path):
-        print(f" Skipping {name} - existing script detected at {existing_task_path}.")
-        update_task_status_in_file(tasks_payload, name, "code_generated")
-        continue
+        existing_task_path = os.path.join(OUTPUT_DIR, f"{name}.py")
+        if os.path.exists(existing_task_path):
+            print(f" Skipping {name} - existing script detected at {existing_task_path}.")
+            update_task_status_in_file(tasks_payload, name, "code_generated")
+            continue
 
-    tasks_to_generate.append(task_info)
+        tasks_to_generate.append(task_info)
 
-# Process in batches of up to 2 tasks
-for i in range(0, len(tasks_to_generate), 2):
-    batch = tasks_to_generate[i:i+2]
-    payload = {"tasks": []}
-    for t in batch:
-        # include data_type if present, else global
-        payload["tasks"].append({
-            "task_name": t.get("task_name"),
-            "description": t.get("description", ""),
-            "data_type": t.get("data_type", DATA_TYPE)
-        })
+    # Process one task per LLM call (prevents truncation on long code responses)
+    for t in tasks_to_generate:
+        payload = {
+            "tasks": [
+                {
+                    "task_name": t.get("task_name"),
+                    "description": t.get("description", ""),
+                    "data_type": t.get("data_type", DATA_TYPE),
+                }
+            ]
+        }
 
-    print(f"\nRequesting code for batch: {[t['task_name'] for t in payload['tasks']]}")
-    generated = call_llm_for_task_code(payload)
-
-    if not generated or not generated.get("tasks"):
-        # mark all batch tasks as failed
-        for t in batch:
-            update_task_status_in_file(tasks_payload, t.get("task_name"), "failed to generate correct code")
-            print(f" ❌ LLM did not return code for {t.get('task_name')}. Marked as failed.")
-        # persist updated tasks file
-        with open(TASK_LIST_PATH, "w", encoding="utf-8") as out_file:
-            json.dump(tasks_payload, out_file, ensure_ascii=False, indent=2)
-        continue
-
-    # Save returned code files and update statuses
-    # normalize returned task names for robust matching
-    returned_map = {
-        (rt.get("task_name") or "").strip().lower(): rt
-        for rt in generated.get("tasks", [])
-    }
-
-    for t in batch:
         tn = t.get("task_name")
-        ret = returned_map.get((tn or "").strip().lower())
-        # fallback: if LLM returned exactly one task for the batch, assume it corresponds
-        if ret is None and len(generated.get("tasks", [])) == 1:
-            ret = generated["tasks"][0]
+        print(f"\nRequesting code for task: {tn}")
+        generated = call_llm_for_task_code(payload)
 
+        if not generated or not generated.get("tasks"):
+            update_task_status_in_file(tasks_payload, tn, "failed to generate correct code")
+            print(f" ❌ LLM did not return code for {tn}. Marked as failed.")
+            with open(TASK_LIST_PATH, "w", encoding="utf-8") as out_file:
+                json.dump(tasks_payload, out_file, ensure_ascii=False, indent=2)
+            continue
+
+        ret = (generated.get("tasks") or [{}])[0]
         if ret and ret.get("code"):
             filepath = os.path.join(OUTPUT_DIR, f"{tn}.py")
             try:
@@ -483,12 +564,11 @@ for i in range(0, len(tasks_to_generate), 2):
                 print(f" ❌ Failed to save {tn}.py: {e}")
                 update_task_status_in_file(tasks_payload, tn, "failed to generate correct code")
         else:
-            print(f" ❌ LLM did not return code for {tn} in batch response.")
+            print(f" ❌ LLM did not return code for {tn}.")
             update_task_status_in_file(tasks_payload, tn, "failed to generate correct code")
 
-    # persist updated tasks file after each batch
-    with open(TASK_LIST_PATH, "w", encoding="utf-8") as out_file:
-        json.dump(tasks_payload, out_file, ensure_ascii=False, indent=2)
+        with open(TASK_LIST_PATH, "w", encoding="utf-8") as out_file:
+            json.dump(tasks_payload, out_file, ensure_ascii=False, indent=2)
 
 print(f"\nAll requested batches processed. Check generated_tasks/{DATA_TYPE} for outputs.")
 

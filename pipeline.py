@@ -1,30 +1,24 @@
 """
 pipeline.py
 --------------------------------
-This is a master pipeline script that orchestrates the entire workflow of
-from task_generator.py to code_generator.py to edge_scheduler_sequential.py.
+Master pipeline for LEI-LLM-assistedEI.
 
-It first generates task descriptions using an LLM, then generates Python code for each task,
-and finally schedules and executes these tasks on an edge device simulator.
-
-The pipeline is designed to be modular and extensible, allowing for easy updates and improvements
-to individual components without affecting the entire workflow.
-
-Last Modfified: 19-12-2025
+Adds timestamped CSV logging (script start/end, duration, status) so runs
+can be correlated with downstream step logs. Unlike LEI-OLLAMA, this version
+targets OpenRouter/Gemini models from config.py and does not use models.yaml.
 """
 
+import csv
 import os
+import shutil
 import subprocess
 import sys
-import shutil
+import time
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Optional
-import time
-import csv
-from datetime import datetime, timezone, timedelta
-import importlib
 
-from config import DATA_TYPE
+from config import DATA_TYPE, DEFAULT_MODEL
 
 
 # === Script Locations ===
@@ -113,7 +107,6 @@ def run_script(step_name: str, script_path: Path, cwd: Optional[Path] = None, en
 
 	command = [sys.executable, str(script_path)]
 
-	# Prepare environment forcing UTF-8 for child Python process output
 	env = os.environ.copy()
 	env["PYTHONIOENCODING"] = "utf-8"
 	if env_override:
@@ -123,7 +116,7 @@ def run_script(step_name: str, script_path: Path, cwd: Optional[Path] = None, en
 	start_perf = time.perf_counter()
 
 	try:
-		print(f"\n🚀 Starting: {script_path} (CWD: {cwd if cwd else os.getcwd()})")
+		print(f"\nStarting: {script_path} (CWD: {cwd if cwd else os.getcwd()})")
 
 		result = subprocess.run(
 			command,
@@ -139,12 +132,12 @@ def run_script(step_name: str, script_path: Path, cwd: Optional[Path] = None, en
 		elapsed = time.perf_counter() - start_perf
 		end_time_ist = datetime.now(IST).isoformat()
 
-		print(f"✅ Success. ({elapsed:.2f}s)")
+		print(f"Success. ({elapsed:.2f}s)")
 
 		_append_pipeline_rows([
 			{
 				"run_id": RUN_ID,
-				"model": env_override.get("MODEL_NAME", "") if env_override else "",
+				"model": env_override.get("MODEL_NAME", DEFAULT_MODEL) if env_override else DEFAULT_MODEL,
 				"run_count": env_override.get("RUN_COUNT") if env_override else os.environ.get("RUN_COUNT", ""),
 				"step": step_name,
 				"script": str(script_path),
@@ -161,14 +154,14 @@ def run_script(step_name: str, script_path: Path, cwd: Optional[Path] = None, en
 		elapsed = time.perf_counter() - start_perf
 		end_time_ist = datetime.now(IST).isoformat()
 
-		print(f"\n❌ ERROR: {script_path} failed (exit {e.returncode}).")
+		print(f"\nERROR: {script_path} failed (exit {e.returncode}).")
 		print(f"--- Stderr ---\n{e.stderr}")
 		print(f"--- Stdout ---\n{e.stdout}")
 
 		_append_pipeline_rows([
 			{
 				"run_id": RUN_ID,
-				"model": env_override.get("MODEL_NAME", "") if env_override else "",
+				"model": env_override.get("MODEL_NAME", DEFAULT_MODEL) if env_override else DEFAULT_MODEL,
 				"run_count": env_override.get("RUN_COUNT") if env_override else os.environ.get("RUN_COUNT", ""),
 				"step": step_name,
 				"script": str(script_path),
@@ -184,12 +177,12 @@ def run_script(step_name: str, script_path: Path, cwd: Optional[Path] = None, en
 	except FileNotFoundError:
 		elapsed = time.perf_counter() - start_perf
 		end_time_ist = datetime.now(IST).isoformat()
-		print(f"\n❌ ERROR: Script not found at {script_path}")
+		print(f"\nERROR: Script not found at {script_path}")
 
 		_append_pipeline_rows([
 			{
 				"run_id": RUN_ID,
-				"model": env_override.get("MODEL_NAME", "") if env_override else "",
+				"model": env_override.get("MODEL_NAME", DEFAULT_MODEL) if env_override else DEFAULT_MODEL,
 				"run_count": env_override.get("RUN_COUNT") if env_override else os.environ.get("RUN_COUNT", ""),
 				"step": step_name,
 				"script": str(script_path),
