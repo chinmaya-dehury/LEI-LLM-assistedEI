@@ -21,13 +21,42 @@ last code updated on 15-11-2025
 
 import os
 import json
-from openai import OpenAI
 from string import Template
-from config import DATA_TYPE, OPENAI_API_KEY
+from config import DATA_TYPE, TASK_LIST_MODEL
+from llm_client import chat_completion
 from prompts.get_tasks_list_adaptive_resource import SYSTEM_PROMPT
 
-# Initialize the LLM client with API key
-client = OpenAI(api_key=OPENAI_API_KEY) 
+
+def _extract_first_json_object(text: str) -> dict:
+    """Extract and parse the first JSON object from a string.
+
+    Handles outputs like:
+      { ...json... }\n\nKey reasoning: ...
+    and optional ``` fences.
+    """
+    if not isinstance(text, str):
+        raise ValueError("LLM output is not a string")
+
+    s = text.strip()
+    if not s:
+        raise ValueError("LLM output is empty")
+
+    # Strip markdown code fences if present
+    if s.startswith("```"):
+        s = s.split("\n", 1)[1] if "\n" in s else ""
+        if "```" in s:
+            s = s.rsplit("```", 1)[0].strip()
+
+    # Find first object start
+    start = s.find("{")
+    if start == -1:
+        raise ValueError("No JSON object start '{' found")
+
+    decoder = json.JSONDecoder()
+    obj, _end = decoder.raw_decode(s[start:])
+    if not isinstance(obj, dict):
+        raise ValueError("Top-level JSON value is not an object")
+    return obj
 
 # Paths
 BASE_PATH = "data/"+DATA_TYPE+"/"
@@ -84,8 +113,8 @@ existing_tasks_json = json.loads(existing_tasks)
 print(f"{len(existing_tasks_json['tasks'])} no. of existing tasks are sent to LLM.")
 
 # Call the LLM
-response = client.chat.completions.create(
-    model="gpt-5",
+response = chat_completion(
+    model=TASK_LIST_MODEL,
     messages=[
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt}
@@ -100,15 +129,15 @@ with open("ResponseLLM.txt", 'w') as json_file:
 exit()
 
 
-raw_output = response.choices[0].message.content
+raw_output = response.choices[0].message.content or ""
 
-# Parse JSON safely
+# Parse JSON safely (extract-first-json)
 try:
-    tasks_data = json.loads(raw_output)
-except json.JSONDecodeError:
+    tasks_data = _extract_first_json_object(raw_output)
+except Exception:
     print("The LLM response was not valid JSON. Saving raw output for review.")
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    with open(os.path.join(OUTPUT_DIR, "raw_output.txt"), "w") as f:
+    with open(os.path.join(OUTPUT_DIR, "raw_output.txt"), "w", encoding="utf-8") as f:
         f.write(raw_output)
     exit()
 

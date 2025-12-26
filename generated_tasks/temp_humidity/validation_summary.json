@@ -1,47 +1,27 @@
 {
   "tasks": [
     {
-      "task_name": "wet_bulb_temperature_stull",
+      "task_name": "hourly_averages",
       "status": "passed",
-      "message": "Executed successfully (JSON format variant)"
+      "message": "Fixed after 1 attempt(s)"
     },
     {
-      "task_name": "vapor_pressure_deficit_kpa",
+      "task_name": "rolling_moving_average",
       "status": "passed",
-      "message": "Executed successfully (JSON format variant)"
+      "message": "Fixed after 1 attempt(s)"
     },
     {
-      "task_name": "overheating_degree_minutes_temperature",
+      "task_name": "comfort_level_classification",
       "status": "passed",
-      "message": "Executed successfully"
+      "message": "Fixed after 1 attempt(s)"
     },
     {
-      "task_name": "comfort_compliance_rate",
-      "status": "passed",
-      "message": "Executed successfully"
-    },
-    {
-      "task_name": "monotonic_ramp_event_detector",
-      "status": "passed",
-      "message": "Executed successfully (JSON format variant)"
-    },
-    {
-      "task_name": "humidity_cusum_drift_detector",
-      "status": "passed",
-      "message": "Executed successfully (JSON format variant)"
-    },
-    {
-      "task_name": "condensation_risk_indicator",
+      "task_name": "sudden_change_detection",
       "status": "passed",
       "message": "Executed successfully"
     },
     {
-      "task_name": "temp_humidity_rolling_correlation",
-      "status": "passed",
-      "message": "Executed successfully"
-    },
-    {
-      "task_name": "time_to_threshold_estimator",
+      "task_name": "simple_forecast_next_interval",
       "status": "passed",
       "message": "Executed successfully"
     }

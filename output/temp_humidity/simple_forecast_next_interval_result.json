@@ -1,0 +1,19 @@
+{
+  "task_name": "simple_forecast_next_interval",
+  "description": "Predict the next 5\u2011minute temperature and humidity values using exponential smoothing (\u03b1=0.3).",
+  "result_summary": [
+    {
+      "name": "forecast_temperature_c",
+      "value": 25.08,
+      "description": "Forecasted temperature for next interval (\u00b0C).",
+      "timestamp": "2025-12-18T11:55:23Z"
+    },
+    {
+      "name": "forecast_humidity_percent",
+      "value": 70.13,
+      "description": "Forecasted humidity for next interval (%).",
+      "timestamp": "2025-12-18T11:55:23Z"
+    }
+  ],
+  "result_generated_at": "2025-12-18T11:55:23Z"
+}
