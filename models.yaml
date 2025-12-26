@@ -1,0 +1,9 @@
+models:
+  - codegemma:7b
+  - codellama:7b
+  - deepseek-coder:6.7b
+  - gemma3:4b
+  - llama3.1:latest
+  - mistral:7b
+  - phi3:3.8b
+  - qwen2.5-coder:7b

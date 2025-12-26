@@ -91,6 +91,5 @@ if not LLM_BASE_URL:
 		"LLM base URL not configured. Set GEMINI_BASE_URL or OPENROUTER_BASE_URL."
 	)
 
-NO_OF_TASKS = 1
-parallel_execution = False
-parallel_execution_limit = 2  # Max number of parallel tasks if parallel_execution is True, DEFAULT value is 1
+if not DATA_TYPE:
+    raise RuntimeError("DATA_TYPE is not set. Please set it in config.py.")
