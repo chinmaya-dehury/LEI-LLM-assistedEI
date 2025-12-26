@@ -1,4 +1,4 @@
-# following promopt is used in llm_orchestrator_adaptive_resource.py
+# following prompt is used in task_generator.py
 # This is independent of the data type (e.g. temp_humidity, air_quality etc.) used.
 
 SYSTEM_PROMPT="""

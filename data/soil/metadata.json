@@ -1,0 +1,70 @@
+{
+  "data_source": "IoT Soil Sensors",
+  "sampling_interval": "1 hour",
+  "data_format": "CSV",
+  "columns": {
+    "date": {
+      "type": "datetime",
+      "description": "Time at which the reading was recorded (UTC)."
+    },
+    "soil_temperature_0cm": {
+      "type": "float",
+      "unit": "degree Celsius",
+      "description": "Soil temperature at surface level (0cm)."
+    },
+    "soil_temperature_6cm": {
+      "type": "float",
+      "unit": "degree Celsius",
+      "description": "Soil temperature at 6cm depth."
+    },
+    "soil_temperature_18cm": {
+      "type": "float",
+      "unit": "degree Celsius",
+      "description": "Soil temperature at 18cm depth."
+    },
+    "soil_temperature_54cm": {
+      "type": "float",
+      "unit": "degree Celsius",
+      "description": "Soil temperature at 54cm depth."
+    },
+    "soil_moisture_0_to_1cm": {
+      "type": "float",
+      "unit": "m3/m3",
+      "range": [0, 1],
+      "description": "Volumetric soil moisture content at 0-1cm depth."
+    },
+    "soil_moisture_1_to_3cm": {
+      "type": "float",
+      "unit": "m3/m3",
+      "range": [0, 1],
+      "description": "Volumetric soil moisture content at 1-3cm depth."
+    },
+    "soil_moisture_3_to_9cm": {
+      "type": "float",
+      "unit": "m3/m3",
+      "range": [0, 1],
+      "description": "Volumetric soil moisture content at 3-9cm depth."
+    },
+    "soil_moisture_9_to_27cm": {
+      "type": "float",
+      "unit": "m3/m3",
+      "range": [0, 1],
+      "description": "Volumetric soil moisture content at 9-27cm depth."
+    },
+    "soil_moisture_27_to_81cm": {
+      "type": "float",
+      "unit": "m3/m3",
+      "range": [0, 1],
+      "description": "Volumetric soil moisture content at 27-81cm depth."
+    }
+  },
+  "data_quality": {
+    "missing_values": "none",
+    "sensor_accuracy": "±0.5°C, ±0.03 m3/m3"
+  },
+  "device_specs": {
+    "edge_device_model": "Raspberry Pi 4",
+    "compute_capability": "Quad-core ARM, 4GB RAM"
+  },
+  "storage": "Local CSV logs with periodic sync"
+}

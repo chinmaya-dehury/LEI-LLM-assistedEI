@@ -1,6 +1,9 @@
 openai
+httpx
 streamlit
 pandas
 numpy
 psutil
 python-dotenv
+ollama
+pyyaml
