@@ -93,6 +93,13 @@ response = client.chat.completions.create(
 )
 
 # Extract response content
+with open("ResponseLLM.txt", 'w') as json_file:
+    json.dump(response, json_file, indent=4)
+
+
+exit()
+
+
 raw_output = response.choices[0].message.content
 
 # Parse JSON safely
