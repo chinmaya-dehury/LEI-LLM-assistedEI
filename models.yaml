@@ -7,4 +7,3 @@ models:
   - mistral:7b
   - phi3:3.8b
   - qwen2.5-coder:7b
-  - qwen3:8b

@@ -214,9 +214,9 @@ def run_pipeline() -> None:
 	print("\n================ PIPELINE START ===============")
 	failures: list[str] = []
 	for model in models:
-		# Set RUN_ID once per model so all 10 runs append to the same CSV files
+		# Set RUN_ID once per model so all 5 runs append to the same CSV files
 		_set_pipeline_run(model)
-		for run_num in range(1,11):
+		for run_num in range(1,6):
 			print(f"\nRunning pipeline for model {model} Run {run_num}")
 			# Clean generated tasks/output before each run
 			_clean_before_model_run()

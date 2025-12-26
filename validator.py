@@ -864,6 +864,7 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
         }
     ])
 
+
     for attempt in range(1, MAX_RETRIES + 1):
         print(f"[Validator] Retry {attempt}/{MAX_RETRIES} for {task_name}...")
 
@@ -893,10 +894,11 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
 
         if exec_result["exit_code"] == 0:
             result_json = _parse_json_from_output(exec_result["stdout"])
-            
             # Accept any valid JSON output
             if result_json:
                 shutil.move(temp_path, script_path)
+                # Log a 'passed' status timing row for this attempt
+                _log_task_result(task_name, "passed", attempt)
                 print(f"✅ {task_name} corrected and validated successfully")
                 return {"task_name": task_name, "status": "passed", "message": f"Fixed after {attempt} attempt(s)"}
 
