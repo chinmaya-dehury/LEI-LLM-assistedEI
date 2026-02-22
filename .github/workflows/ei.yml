@@ -1,5 +1,10 @@
 name: Deploy to Pi
-on: [push]
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "device.yml"
 
 jobs:
   run-on-pi:
@@ -8,12 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install System Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3 python3-pip python3-venv
-
-      - name: Set up or Update Virtual Environment
+      - name: Set up Virtual Environment
         run: |
           # Check if venv directory exists
           if [ ! -d "venv" ]; then
@@ -28,7 +28,23 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run my script using venv
+      - name: Run pipeline with resource monitoring
         run: |
-          # Use the absolute path to the venv python to ensure it uses the environment
-          ./venv/bin/python your_script.py
+          source venv/bin/activate
+          export MONITOR_PID_FILE="resource_stat/monitor.pid"
+
+          stop_monitor() {
+            echo "Stopping resource monitor..."
+            python resource_stat/stop_monitor.py || echo "Monitor stop script reported an error"
+          }
+
+          trap stop_monitor EXIT
+
+          echo "Starting resource monitor"
+          python resource_stat/resource_stat.py &
+          MONITOR_PID=$!
+          echo "Monitor PID: ${MONITOR_PID}. Waiting 10 seconds before pipeline run."
+          sleep 10
+
+          echo "Starting pipeline run"
+          python pipeline.py
