@@ -1,17 +1,93 @@
-# Paths = Data type specific
-# MAke sure that a fodler name with following data type exists inside 
-#   data/, generated_tasks/ and output/ folders.
-#
-#### Select any one data type by uncommenting the line below
+'''
+config.py fetches the use_case (DATA_TYPE) based on the device's hostname from device.yml. 
+It also loads LLM configuration from environment variables and sets up constants for the pipeline.
+
+Last updated: 22-02-2026
+By Siddharth
+'''
+
 
 import os
+import socket
+from pathlib import Path
+from typing import Dict, List, Tuple
+
+import yaml
 from dotenv import load_dotenv
 
 # Load .env from project root (load_dotenv looks for a .env file)
 load_dotenv()
 
-# DATA_TYPE available options: "temp_humidity", "air_quality"
-DATA_TYPE = "wind"  # change only this line to switch data type
+# DATA_TYPE is now derived from device.yml use_case entries
+
+BASE_DIR = Path(__file__).parent.resolve()
+DEVICE_CONFIG_PATH = BASE_DIR / "device.yml"
+
+
+def _load_device_use_cases(devices_file: Path) -> List[Tuple[str, str]]:
+	if not devices_file.exists():
+		raise RuntimeError(f"Device file not found at {devices_file}")
+	try:
+		with devices_file.open("r", encoding="utf-8") as handle:
+			payload = yaml.safe_load(handle) or {}
+	except yaml.YAMLError as exc:
+		raise RuntimeError(f"Invalid YAML in {devices_file}: {exc}") from exc
+	devices_section = payload.get("devices") or {}
+	if not isinstance(devices_section, dict):
+		raise RuntimeError("device.yml must define a 'devices' mapping")
+	runs: List[Tuple[str, str]] = []
+	for device_name, device_info in devices_section.items():
+		if not isinstance(device_info, dict):
+			continue
+		candidate = (device_info.get("use_case") or "").strip()
+		if candidate:
+			runs.append((device_name, candidate))
+	return runs
+
+
+DEVICE_USE_CASES = _load_device_use_cases(DEVICE_CONFIG_PATH)
+if not DEVICE_USE_CASES:
+	raise RuntimeError("No use_case entries found in device.yml; add at least one use_case per device.")
+
+DEVICE_USE_CASE_MAP: Dict[str, str] = {device: use_case for device, use_case in DEVICE_USE_CASES}
+DEVICE_NAMES: List[str] = [device for device, _ in DEVICE_USE_CASES]
+USE_CASES: List[str] = [use_case for _, use_case in DEVICE_USE_CASES]
+
+
+def _normalize_device_name(name: str) -> str:
+	return (name or "").strip().lower()
+
+
+DEVICE_LOOKUP: Dict[str, Tuple[str, str]] = {
+	_normalize_device_name(device): (device, use_case)
+	for device, use_case in DEVICE_USE_CASES
+}
+
+
+def _detect_device_name() -> str:
+	override = os.getenv("EDGE_DEVICE_NAME")
+	if override:
+		return override.strip()
+	return socket.gethostname().strip()
+
+
+def _resolve_active_device() -> Tuple[str, str]:
+	detected = _detect_device_name()
+	normalized = _normalize_device_name(detected)
+	match = DEVICE_LOOKUP.get(normalized)
+	if match:
+		return match
+	available = ", ".join(DEVICE_NAMES)
+	raise RuntimeError(
+		f"Detected device '{detected}' is not defined in device.yml. Available devices: {available}"
+	)
+
+
+ACTIVE_DEVICE, DATA_TYPE = _resolve_active_device()
+
+
+def _print_device_binding() -> None:
+	print(f"[config] Active device: {ACTIVE_DEVICE} | use_case: {DATA_TYPE}")
 
 OPENROUTER_BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
@@ -99,3 +175,9 @@ if not LLM_BASE_URL:
 NO_OF_TASKS = 1
 parallel_execution = False
 parallel_execution_limit = 2  # Max number of parallel tasks if parallel_execution is True, DEFAULT value is 1
+
+if os.getenv("PRINT_DEVICE_BINDING") == "1":
+	_print_device_binding()
+
+if __name__ == "__main__":
+	_print_device_binding()

@@ -4,3 +4,4 @@ pandas
 numpy
 psutil
 python-dotenv
+pyyaml
