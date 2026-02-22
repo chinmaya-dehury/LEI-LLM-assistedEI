@@ -1,0 +1,24 @@
+{
+  "generated_at": "2025-11-17T14:47:59.982391",
+  "last_checked": "2025-11-17T14:47:59.982398",
+  "summary_windows": {
+    "1m": {
+      "avg_cpu": 0.0,
+      "avg_mem": 3.1
+    },
+    "5m": {
+      "avg_cpu": 0.0,
+      "avg_mem": 3.1
+    },
+    "10m": {
+      "avg_cpu": 0.01,
+      "avg_mem": 3.11
+    },
+    "30m": {
+      "avg_cpu": 0.01,
+      "avg_mem": 3.11
+    }
+  },
+  "total_cpu_capacity_cores": 4,
+  "total_memory_capacity_gb": 15.84
+}
