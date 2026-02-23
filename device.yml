@@ -2,5 +2,5 @@ devices:
   Rpi5-A:
     use_case: wind
   
-  Siddharth:
+  Rpi5-B:
     use_case: wind

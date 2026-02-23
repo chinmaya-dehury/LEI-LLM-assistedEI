@@ -5,7 +5,7 @@ Master pipeline for LEI-LLM-assistedEI.
 
 Adds timestamped CSV logging (script start/end, duration, status) so runs
 can be correlated with downstream step logs. Unlike LEI-OLLAMA, this version
-targets OpenRouter/Gemini models from config.py and does not use models.yaml.
+ targets Gemini models from config.py and does not use models.yaml.
 """
 
 import csv

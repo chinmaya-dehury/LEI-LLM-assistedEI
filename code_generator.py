@@ -9,7 +9,7 @@ Each generated task code will be saved as a separate .py file in the `generated_
 
 Notes:
 - Validator removed: this script only generates code.
-- Processes 1 task per LLM call (more reliable with OpenRouter/free routes).
+- Processes 1 task per LLM call for stable generation.
 - Skips tasks whose .py already exists.
 - Updates new_tasks.json statuses (code_generated / failed to generate correct code).
 """
@@ -280,7 +280,7 @@ Tasks (<=2):
     if not raw_output.strip():
         _debug_dump_response(response, Path("output") / "debug", prefix="task_codegen_empty_content")
         print(
-            "[Generator] Empty LLM output. Check finish_reason/max_tokens and OpenRouter model availability. "
+            "[Generator] Empty LLM output. Check finish_reason/max_tokens and model availability. "
             "Saved debug response to output/debug/task_codegen_empty_content.json"
         )
         return None
@@ -390,7 +390,7 @@ def _extract_first_json_object(text: str) -> dict:
 
 def _get_llm_text_from_chat_completion(response) -> str:
     """
-    OpenRouter/OpenAI-compatible responses sometimes put the payload in tool_calls.
+    OpenAI-compatible responses sometimes put the payload in tool_calls.
     This returns the best-effort textual payload to parse.
     """
     if not getattr(response, "choices", None):

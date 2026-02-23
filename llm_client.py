@@ -1,4 +1,4 @@
-"""Shared LLM client with Gemini/OpenRouter rate limiting support."""
+"""Shared LLM client with Gemini rate limiting support."""
 
 from __future__ import annotations
 
@@ -9,17 +9,13 @@ from datetime import datetime, timezone
 from threading import Lock
 from typing import Any, Dict, Iterable, Mapping, Sequence
 
-from openai import OpenAI, NotFoundError, RateLimitError
+from openai import OpenAI, RateLimitError
 
 from config import (
     LLM_API_KEY,
     LLM_BASE_URL,
-    LLM_PROVIDER,
     MODEL_RATE_LIMITS,
     MIN_REQUEST_INTERVAL_SECONDS,
-    OPENROUTER_DATA_COLLECTION_OPT_IN,
-    OPENROUTER_HTTP_REFERER,
-    OPENROUTER_TITLE,
 )
 
 
@@ -137,24 +133,9 @@ _rate_limiter = RateLimiter(
 	min_interval_seconds=MIN_REQUEST_INTERVAL_SECONDS,
 )
 
-_DEFAULT_HEADERS: Dict[str, str] = {}
-
-if LLM_PROVIDER == "openrouter":
-    # Required for some OpenRouter free routes / policy matching
-    if OPENROUTER_DATA_COLLECTION_OPT_IN is not None and str(OPENROUTER_DATA_COLLECTION_OPT_IN).strip() != "":
-        _DEFAULT_HEADERS["X-OpenRouter-Data-Collection-Opt-In"] = str(OPENROUTER_DATA_COLLECTION_OPT_IN).strip().lower()
-
-    # Strongly recommended for OpenRouter routing/attribution
-    if OPENROUTER_HTTP_REFERER:
-        _DEFAULT_HEADERS["HTTP-Referer"] = str(OPENROUTER_HTTP_REFERER).strip()
-
-    if OPENROUTER_TITLE:
-        _DEFAULT_HEADERS["X-Title"] = str(OPENROUTER_TITLE).strip()
-
 _client = OpenAI(
     api_key=LLM_API_KEY,
     base_url=LLM_BASE_URL,
-    default_headers=_DEFAULT_HEADERS or None,
 )
 
 
@@ -241,15 +222,6 @@ def chat_completion(*, model: str, messages: Sequence[Mapping[str, Any]], max_re
 			wait_time = min(10 * (2 ** attempt), 60)
 			print(f"Rate limit hit. Waiting {wait_time:.0f}s before retry {attempt + 1}/{max_retries}...")
 			time.sleep(wait_time)
-		except NotFoundError as err:
-			message = str(err)
-			if "data policy" in message.lower() and LLM_PROVIDER == "openrouter":
-				raise RuntimeError(
-					"OpenRouter rejected the request because your privacy settings block free models. "
-					"Visit https://openrouter.ai/settings/privacy and enable data sharing for free models, "
-					"or disable OPENROUTER_API_KEY to use Gemini instead."
-				) from err
-			raise
 
 
 __all__ = [

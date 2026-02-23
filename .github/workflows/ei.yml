@@ -7,13 +7,27 @@ on:
       - "device.yml"
 
 jobs:
-  run-on-pi:
-    runs-on: self-hosted
+  run-on-devices:
+    strategy:
+      matrix:
+        device: [rpi5-A, rpi5-B]  # labels used
+
+    runs-on:
+      - self-hosted
+      - ${{ matrix.device }}
+
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Announce target device
+        run: echo "Running on ${{ matrix.device }}"
+
+      - name: Show host info
+        run: hostname
 
       - name: Set up Virtual Environment
         run: |
