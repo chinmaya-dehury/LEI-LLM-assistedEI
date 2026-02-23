@@ -6,11 +6,6 @@ Typical insights could include (but not limited to):
 - Wind shear analysis – speed variation across altitude layers (10m to 180m)
 - Wind direction consistency – directional stability across different heights
 - Turbulence intensity – gust-to-mean wind speed ratio for structural safety
-- Power output estimation – wind energy potential at turbine hub heights (80m, 120m)
-- Optimal turbine height recommendation – identifying altitude with best wind conditions
-- Diurnal wind patterns – hourly trends for day vs night wind behavior
-- Wind persistence analysis – duration of favorable wind speeds for energy generation
-- Directional shift detection – identifying wind veer patterns with altitude
 - Low wind event detection – calm periods impacting energy production
 - Strong gust warnings – extreme wind events for safety alerts
 
