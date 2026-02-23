@@ -135,7 +135,7 @@ if LLM_PROVIDER == "openrouter":
 	)
 else:
 	DEFAULT_MODEL = _sanitize_model_id(
-		os.getenv("GEMINI_MODEL", "Gemini 2.5 Flash")
+		os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 	)
 
 # Used by llm_orchestrator_* (task list generation)
@@ -149,7 +149,7 @@ VALIDATOR_MODEL = DEFAULT_MODEL
 
 # Models to compare in pipeline (each model runs RUNS_PER_MODEL times)
 COMPARISON_MODELS = [
-	"Gemini 2.5 Flash",
+	"gemini-2.5-flash",
 ]
 
 RUNS_PER_MODEL = 2  # Number of times each model runs for comparison
@@ -160,7 +160,7 @@ MODEL_RATE_LIMITS = {
 	"requests_per_day": 20,
 }
 
-MIN_REQUEST_INTERVAL_SECONDS = 12.0  # Gemini 2.5 Flash: 5 RPM cap -> ~12s spacing
+MIN_REQUEST_INTERVAL_SECONDS = 12.0  # gemini-2.5-flash: 5 RPM cap -> ~12s spacing
 
 if not LLM_API_KEY:
 	raise RuntimeError(
