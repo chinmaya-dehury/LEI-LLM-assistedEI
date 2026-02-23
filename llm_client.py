@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from threading import Lock
 from typing import Any, Dict, Iterable, Mapping, Sequence
 
-from openai import OpenAI, RateLimitError
+from openai import BadRequestError, OpenAI, RateLimitError
 
 from config import (
     LLM_API_KEY,
@@ -198,6 +198,40 @@ def _extract_usage_total_tokens(response: Any) -> int | None:
 	return None
 
 
+def _coerce_system_to_user_messages(messages: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+	"""Convert system instructions into a leading user message for models that reject system/developer instructions."""
+	adapted: list[dict[str, Any]] = []
+	system_chunks: list[str] = []
+
+	for message in messages:
+		if not isinstance(message, Mapping):
+			continue
+		role = str(message.get("role", "")).strip().lower()
+		content = message.get("content", "")
+		if role == "system":
+			if isinstance(content, str) and content.strip():
+				system_chunks.append(content.strip())
+			continue
+		adapted.append(dict(message))
+
+	if system_chunks:
+		merged_system = "\n\n".join(system_chunks)
+		prefix = (
+			"Follow these instructions carefully:\n"
+			f"{merged_system}"
+		)
+		if adapted and str(adapted[0].get("role", "")).strip().lower() == "user":
+			first_content = adapted[0].get("content", "")
+			if isinstance(first_content, str):
+				adapted[0]["content"] = f"{prefix}\n\n{first_content}"
+			else:
+				adapted.insert(0, {"role": "user", "content": prefix})
+		else:
+			adapted.insert(0, {"role": "user", "content": prefix})
+
+	return adapted
+
+
 def chat_completion(*, model: str, messages: Sequence[Mapping[str, Any]], max_retries: int = 5, timeout: float = 180.0, **kwargs: Any):
 	"""Wrapper applying rate limits before issuing a chat.completions request.
 	
@@ -215,6 +249,15 @@ def chat_completion(*, model: str, messages: Sequence[Mapping[str, Any]], max_re
 			response = _client.chat.completions.create(model=model, messages=messages, **kwargs)
 			_rate_limiter.record_completion(_extract_usage_total_tokens(response))
 			return response
+		except BadRequestError as err:
+			message = str(err)
+			if "developer instruction is not enabled" in message.lower():
+				adapted_messages = _coerce_system_to_user_messages(messages)
+				if adapted_messages != list(messages):
+					response = _client.chat.completions.create(model=model, messages=adapted_messages, **kwargs)
+					_rate_limiter.record_completion(_extract_usage_total_tokens(response))
+					return response
+			raise
 		except RateLimitError as err:
 			if attempt >= max_retries:
 				raise
