@@ -1,8 +1,11 @@
 '''
-config.py fetches the use_case (DATA_TYPE) based on the device's hostname from device.yml. 
+config.py fetches one or more use_case entries (DATA_TYPE) based on the device's hostname from device.yml.
 It also loads LLM configuration from environment variables and sets up constants for the pipeline.
 
-Last updated: 22-02-2026
+Supports multiple use cases per device. When a device lists several use_case values, set EDGE_USE_CASE
+to pick one; otherwise the first listed use case is used.
+
+Last updated: 25-02-2026
 By Siddharth
 '''
 
@@ -24,7 +27,27 @@ BASE_DIR = Path(__file__).parent.resolve()
 DEVICE_CONFIG_PATH = BASE_DIR / "device.yml"
 
 
-def _load_device_use_cases(devices_file: Path) -> List[Tuple[str, str]]:
+def _normalize_use_cases(raw_use_case) -> List[str]:
+	"""Normalize comma-separated strings or lists of use cases into a clean list."""
+	if isinstance(raw_use_case, str):
+		candidates = [part.strip() for part in raw_use_case.split(",") if part.strip()]
+	elif isinstance(raw_use_case, (list, tuple)):
+		candidates = [str(part).strip() for part in raw_use_case if str(part).strip()]
+	else:
+		return []
+
+	seen = set()
+	normalized: List[str] = []
+	for item in candidates:
+		key = item.lower()
+		if key in seen:
+			continue
+		seen.add(key)
+		normalized.append(item)
+	return normalized
+
+
+def _load_device_use_cases(devices_file: Path) -> List[Tuple[str, List[str]]]:
 	if not devices_file.exists():
 		raise RuntimeError(f"Device file not found at {devices_file}")
 	try:
@@ -35,33 +58,62 @@ def _load_device_use_cases(devices_file: Path) -> List[Tuple[str, str]]:
 	devices_section = payload.get("devices") or {}
 	if not isinstance(devices_section, dict):
 		raise RuntimeError("device.yml must define a 'devices' mapping")
-	runs: List[Tuple[str, str]] = []
+	runs: List[Tuple[str, List[str]]] = []
 	for device_name, device_info in devices_section.items():
 		if not isinstance(device_info, dict):
 			continue
-		candidate = (device_info.get("use_case") or "").strip()
-		if candidate:
-			runs.append((device_name, candidate))
+		use_cases = _normalize_use_cases(device_info.get("use_case"))
+		runs.append((device_name, use_cases))
 	return runs
 
 
 DEVICE_USE_CASES = _load_device_use_cases(DEVICE_CONFIG_PATH)
 if not DEVICE_USE_CASES:
-	raise RuntimeError("No use_case entries found in device.yml; add at least one use_case per device.")
+	raise RuntimeError("No devices found in device.yml; add at least one device entry.")
 
-DEVICE_USE_CASE_MAP: Dict[str, str] = {device: use_case for device, use_case in DEVICE_USE_CASES}
+if all((not use_cases) for _, use_cases in DEVICE_USE_CASES):
+	raise RuntimeError(
+		"No use_case entries configured for any device in device.yml; add at least one use_case per device."
+	)
+
+DEVICE_USE_CASE_MAP: Dict[str, List[str]] = {device: use_cases for device, use_cases in DEVICE_USE_CASES}
 DEVICE_NAMES: List[str] = [device for device, _ in DEVICE_USE_CASES]
-USE_CASES: List[str] = [use_case for _, use_case in DEVICE_USE_CASES]
+USE_CASES: List[str] = [use_case for _, use_cases in DEVICE_USE_CASES for use_case in use_cases]
 
 
 def _normalize_device_name(name: str) -> str:
 	return (name or "").strip().lower()
 
 
-DEVICE_LOOKUP: Dict[str, Tuple[str, str]] = {
-	_normalize_device_name(device): (device, use_case)
-	for device, use_case in DEVICE_USE_CASES
+DEVICE_LOOKUP: Dict[str, Tuple[str, List[str]]] = {
+	_normalize_device_name(device): (device, use_cases)
+	for device, use_cases in DEVICE_USE_CASES
 }
+
+
+def _select_use_case(device: str, use_cases: List[str]) -> str:
+	if not use_cases:
+		raise RuntimeError(f"No use_case entries found for device '{device}'")
+
+	override = os.getenv("EDGE_USE_CASE")
+	if override:
+		override_normalized = override.strip().lower()
+		for candidate in use_cases:
+			if candidate.lower() == override_normalized:
+				return candidate
+		available = ", ".join(use_cases)
+		raise RuntimeError(
+			f"EDGE_USE_CASE '{override}' is not valid for device '{device}'. Available: {available}"
+		)
+
+	if len(use_cases) == 1:
+		return use_cases[0]
+
+	print(
+		f"[config] Multiple use_case entries for {device}: {', '.join(use_cases)}. "
+		"Using the first entry; set EDGE_USE_CASE to override."
+	)
+	return use_cases[0]
 
 
 def _detect_device_name() -> str:
@@ -76,7 +128,9 @@ def _resolve_active_device() -> Tuple[str, str]:
 	normalized = _normalize_device_name(detected)
 	match = DEVICE_LOOKUP.get(normalized)
 	if match:
-		return match
+		device, use_cases = match
+		selected_use_case = _select_use_case(device, use_cases)
+		return device, selected_use_case
 	available = ", ".join(DEVICE_NAMES)
 	raise RuntimeError(
 		f"Detected device '{detected}' is not defined in device.yml. Available devices: {available}"
@@ -84,10 +138,12 @@ def _resolve_active_device() -> Tuple[str, str]:
 
 
 ACTIVE_DEVICE, DATA_TYPE = _resolve_active_device()
+ACTIVE_USE_CASES: List[str] = DEVICE_USE_CASE_MAP.get(ACTIVE_DEVICE, []) or [DATA_TYPE]
 
 
 def _print_device_binding() -> None:
-	print(f"[config] Active device: {ACTIVE_DEVICE} | use_case: {DATA_TYPE}")
+	available = ", ".join(DEVICE_USE_CASE_MAP.get(ACTIVE_DEVICE, []))
+	print(f"[config] Active device: {ACTIVE_DEVICE} | use_case: {DATA_TYPE} | available: {available}")
 
 GEMINI_BASE_URL = os.getenv("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -106,7 +162,7 @@ def _sanitize_model_id(model_id: str) -> str:
 
 # Requested model for the whole project
 DEFAULT_MODEL = _sanitize_model_id(
-	os.getenv("GEMINI_MODEL", "gemma-3-27b-it")
+	os.getenv("GEMINI_MODEL", "gemma-3-12b-it")
 )
 
 # Used by llm_orchestrator_* (task list generation)
@@ -120,7 +176,7 @@ VALIDATOR_MODEL = DEFAULT_MODEL
 
 # Models to compare in pipeline (each model runs RUNS_PER_MODEL times)
 COMPARISON_MODELS = [
-	"gemma-3-27b-it",
+	"gemma-3-12b-it",
 ]
 
 RUNS_PER_MODEL = 1  # Number of times each model runs for comparison
