@@ -92,10 +92,12 @@ DEVICE_LOOKUP: Dict[str, Tuple[str, List[str]]] = {
 
 
 def _select_use_case(device: str, use_cases: List[str]) -> str:
-	if not use_cases:
-		raise RuntimeError(f"No use_case entries found for device '{device}'")
-
 	override = os.getenv("EDGE_USE_CASE")
+	if not use_cases:
+		if override:
+			return override.strip()
+		raise RuntimeError(f"No use_case entries found for device '{device}'. Set EDGE_USE_CASE or add use_case in device.yml.")
+
 	if override:
 		override_normalized = override.strip().lower()
 		for candidate in use_cases:
