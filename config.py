@@ -96,6 +96,17 @@ def _select_use_case(device: str, use_cases: List[str]) -> str:
 	if not use_cases:
 		if override:
 			return override.strip()
+		fallback_env = os.getenv("DEFAULT_USE_CASE")
+		if fallback_env:
+			print(
+				f"[config] No use_case listed for {device}. Using DEFAULT_USE_CASE='{fallback_env.strip()}'"
+			)
+			return fallback_env.strip()
+		if USE_CASES:
+			print(
+				f"[config] No use_case listed for {device}. Falling back to first available use_case '{USE_CASES[0]}'"
+			)
+			return USE_CASES[0]
 		raise RuntimeError(f"No use_case entries found for device '{device}'. Set EDGE_USE_CASE or add use_case in device.yml.")
 
 	if override:

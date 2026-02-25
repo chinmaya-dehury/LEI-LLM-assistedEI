@@ -9,6 +9,7 @@ on:
 jobs:
   run-on-devices:
     strategy:
+      fail-fast: false  # allow other devices to continue even if one fails
       matrix:
         device: [rpi5-A, rpi5-B]  # labels used
 
