@@ -23,7 +23,7 @@ if parent_dir not in sys.path:
 import subprocess
 import time
 from datetime import datetime, timezone
-from config import DATA_TYPE, MODEL_NAME
+from config import DATA_TYPE, DEFAULT_MODEL
 import json
 
 
@@ -49,7 +49,7 @@ os.makedirs(LOG_DIR, exist_ok=True)
 RUN_ID = os.environ.get("RUN_ID") or datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
 # Optional run count (passed from pipeline)
 RUN_COUNT = os.environ.get("RUN_COUNT") or ""
-SANITIZED_MODEL = _sanitize_model_name(MODEL_NAME)
+SANITIZED_MODEL = _sanitize_model_name(DEFAULT_MODEL)
 
 # Create a timestamped log file with model name and run count
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -64,7 +64,7 @@ SCRIPT_START_PERF = time.perf_counter()
 
 # Log resource metrics at start
 RESOURCE_CSV = os.path.join(TIMESTAMP_PATH, f"step4_resource_{SANITIZED_MODEL}_{RUN_ID}.csv")
-log_resource_metrics(RESOURCE_CSV, "step4_scheduler", "start", model_name=MODEL_NAME, run_count=RUN_COUNT)
+log_resource_metrics(RESOURCE_CSV, "step4_scheduler", "start", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
 
 def log(msg):
     """Helper function to append messages to the log file and print them."""
@@ -207,7 +207,7 @@ def execute_task(task_path):
     _append_step4_rows([
         {
             "step": "task_run",
-            "model": MODEL_NAME,
+            "model": DEFAULT_MODEL,
             "run_count": RUN_COUNT,
             "task_name": os.path.splitext(os.path.basename(task_path))[0],
             "script_start_time_ist": start_time_utc,
@@ -251,7 +251,7 @@ def main():
     log(f"Log file saved at: {log_file}")
 
     # Log resource metrics at end
-    log_resource_metrics(RESOURCE_CSV, "step4_scheduler", "end", model_name=MODEL_NAME, run_count=RUN_COUNT)
+    log_resource_metrics(RESOURCE_CSV, "step4_scheduler", "end", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
 
 if __name__ == "__main__":
     main()

@@ -20,12 +20,11 @@ from typing import Dict, List
 import shutil
 from datetime import datetime, timezone, timedelta
 import re
-import httpx
 
 from openai import OpenAI
 
-from config import DATA_TYPE, OLLAMA_SERVER_URL, MODEL_NAME
-from prompts.get_validator import SYSTEM_PROMPT
+from config import DATA_TYPE, LLM_BASE_URL, LLM_API_KEY, DEFAULT_MODEL
+from prompts.get_validated import SYSTEM_PROMPT
 from resource_monitor import log_resource_metrics
 
 
@@ -46,7 +45,7 @@ if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
 CLIENT_TIMEOUT = 120  # seconds
-client = OpenAI(base_url=OLLAMA_SERVER_URL, api_key="ollama", timeout=CLIENT_TIMEOUT)
+client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY, timeout=CLIENT_TIMEOUT)
 
 TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
 # Per-run CSV path with model name and run ID (step3 = validator)
@@ -55,7 +54,7 @@ IST = timezone(timedelta(hours=5, minutes=30))
 RUN_ID = os.environ.get("RUN_ID") or datetime.now(IST).strftime("%Y%m%d_%H%M%S")
 # Optional run count (passed from pipeline)
 RUN_COUNT = os.environ.get("RUN_COUNT") or ""
-SANITIZED_MODEL = _sanitize_model_name(MODEL_NAME)
+SANITIZED_MODEL = _sanitize_model_name(DEFAULT_MODEL)
 STEP3_CSV = os.path.join(TIMESTAMP_PATH, f"step3_{SANITIZED_MODEL}_{RUN_ID}.csv")
 
 MAX_RETRIES = 2
@@ -68,7 +67,7 @@ TIMING_ROWS_WRITTEN = 0
 
 # Log resource metrics at start
 RESOURCE_CSV = os.path.join(TIMESTAMP_PATH, f"step3_resource_{SANITIZED_MODEL}_{RUN_ID}.csv")
-log_resource_metrics(RESOURCE_CSV, "step3_validator", "start", model_name=MODEL_NAME, run_count=RUN_COUNT)
+log_resource_metrics(RESOURCE_CSV, "step3_validator", "start", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
 
 
 def _append_timing_rows(rows: List[dict]) -> None:
@@ -108,7 +107,7 @@ def _log_task_result(task_name: str, status: str, attempt: int = 0) -> None:
     """Log a task validation result (passed/failed) to CSV without LLM timing."""
     _append_timing_rows([{
         "step": "validation",
-        "model": MODEL_NAME,
+        "model": DEFAULT_MODEL,
         "run_count": RUN_COUNT,
         "task_name": task_name,
         "status": status,
@@ -344,47 +343,34 @@ Provide corrected code following the response format specified in the system pro
 """.strip()
 
 
-def _ollama_native_base_url() -> str:
-    """Derive Ollama base URL (without /v1) from OLLAMA_SERVER_URL."""
-    url = (OLLAMA_SERVER_URL or "").strip()
-    if url.endswith("/v1"):
-        url = url[:-3]
-    return url.rstrip("/")
-
-
-def _call_ollama_native_chat(system_prompt: str, user_prompt: str) -> dict:
-    """Call Ollama's native /api/chat endpoint to obtain token counts."""
-    base = _ollama_native_base_url()
-    if not base:
-        raise RuntimeError("OLLAMA_SERVER_URL is empty")
-
-    url = f"{base}/api/chat"
-    payload = {
-        "model": MODEL_NAME,
-        "messages": [
+def _call_llm_chat(system_prompt: str, user_prompt: str) -> dict:
+    response = client.chat.completions.create(
+        model=DEFAULT_MODEL,
+        messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
-        "stream": False,
-        "options": {"temperature": 0.0},
-    }
+        temperature=0.0,
+    )
 
-    with httpx.Client(timeout=CLIENT_TIMEOUT) as http:
-        resp = http.post(url, json=payload)
-        resp.raise_for_status()
-        data = resp.json()
+    usage = getattr(response, "usage", None) or {}
+    if isinstance(usage, dict):
+        prompt_tokens = int(usage.get("prompt_tokens") or usage.get("input_tokens") or 0)
+        completion_tokens = int(usage.get("completion_tokens") or usage.get("output_tokens") or 0)
+    else:
+        prompt_tokens = int(getattr(usage, "prompt_tokens", 0) or getattr(usage, "input_tokens", 0) or 0)
+        completion_tokens = int(getattr(usage, "completion_tokens", 0) or getattr(usage, "output_tokens", 0) or 0)
 
-    message = data.get("message") or {}
-    content = message.get("content") or ""
-    prompt_tokens = int(data.get("prompt_eval_count") or 0)
-    completion_tokens = int(data.get("eval_count") or 0)
-    model = data.get("model") or MODEL_NAME
+    content = ""
+    if getattr(response, "choices", None):
+        content = response.choices[0].message.content or ""
+
     return {
         "content": content,
         "prompt_tokens": prompt_tokens,
         "completion_tokens": completion_tokens,
-        "model": model,
-        "raw": data,
+        "model": getattr(response, "model", DEFAULT_MODEL),
+        "raw": response,
     }
 
 
@@ -602,43 +588,7 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
     llm_start_perf = time.perf_counter()
 
     try:
-        native = _call_ollama_native_chat(system_prompt, user_prompt)
-    except (httpx.TimeoutException, httpx.ReadTimeout) as e:
-        llm_end_perf = time.perf_counter()
-        llm_end_time = datetime.now(IST).isoformat()
-        llm_duration = llm_end_perf - llm_start_perf
-
-        script_end_time = datetime.now(IST).isoformat()
-        script_duration = time.perf_counter() - SCRIPT_START_PERF
-        _append_timing_rows([
-            {
-                "step": "llm_call_timeout",
-                "model": MODEL_NAME,
-                "run_count": RUN_COUNT,
-                "task_name": task.get("task_name", ""),
-                "status": "llm_timeout",
-                "attempt": attempt,
-                "script_start_time_ist": SCRIPT_START_TIME,
-                "script_end_time_ist": script_end_time,
-                "script_duration_sec": script_duration,
-                "llm_start_time_ist": llm_start_time,
-                "llm_end_time_ist": llm_end_time,
-                "llm_duration_sec": llm_duration,
-                "prompt_tokens": 0,
-                "completion_tokens": 0,
-                "total_tokens": 0,
-                "prompt_tokens_per_sec": 0,
-                "completion_tokens_per_sec": 0,
-            }
-        ])
-        print(f"[Validator] LLM call timed out: {e}")
-        return {
-            "task_name": task.get("task_name"),
-            "is_valid": False,
-            "error_message": f"LLM call timed out: {e}",
-            "corrected_code": "",
-        }
-
+        native = _call_llm_chat(system_prompt, user_prompt)
     except Exception as e:
         llm_end_perf = time.perf_counter()
         llm_end_time = datetime.now(IST).isoformat()
@@ -649,7 +599,7 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
         _append_timing_rows([
             {
                 "step": "llm_call_failed",
-                "model": MODEL_NAME,
+                "model": DEFAULT_MODEL,
                 "run_count": RUN_COUNT,
                 "task_name": task.get("task_name", ""),
                 "status": "llm_error",
@@ -691,7 +641,7 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
     _append_timing_rows([
         {
             "step": "llm_call",
-            "model": native.get("model") or MODEL_NAME,
+            "model": native.get("model") or DEFAULT_MODEL,
             "run_count": RUN_COUNT,
             "task_name": task.get("task_name", ""),
             "status": "correction_attempt",
@@ -845,7 +795,7 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
     _append_timing_rows([
         {
             "step": "initial_run",
-            "model": MODEL_NAME,
+            "model": DEFAULT_MODEL,
             "run_count": RUN_COUNT,
             "task_name": task_name,
             "status": "initial_validation",
@@ -939,7 +889,7 @@ def validate_all_generated_tasks(tasks_file: str, scripts_dir: str) -> Dict[str,
             tasks_data = json.load(f)
     except Exception as e:
         print(f"❌ Failed to load tasks file: {e}")
-        return {"tasks": [], "run_count": RUN_COUNT, "model": MODEL_NAME}
+        return {"tasks": [], "run_count": RUN_COUNT, "model": DEFAULT_MODEL}
 
     results: List[Dict] = []
     for task in tasks_data.get("tasks", []):
@@ -969,7 +919,7 @@ def validate_all_generated_tasks(tasks_file: str, scripts_dir: str) -> Dict[str,
 
     return {
         "run_count": RUN_COUNT,
-        "model": MODEL_NAME,
+        "model": DEFAULT_MODEL,
         "tasks": results,
         "summary": {
             "total": len(results),
@@ -1006,13 +956,13 @@ def main() -> None:
             with open(master_summary_path, "r", encoding="utf-8") as f:
                 all_runs_data = json.load(f)
         except Exception:
-            all_runs_data = {"run_count": RUN_COUNT, "model": MODEL_NAME, "runs": {}}
+            all_runs_data = {"run_count": RUN_COUNT, "model": DEFAULT_MODEL, "runs": {}}
     else:
-        all_runs_data = {"run_count": RUN_COUNT, "model": MODEL_NAME, "runs": {}}
+        all_runs_data = {"run_count": RUN_COUNT, "model": DEFAULT_MODEL, "runs": {}}
     
     # Add current run's results
     all_runs_data["run_count"] = RUN_COUNT  # Update to latest run count
-    all_runs_data["model"] = MODEL_NAME
+    all_runs_data["model"] = DEFAULT_MODEL
     if "runs" not in all_runs_data:
         all_runs_data["runs"] = {}
     all_runs_data["runs"][str(RUN_COUNT)] = summary.get("tasks", [])
@@ -1044,7 +994,7 @@ def main() -> None:
         _append_timing_rows([
             {
                 "step": "validator_run",
-                "model": MODEL_NAME,
+                "model": DEFAULT_MODEL,
                 "run_count": RUN_COUNT,
                 "task_name": "",
                 "status": "no_corrections_needed",
@@ -1064,7 +1014,7 @@ def main() -> None:
         ])
 
 # Log resource metrics at end
-log_resource_metrics(RESOURCE_CSV, "step3_validator", "end", model_name=MODEL_NAME, run_count=RUN_COUNT)
+log_resource_metrics(RESOURCE_CSV, "step3_validator", "end", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
 
 
 if __name__ == "__main__":

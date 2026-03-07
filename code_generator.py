@@ -21,9 +21,9 @@ import time
 import csv
 from datetime import datetime, timezone, timedelta
 from openai import OpenAI
-from config import OLLAMA_SERVER_URL, DATA_TYPE, MODEL_NAME
+from config import LLM_BASE_URL, LLM_API_KEY, DATA_TYPE, DEFAULT_MODEL
 from string import Template
-from prompts.get_single_task_code import SYSTEM_PROMPT
+from prompts.get_code import SYSTEM_PROMPT
 from typing import List
 import re
 from resource_monitor import log_resource_metrics
@@ -46,7 +46,7 @@ if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
 # Initialize the LLM client
-client = OpenAI(base_url=OLLAMA_SERVER_URL, api_key="ollama")
+client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY)
 
 # Paths
 BASE_PATH = f"data/{DATA_TYPE}/"
@@ -64,7 +64,7 @@ RUN_ID = os.environ.get("RUN_ID") or datetime.now(IST).strftime("%Y%m%d_%H%M%S")
 RUN_COUNT = os.environ.get("RUN_COUNT") or ""
 # Path to resource summary JSON
 RESOURCE_SUMMARY_PATH = "resource_stat/resource_usage_summary.json"
-SANITIZED_MODEL = _sanitize_model_name(MODEL_NAME)
+SANITIZED_MODEL = _sanitize_model_name(DEFAULT_MODEL)
 STEP2_CSV = os.path.join(TIMESTAMP_PATH, f"step2_{SANITIZED_MODEL}_{RUN_ID}.csv")
 
 
@@ -132,7 +132,7 @@ SCRIPT_START_PERF = time.perf_counter()
 
 # Log resource metrics at start
 RESOURCE_CSV = os.path.join(TIMESTAMP_PATH, f"step2_resource_{SANITIZED_MODEL}_{RUN_ID}.csv")
-log_resource_metrics(RESOURCE_CSV, "step2_code_generator", "start", model_name=MODEL_NAME, run_count=RUN_COUNT)
+log_resource_metrics(RESOURCE_CSV, "step2_code_generator", "start", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
 
 
 def _truncate(text: str, max_chars: int) -> str:
@@ -210,7 +210,7 @@ Tasks (<=2):
 
     # Single-model call with timing capture
     response = None
-    used_model = MODEL_NAME
+    used_model = DEFAULT_MODEL
     errors = []
     llm_start_time = ""
     llm_end_time = ""
@@ -220,7 +220,7 @@ Tasks (<=2):
         llm_start_time = datetime.now(IST).isoformat()
         llm_start_perf = time.perf_counter()
         response = client.chat.completions.create(
-            model=MODEL_NAME,
+            model=DEFAULT_MODEL,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
@@ -228,7 +228,7 @@ Tasks (<=2):
             temperature=0.0,
         )
     except Exception as e:
-        errors.append(f"{MODEL_NAME}: {repr(e)}")
+        errors.append(f"{DEFAULT_MODEL}: {repr(e)}")
 
     if llm_start_perf is not None:
         llm_end_perf = time.perf_counter()
@@ -259,7 +259,7 @@ Tasks (<=2):
                 "total_tokens": 0,
                 "prompt_tokens_per_sec": 0,
                 "completion_tokens_per_sec": 0,
-                "model": MODEL_NAME,
+                "model": DEFAULT_MODEL,
                 "tasks": ",".join([t.get("task_name", "") for t in task_payload.get("tasks", [])]) if isinstance(task_payload, dict) else "",
             }
         ])
@@ -573,4 +573,4 @@ def main() -> None:
 print(f"\nAll requested batches processed. Check generated_tasks/{DATA_TYPE} for outputs.")
 
 # Log resource metrics at end
-log_resource_metrics(RESOURCE_CSV, "step2_code_generator", "end", model_name=MODEL_NAME, run_count=RUN_COUNT)
+log_resource_metrics(RESOURCE_CSV, "step2_code_generator", "end", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)

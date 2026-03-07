@@ -28,8 +28,8 @@ import csv
 from datetime import datetime, timezone, timedelta
 from openai import OpenAI
 from string import Template
-from config import DATA_TYPE, OLLAMA_SERVER_URL, MODEL_NAME
-from prompts.get_tasks_list_adaptive_resource import SYSTEM_PROMPT
+from config import DATA_TYPE, LLM_BASE_URL, LLM_API_KEY, DEFAULT_MODEL
+from prompts.get_tasks import SYSTEM_PROMPT
 from resource_monitor import log_resource_metrics
 
 
@@ -158,9 +158,8 @@ def write_timing_csv(
         )
 
 
-# Initialize the LLM client to use the OLLAMA server.
-# OLLAMA_SERVER_URL is expected to include the /v1 endpoint, e.g. "http://localhost:11434/v1".
-client = OpenAI(base_url=OLLAMA_SERVER_URL, api_key="ollama")
+# Initialize the LLM client using an OpenAI-compatible base URL.
+client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY)
 
 # Paths
 BASE_PATH = "data/"+DATA_TYPE+"/"
@@ -178,7 +177,7 @@ IST = timezone(timedelta(hours=5, minutes=30))
 RUN_ID = os.environ.get("RUN_ID") or datetime.now(IST).strftime("%Y%m%d_%H%M%S")
 # Optional run count (passed from pipeline)
 RUN_COUNT = os.environ.get("RUN_COUNT") or ""
-SANITIZED_MODEL = _sanitize_model_name(MODEL_NAME)
+SANITIZED_MODEL = _sanitize_model_name(DEFAULT_MODEL)
 STEP1_CSV_PATH = os.path.join(TIMESTAMP_PATH, f"step1_{SANITIZED_MODEL}_{RUN_ID}.csv")
 
 # Script-wide timing start
@@ -187,7 +186,7 @@ script_start_perf = time.perf_counter()
 
 # Log resource metrics at start
 RESOURCE_CSV = os.path.join(TIMESTAMP_PATH, f"step1_resource_{SANITIZED_MODEL}_{RUN_ID}.csv")
-log_resource_metrics(RESOURCE_CSV, "step1_task_generator", "start", model_name=MODEL_NAME, run_count=RUN_COUNT)
+log_resource_metrics(RESOURCE_CSV, "step1_task_generator", "start", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
 
 # Read all inputs
 with open(DATA_PATH, "r") as f:
@@ -238,7 +237,7 @@ print(f"{len(existing_tasks_json['tasks'])} no. of existing tasks are sent to LL
 llm_start_time = datetime.now(IST).isoformat()
 llm_start_perf = time.perf_counter()
 response = client.chat.completions.create(
-    model=MODEL_NAME,
+    model=DEFAULT_MODEL,
     messages=[
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt}
@@ -258,7 +257,7 @@ else:
     completion_tokens = getattr(usage, "completion_tokens", 0)
     total_tokens = getattr(usage, "total_tokens", prompt_tokens + completion_tokens)
 
-model_name = getattr(response, "model", MODEL_NAME)
+model_name = getattr(response, "model", DEFAULT_MODEL)
 
 # Extract response content (may be None/empty if the model failed)
 raw_output = response.choices[0].message.content or ""
@@ -402,7 +401,7 @@ script_duration = script_end_perf - script_start_perf
 llm_duration = llm_end_perf - llm_start_perf
 
 # Log resource metrics at end
-log_resource_metrics(RESOURCE_CSV, "step1_task_generator", "end", model_name=MODEL_NAME, run_count=RUN_COUNT)
+log_resource_metrics(RESOURCE_CSV, "step1_task_generator", "end", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
 
 write_timing_csv(
     STEP1_CSV_PATH,

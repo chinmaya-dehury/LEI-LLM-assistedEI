@@ -16,7 +16,7 @@ import json
 from openai import OpenAI
 from config import DATA_TYPE, OPENAI_API_KEY
 from string import Template
-from prompts.get_tasks_list_adaptive import SYSTEM_PROMPT
+from prompts.archive_prompts.get_tasks_list_adaptive import SYSTEM_PROMPT
 import sys
 
 # Initialize the LLM client
