@@ -102,12 +102,10 @@ def _select_use_case(device: str, use_cases: List[str]) -> str:
 				f"[config] No use_case listed for {device}. Using DEFAULT_USE_CASE='{fallback_env.strip()}'"
 			)
 			return fallback_env.strip()
-		if USE_CASES:
-			print(
-				f"[config] No use_case listed for {device}. Falling back to first available use_case '{USE_CASES[0]}'"
-			)
-			return USE_CASES[0]
-		raise RuntimeError(f"No use_case entries found for device '{device}'. Set EDGE_USE_CASE or add use_case in device.yml.")
+		print(
+			f"[config] No use_case listed for {device}. Skipping execution for this device unless EDGE_USE_CASE or DEFAULT_USE_CASE is set."
+		)
+		return ""
 
 	if override:
 		override_normalized = override.strip().lower()
@@ -151,7 +149,9 @@ def _resolve_active_device() -> Tuple[str, str]:
 
 
 ACTIVE_DEVICE, DATA_TYPE = _resolve_active_device()
-ACTIVE_USE_CASES: List[str] = DEVICE_USE_CASE_MAP.get(ACTIVE_DEVICE, []) or [DATA_TYPE]
+ACTIVE_USE_CASES: List[str] = [uc for uc in DEVICE_USE_CASE_MAP.get(ACTIVE_DEVICE, []) if uc]
+if not ACTIVE_USE_CASES and DATA_TYPE:
+	ACTIVE_USE_CASES = [DATA_TYPE]
 
 
 def _print_device_binding() -> None:

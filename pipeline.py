@@ -240,7 +240,15 @@ def run_pipeline() -> None:
 
 	models = COMPARISON_MODELS if COMPARISON_MODELS else [DEFAULT_MODEL]
 	total_runs = RUNS_PER_MODEL
-	use_cases = ACTIVE_USE_CASES or [DATA_TYPE]
+	use_cases = [uc for uc in ACTIVE_USE_CASES if uc]
+	if not use_cases and DATA_TYPE:
+		use_cases = [DATA_TYPE] if DATA_TYPE else []
+
+	if not use_cases:
+		print("\n================ PIPELINE START ===============")
+		print(f"Device: {ACTIVE_DEVICE}")
+		print("No use_case configured or provided; skipping execution.")
+		return
 	print("\n================ PIPELINE START ===============")
 	print(f"Device: {ACTIVE_DEVICE}")
 	print(f"Use cases: {', '.join(use_cases)}")
