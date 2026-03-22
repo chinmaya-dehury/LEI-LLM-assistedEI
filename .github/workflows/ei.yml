@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - eiops
     paths:
       - "device.yml"
 
@@ -19,15 +18,20 @@ jobs:
       - ${{ matrix.device }}
 
     env:
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      OLLAMA_BASE_URL: ${{ vars.OLLAMA_BASE_URL }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Announce target device
-        run: echo "Running on ${{ matrix.device }}"
-
+      - name: Announce target device and capture GitHub workflow start time
+        id: github_start
+        run: |
+          echo "Running on ${{ matrix.device }}"
+          GH_START="${{ github.event.head_commit.timestamp }}"
+          GITHUB_START_EPOCH=$(date -d "$GH_START" +%s)
+          echo "GitHub workflow started at: $GH_START (epoch: $GITHUB_START_EPOCH)"
+          echo "github_start_epoch=$GITHUB_START_EPOCH" >> $GITHUB_OUTPUT
       - name: Show host info
         run: hostname
 
@@ -47,6 +51,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run pipeline with resource monitoring
+        id: run_pipeline
         run: |
           source venv/bin/activate
           export MONITOR_PID_FILE="resource_stat/monitor.pid"
@@ -64,5 +69,83 @@ jobs:
           echo "Monitor PID: ${MONITOR_PID}. Waiting 10 seconds before pipeline run."
           sleep 10
 
+          PI_START_EPOCH=$(date +%s)
+          echo "Pipeline start on Pi: $(date) (epoch: $PI_START_EPOCH)"
+          echo "pi_start_epoch=$PI_START_EPOCH" >> $GITHUB_OUTPUT
+
           echo "Starting pipeline run"
-          python pipeline.py
+          python pipeline.py || PIPELINE_EXIT=$?
+
+          PI_END_EPOCH=$(date +%s)
+          echo "Pipeline end on Pi: $(date) (epoch: $PI_END_EPOCH)"
+          echo "pi_end_epoch=$PI_END_EPOCH" >> $GITHUB_OUTPUT
+
+          if [ ! -z "$PIPELINE_EXIT" ]; then
+            echo "⚠️  Pipeline exited with code $PIPELINE_EXIT"
+            exit $PIPELINE_EXIT
+          fi
+
+      - name: Calculate and save timing metrics
+        if: always()
+        run: |
+          GITHUB_START_EPOCH="${{ steps.github_start.outputs.github_start_epoch }}"
+          PI_START_EPOCH="${{ steps.run_pipeline.outputs.pi_start_epoch }}"
+          PI_END_EPOCH="${{ steps.run_pipeline.outputs.pi_end_epoch }}"
+
+          # Validate timestamps are set
+          if [ -z "$GITHUB_START_EPOCH" ] || [ -z "$PI_START_EPOCH" ]; then
+            echo "❌ Error: Missing required timestamps (GitHub or Pi start)"
+            echo "GITHUB_START_EPOCH=$GITHUB_START_EPOCH"
+            echo "PI_START_EPOCH=$PI_START_EPOCH"
+            echo "PI_END_EPOCH=$PI_END_EPOCH"
+            exit 1
+          fi
+
+          # Handle missing end epoch (pipeline failure)
+          if [ -z "$PI_END_EPOCH" ]; then
+            echo "⚠️  Warning: Pipeline end time not captured (pipeline may have failed)"
+            PI_END_EPOCH=$(date +%s)
+            echo "Using current time as fallback: $PI_END_EPOCH"
+          fi
+
+          # Calculate times
+          QUEUE_TIME=$((PI_START_EPOCH - GITHUB_START_EPOCH))
+          EXECUTION_TIME=$((PI_END_EPOCH - PI_START_EPOCH))
+          TOTAL_TIME=$((PI_END_EPOCH - GITHUB_START_EPOCH))
+
+          # Validate and handle edge cases
+          if [ $QUEUE_TIME -lt 0 ]; then
+            echo "⚠️  Warning: Queue time was negative ($QUEUE_TIME sec), likely due to clock skew. Setting to 0."
+            QUEUE_TIME=0
+          fi
+          if [ $EXECUTION_TIME -lt 0 ]; then
+            echo "⚠️  Warning: Execution time invalid ($EXECUTION_TIME sec). Setting to -1 (failed)."
+            EXECUTION_TIME=-1
+          fi
+
+          # Create timing metrics directory
+          mkdir -p timing_metrics
+
+          # Save as JSON
+          cat > timing_metrics/timing_${{ matrix.device }}.json <<EOF
+          {
+            "device": "${{ matrix.device }}",
+            "github_start_epoch": $GITHUB_START_EPOCH,
+            "pi_start_epoch": $PI_START_EPOCH,
+            "pi_end_epoch": $PI_END_EPOCH,
+            "queue_time_sec": $QUEUE_TIME,
+            "execution_time_sec": $EXECUTION_TIME,
+            "total_time_sec": $TOTAL_TIME,
+            "timestamp": "$(date -Iseconds)"
+          }
+          EOF
+
+          echo "Timing metrics saved:"
+          cat timing_metrics/timing_${{ matrix.device }}.json
+
+      - name: Upload timing metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: timing-metrics-${{ matrix.device }}
+          path: timing_metrics/timing_${{ matrix.device }}.json

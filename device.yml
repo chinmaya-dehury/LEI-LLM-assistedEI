@@ -1,6 +1,6 @@
 devices:
   Rpi5-A:
-    use_case: air_quality, wind
+    use_case: 
   
   Rpi5-B:
-    use_case: 
+    use_case: wind
