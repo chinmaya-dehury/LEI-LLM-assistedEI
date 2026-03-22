@@ -1,0 +1,68 @@
+name: Deploy to Pi
+on:
+  push:
+    branches:
+      - main
+      - eiops
+    paths:
+      - "device.yml"
+
+jobs:
+  run-on-devices:
+    strategy:
+      fail-fast: false  # allow other devices to continue even if one fails
+      matrix:
+        device: [rpi5-A, rpi5-B]  # labels used
+
+    runs-on:
+      - self-hosted
+      - ${{ matrix.device }}
+
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Announce target device
+        run: echo "Running on ${{ matrix.device }}"
+
+      - name: Show host info
+        run: hostname
+
+      - name: Set up Virtual Environment
+        run: |
+          # Check if venv directory exists
+          if [ ! -d "venv" ]; then
+            echo "Creating new virtual environment..."
+            python3 -m venv venv
+          else
+            echo "Virtual environment already exists. Skipping creation."
+          fi
+          
+          # Activate and sync dependencies
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run pipeline with resource monitoring
+        run: |
+          source venv/bin/activate
+          export MONITOR_PID_FILE="resource_stat/monitor.pid"
+
+          stop_monitor() {
+            echo "Stopping resource monitor..."
+            python resource_stat/stop_monitor.py || echo "Monitor stop script reported an error"
+          }
+
+          trap stop_monitor EXIT
+
+          echo "Starting resource monitor"
+          python resource_stat/resource_stat.py &
+          MONITOR_PID=$!
+          echo "Monitor PID: ${MONITOR_PID}. Waiting 10 seconds before pipeline run."
+          sleep 10
+
+          echo "Starting pipeline run"
+          python pipeline.py
