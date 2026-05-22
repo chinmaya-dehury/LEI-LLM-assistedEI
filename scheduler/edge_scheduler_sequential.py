@@ -25,17 +25,12 @@ import time
 from datetime import datetime, timezone
 from config import DATA_TYPE, DEFAULT_MODEL
 import json
-
-
-def _sanitize_model_name(model: str) -> str:
-    """Sanitize model name for use in filenames."""
-    return (
-        (model or "model")
-        .replace(" ", "_")
-        .replace(":", "_")
-        .replace("/", "_")
-        .replace("\\", "_")
-    )
+from shared_utils import (
+    sanitize_model_name,
+    get_environment_vars,
+    setup_timing_paths,
+    IST,
+)
 
 
 from resource_monitor import log_resource_metrics
@@ -45,25 +40,24 @@ TASKS_DIR = "generated_tasks/"+DATA_TYPE
 LOG_DIR = "logs"
 os.makedirs(LOG_DIR, exist_ok=True)
 
-# Use RUN_ID from environment (passed from pipeline) or generate new one
-RUN_ID = os.environ.get("RUN_ID") or datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-# Optional run count (passed from pipeline)
-RUN_COUNT = os.environ.get("RUN_COUNT") or ""
-SANITIZED_MODEL = _sanitize_model_name(DEFAULT_MODEL)
+# Use RUN_ID from environment and setup timing paths
+env_vars = get_environment_vars()
+RUN_ID = env_vars["RUN_ID"]
+RUN_COUNT = env_vars["RUN_COUNT"]
+timing_paths = setup_timing_paths(DATA_TYPE, "step4", DEFAULT_MODEL)
+TIMESTAMP_PATH = timing_paths["TIMESTAMP_PATH"]
+STEP4_CSV = timing_paths["STEP_CSV"]
+RESOURCE_CSV = timing_paths["RESOURCE_CSV"]
 
 # Create a timestamped log file with model name and run count
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-log_file = os.path.join(LOG_DIR, f"edge_execution_{SANITIZED_MODEL}_run{RUN_COUNT}_{timestamp}.log")
-TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
-# Per-run CSV path with model name and run ID (step4 = scheduler)
-STEP4_CSV = os.path.join(TIMESTAMP_PATH, f"step4_{SANITIZED_MODEL}_{RUN_ID}.csv")
+log_file = os.path.join(LOG_DIR, f"edge_execution_{sanitize_model_name(DEFAULT_MODEL)}_run{RUN_COUNT}_{timestamp}.log")
 
 # Script-level timing
 SCRIPT_START_TIME = datetime.now(timezone.utc).isoformat()
 SCRIPT_START_PERF = time.perf_counter()
 
 # Log resource metrics at start
-RESOURCE_CSV = os.path.join(TIMESTAMP_PATH, f"step4_resource_{SANITIZED_MODEL}_{RUN_ID}.csv")
 log_resource_metrics(RESOURCE_CSV, "step4_scheduler", "start", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
 
 def log(msg):

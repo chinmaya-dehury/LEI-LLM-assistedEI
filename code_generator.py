@@ -20,6 +20,7 @@ import sys
 import time
 import csv
 from datetime import datetime, timezone, timedelta
+from pathlib import Path
 from openai import OpenAI
 from config import LLM_BASE_URL, LLM_API_KEY, DATA_TYPE, DEFAULT_MODEL
 from string import Template
@@ -27,17 +28,15 @@ from prompts.get_code import SYSTEM_PROMPT
 from typing import List
 import re
 from resource_monitor import log_resource_metrics
-
-
-def _sanitize_model_name(model: str) -> str:
-    """Sanitize model name for use in filenames."""
-    return (
-        (model or "model")
-        .replace(" ", "_")
-        .replace(":", "_")
-        .replace("/", "_")
-        .replace("\\", "_")
-    )
+from shared_utils import (
+    sanitize_model_name,
+    extract_json_blob,
+    extract_first_json_object,
+    get_environment_vars,
+    setup_timing_paths,
+    append_timing_rows_to_csv,
+    IST,
+)
 
 # Ensure Unicode-safe stdout/stderr on Windows
 if hasattr(sys.stdout, "reconfigure"):
@@ -55,17 +54,16 @@ META_PATH = os.path.join(BASE_PATH, "metadata.json")
 CONTEXT_PATH = os.path.join(BASE_PATH, "context.txt")
 OUTPUT_DIR = os.path.join("generated_tasks", DATA_TYPE)
 TASK_LIST_PATH = os.path.join(OUTPUT_DIR, "new_tasks.json")
-TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
-# Per-run CSV path with model name and run ID (requested: step2_<model>_<timestamp>.csv)
-IST = timezone(timedelta(hours=5, minutes=30))
-# Use RUN_ID from environment (passed from pipeline) or generate new one
-RUN_ID = os.environ.get("RUN_ID") or datetime.now(IST).strftime("%Y%m%d_%H%M%S")
-# Optional run count (passed from pipeline)
-RUN_COUNT = os.environ.get("RUN_COUNT") or ""
-# Path to resource summary JSON
 RESOURCE_SUMMARY_PATH = "resource_stat/resource_usage_summary.json"
-SANITIZED_MODEL = _sanitize_model_name(DEFAULT_MODEL)
-STEP2_CSV = os.path.join(TIMESTAMP_PATH, f"step2_{SANITIZED_MODEL}_{RUN_ID}.csv")
+
+# Per-run CSV path with model name and run ID
+env_vars = get_environment_vars()
+RUN_ID = env_vars["RUN_ID"]
+RUN_COUNT = env_vars["RUN_COUNT"]
+timing_paths = setup_timing_paths(DATA_TYPE, "step2", DEFAULT_MODEL)
+TIMESTAMP_PATH = timing_paths["TIMESTAMP_PATH"]
+STEP2_CSV = timing_paths["STEP_CSV"]
+RESOURCE_CSV = timing_paths["RESOURCE_CSV"]
 
 
 def _append_timing_rows(rows: list[dict]) -> None:
@@ -131,9 +129,7 @@ SCRIPT_START_TIME = datetime.now(IST).isoformat()
 SCRIPT_START_PERF = time.perf_counter()
 
 # Log resource metrics at start
-RESOURCE_CSV = os.path.join(TIMESTAMP_PATH, f"step2_resource_{SANITIZED_MODEL}_{RUN_ID}.csv")
 log_resource_metrics(RESOURCE_CSV, "step2_code_generator", "start", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
-
 
 def _truncate(text: str, max_chars: int) -> str:
     if not isinstance(text, str):
@@ -226,6 +222,7 @@ Tasks (<=2):
                 {"role": "user", "content": user_prompt},
             ],
             temperature=0.0,
+            timeout=300,  # 5-minute timeout to prevent indefinite hanging
         )
     except Exception as e:
         errors.append(f"{DEFAULT_MODEL}: {repr(e)}")
@@ -284,7 +281,7 @@ Tasks (<=2):
     # Parse using extract-first-json (tolerate extra text)
     tasks_json = None
     try:
-        tasks_json = _extract_first_json_object(raw_output)
+        tasks_json = extract_first_json_object(raw_output)
     except Exception:
         raw_output = str(response)
 
@@ -412,27 +409,31 @@ def normalize_code_string(code: str) -> str:
         s = s.replace("\\r\\n", "\n").replace("\\n", "\n").replace("\\t", "\t")
     return s
 
-def _extract_first_json_object(text: str) -> dict:
+def _extract_json_blob(text: str) -> str:
+    """Extract a JSON object string from text that may contain extra content."""
     if not isinstance(text, str):
-        raise ValueError("LLM output is not a string")
-
+        return ""
+    
     s = text.strip()
-
+    
     # Strip ``` fences if present
     if s.startswith("```"):
         s = s.split("\n", 1)[1] if "\n" in s else ""
         if "```" in s:
             s = s.rsplit("```", 1)[0].strip()
-
+    
     start = s.find("{")
     if start == -1:
-        raise ValueError("No JSON object start '{' found in LLM output")
+        return ""
+    
+    try:
+        decoder = json.JSONDecoder()
+        obj, end = decoder.raw_decode(s[start:])
+        # Return the JSON string (from start to end of the decoded object)
+        return s[start:start + end]
+    except Exception:
+        return ""
 
-    decoder = json.JSONDecoder()
-    obj, _end = decoder.raw_decode(s[start:])
-    if not isinstance(obj, dict):
-        raise ValueError("Top-level JSON value is not an object")
-    return obj
 
 
 def _get_llm_text_from_chat_completion(response) -> str:
@@ -570,7 +571,11 @@ def main() -> None:
         with open(TASK_LIST_PATH, "w", encoding="utf-8") as out_file:
             json.dump(tasks_payload, out_file, ensure_ascii=False, indent=2)
 
-print(f"\nAll requested batches processed. Check generated_tasks/{DATA_TYPE} for outputs.")
+    print(f"\nAll requested batches processed. Check generated_tasks/{DATA_TYPE} for outputs.")
 
-# Log resource metrics at end
-log_resource_metrics(RESOURCE_CSV, "step2_code_generator", "end", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
+    # Log resource metrics at end
+    log_resource_metrics(RESOURCE_CSV, "step2_code_generator", "end", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
+
+
+if __name__ == "__main__":
+    main()

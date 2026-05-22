@@ -3,40 +3,41 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATA_TYPE = "temp_humidity"
+# later on change the default "air_quality" to use COMPLEX tasks
+DATA_TYPE = os.getenv("DATA_TYPE", "air_quality")
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "generic").strip().lower()
 
-LLM_PROVIDER = (os.getenv("LLM_PROVIDER") or "").strip().lower()
+# LLM API credentials and endpoint
+LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")
+LLM_API_KEY = os.getenv("LLM_API_KEY")
+DEFAULT_MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
 
-GENERIC_API_KEY = os.getenv("LLM_API_KEY")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-
-if not LLM_PROVIDER:
-	if OPENAI_API_KEY:
-		LLM_PROVIDER = "openai"
-	elif GEMINI_API_KEY:
-		LLM_PROVIDER = "gemini"
-	else:
-		LLM_PROVIDER = "generic"
-
-if LLM_PROVIDER == "openai":
-	LLM_BASE_URL = os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL") or "https://api.openai.com/v1"
-	LLM_API_KEY = GENERIC_API_KEY or OPENAI_API_KEY
-	DEFAULT_MODEL = os.getenv("LLM_MODEL") or os.getenv("OPENAI_MODEL") or "gpt-4o-mini"
-elif LLM_PROVIDER == "gemini":
-	LLM_BASE_URL = os.getenv("LLM_BASE_URL") or os.getenv("GEMINI_BASE_URL") or "https://generativelanguage.googleapis.com/v1beta/openai"
-	LLM_API_KEY = GENERIC_API_KEY or GEMINI_API_KEY
-	DEFAULT_MODEL = os.getenv("LLM_MODEL") or os.getenv("GEMINI_MODEL") or "gemini-2.5-flash-lite"
-else:
-	LLM_BASE_URL = os.getenv("LLM_BASE_URL") or "https://api.openai.com/v1"
-	LLM_API_KEY = GENERIC_API_KEY or OPENAI_API_KEY or GEMINI_API_KEY
-	DEFAULT_MODEL = os.getenv("LLM_MODEL") or os.getenv("OPENAI_MODEL") or os.getenv("GEMINI_MODEL") or "gpt-4o-mini"
-
+# Validation
 if not LLM_API_KEY:
-	raise RuntimeError("LLM API key not found. Set LLM_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY in your .env file.")
+	raise RuntimeError("LLM_API_KEY not found in .env file")
 
 if not LLM_BASE_URL:
-	raise RuntimeError("LLM base URL not configured. Set LLM_BASE_URL in your .env file.")
+	raise RuntimeError("LLM_BASE_URL not configured in .env file")
 
 if not DATA_TYPE:
 	raise RuntimeError("DATA_TYPE is not set. Please set it in config.py.")
+
+# ============================================================================
+# LLM Configuration
+# ============================================================================
+# Two options supported:
+# 
+# OPTION 1: Generic LLM Provider (ChatGPT, Gemini, Groq, Claude, etc.)
+#   LLM_PROVIDER=generic
+#   LLM_BASE_URL=https://api.groq.com/openai/v1  (or your provider's URL)
+#   LLM_API_KEY=your-api-key
+#   LLM_MODEL=llama-3.3-70b-versatile  (or your model name)
+#
+# OPTION 2: Ollama (Local LLM - self-hosted)
+#   LLM_PROVIDER=ollama
+#   LLM_BASE_URL=http://localhost:11434/v1
+#   LLM_API_KEY=ollama
+#   LLM_MODEL=llama2  (or any ollama model)
+#
+# See .env.example for detailed provider configurations
+# ============================================================================
