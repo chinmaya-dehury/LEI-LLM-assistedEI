@@ -16,7 +16,7 @@ This is resource-aware version. It provides the LLM with current
 resource usage summary of the edge device so that the LLM can decide
 whether to generate new tasks or not based on the resource constraints.
 
-last code updated on 18-12-2025
+last code updated on 21-05-2025
 (name changed from llm_orchestrator_adaptive_resource.py to task_generator.py)
 """
 
@@ -31,172 +31,84 @@ from string import Template
 from config import DATA_TYPE, LLM_BASE_URL, LLM_API_KEY, DEFAULT_MODEL
 from prompts.get_tasks import SYSTEM_PROMPT
 from resource_monitor import log_resource_metrics
-
-
-def _sanitize_model_name(model: str) -> str:
-    """Sanitize model name for use in filenames."""
-    return (
-        (model or "model")
-        .replace(" ", "_")
-        .replace(":", "_")
-        .replace("/", "_")
-        .replace("\\", "_")
-    )
-
-
-def _extract_first_json_object(text: str) -> dict:
-    """Extract first JSON object from LLM output that may contain extra NL text."""
-    if not isinstance(text, str):
-        raise ValueError("LLM output is not a string")
-
-    s = text.strip()
-
-    # Strip ``` fences if present
-    if s.startswith("```"):
-        s = s.split("\n", 1)[1] if "\n" in s else ""
-        if "```" in s:
-            s = s.rsplit("```", 1)[0].strip()
-
-    start = s.find("{")
-    if start == -1:
-        raise ValueError("No JSON object start '{' found in LLM output")
-
-    decoder = json.JSONDecoder()
-    obj, _end = decoder.raw_decode(s[start:])
-    if not isinstance(obj, dict):
-        raise ValueError("Top-level JSON value is not an object")
-    return obj
-
-
-def write_timing_csv(
-    csv_path: str,
-    script_start_time: str,
-    script_end_time: str,
-    script_duration: float,
-    llm_start_time: str,
-    llm_end_time: str,
-    llm_duration: float,
-    prompt_tokens: int,
-    completion_tokens: int,
-    total_tokens: int,
-    model_name: str,
-) -> None:
-    os.makedirs(os.path.dirname(csv_path) or ".", exist_ok=True)
-    prompt_tokens_per_sec = prompt_tokens / llm_duration if llm_duration > 0 else 0
-    completion_tokens_per_sec = completion_tokens / llm_duration if llm_duration > 0 else 0
-
-    # Add run_count and resource summary fields from resource_stat/resource_usage_summary.json
-    fieldnames = [
-        "step",
-        "model",
-        "run_count",
-        "script_start_time_ist",
-        "script_end_time_ist",
-        "script_duration_sec",
-        "llm_start_time_ist",
-        "llm_end_time_ist",
-        "llm_duration_sec",
-        "prompt_tokens",
-        "completion_tokens",
-        "total_tokens",
-        "prompt_tokens_per_sec",
-        "completion_tokens_per_sec",
-        "resource_generated_at",
-        "resource_last_checked",
-        "avg_cpu_1m",
-        "avg_mem_1m",
-        "avg_cpu_5m",
-        "avg_mem_5m",
-    ]
-
-    file_exists = os.path.exists(csv_path) and os.path.getsize(csv_path) > 0
-
-    with open(csv_path, "a", newline="", encoding="utf-8") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        if not file_exists:
-            writer.writeheader()
-
-        # Try to read resource summary values
-        resource_vals = {}
-        try:
-            with open(RESOURCE_SUMMARY_PATH, "r", encoding="utf-8") as rf:
-                rs = json.load(rf)
-                resource_vals["resource_generated_at"] = rs.get("generated_at", "")
-                resource_vals["resource_last_checked"] = rs.get("last_checked", "")
-                sw = rs.get("summary_windows", {}) or {}
-                w1 = sw.get("1m", {}) or {}
-                w5 = sw.get("5m", {}) or {}
-                resource_vals["avg_cpu_1m"] = w1.get("avg_cpu", "")
-                resource_vals["avg_mem_1m"] = w1.get("avg_mem", "")
-                resource_vals["avg_cpu_5m"] = w5.get("avg_cpu", "")
-                resource_vals["avg_mem_5m"] = w5.get("avg_mem", "")
-        except Exception:
-            # leave resource_vals empty if file missing or malformed
-            resource_vals = {k: "" for k in [
-                "resource_generated_at", "resource_last_checked", "avg_cpu_1m",
-                "avg_mem_1m", "avg_cpu_5m", "avg_mem_5m"]}
-
-        # Dedicated LLM call timing row
-        writer.writerow(
-            {
-                "step": "llm_call",
-                "model": model_name,
-                "run_count": RUN_COUNT,
-                "script_start_time_ist": script_start_time,
-                "script_end_time_ist": script_end_time,
-                "script_duration_sec": script_duration,
-                "llm_start_time_ist": llm_start_time,
-                "llm_end_time_ist": llm_end_time,
-                "llm_duration_sec": llm_duration,
-                "prompt_tokens": prompt_tokens,
-                "completion_tokens": completion_tokens,
-                "total_tokens": total_tokens,
-                "prompt_tokens_per_sec": prompt_tokens_per_sec,
-                "completion_tokens_per_sec": completion_tokens_per_sec,
-                **resource_vals,
-            }
-        )
+from shared_utils import (
+    sanitize_model_name,
+    extract_first_json_object,
+    get_environment_vars,
+    setup_timing_paths,
+    append_timing_rows_to_csv,
+    load_context_for_data_type,
+    load_resource_summary,
+    IST,
+)
 
 
 # Initialize the LLM client using an OpenAI-compatible base URL.
 client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY)
 
-# Paths
-BASE_PATH = "data/"+DATA_TYPE+"/"
-DATA_PATH = BASE_PATH+"sample_data.csv"
-META_PATH = BASE_PATH+"metadata.json"
-CONTEXT_PATH = BASE_PATH+"context.txt"
-RESOURCE_SUMMARY_PATH = "resource_stat/resource_usage_summary.json"
-OUTPUT_DIR = "generated_tasks/"+DATA_TYPE
-TASK_LIST_PATH = OUTPUT_DIR+"/tasks_list.json"
-TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
 
-# Per-run CSV path with model name and run ID (requested: step1_<model>_<timestamp>.csv)
-IST = timezone(timedelta(hours=5, minutes=30))
-# Use RUN_ID from environment (passed from pipeline) or generate new one
-RUN_ID = os.environ.get("RUN_ID") or datetime.now(IST).strftime("%Y%m%d_%H%M%S")
-# Optional run count (passed from pipeline)
-RUN_COUNT = os.environ.get("RUN_COUNT") or ""
-SANITIZED_MODEL = _sanitize_model_name(DEFAULT_MODEL)
-STEP1_CSV_PATH = os.path.join(TIMESTAMP_PATH, f"step1_{SANITIZED_MODEL}_{RUN_ID}.csv")
+def _write_timing_csv(script_start_time, script_end_time, script_duration, llm_start_time,
+                      llm_end_time, llm_duration, prompt_tokens, completion_tokens, total_tokens):
+    """Write timing data to CSV with resource summary."""
+    resource_vals = load_resource_summary(RESOURCE_SUMMARY_PATH)
+    fieldnames = [
+        "step", "model", "run_count", "script_start_time_ist", "script_end_time_ist",
+        "script_duration_sec", "llm_start_time_ist", "llm_end_time_ist", "llm_duration_sec",
+        "prompt_tokens", "completion_tokens", "total_tokens", "prompt_tokens_per_sec",
+        "completion_tokens_per_sec", "resource_generated_at", "resource_last_checked",
+        "avg_cpu_1m", "avg_mem_1m", "avg_cpu_5m", "avg_mem_5m"
+    ]
+    prompt_tps = prompt_tokens / llm_duration if llm_duration > 0 else 0
+    completion_tps = completion_tokens / llm_duration if llm_duration > 0 else 0
+    
+    append_timing_rows_to_csv(STEP1_CSV_PATH, [{
+        "step": "llm_call",
+        "model": DEFAULT_MODEL,
+        "run_count": RUN_COUNT,
+        "script_start_time_ist": script_start_time,
+        "script_end_time_ist": script_end_time,
+        "script_duration_sec": script_duration,
+        "llm_start_time_ist": llm_start_time,
+        "llm_end_time_ist": llm_end_time,
+        "llm_duration_sec": llm_duration,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "total_tokens": total_tokens,
+        "prompt_tokens_per_sec": prompt_tps,
+        "completion_tokens_per_sec": completion_tps,
+        **resource_vals,
+    }], fieldnames)
+
+# Paths
+BASE_PATH = os.path.join("data", DATA_TYPE)
+DATA_PATH = os.path.join(BASE_PATH, "sample_data.csv")
+META_PATH = os.path.join(BASE_PATH, "metadata.json")
+CONTEXT_PATH = os.path.join(BASE_PATH, "context.txt")
+RESOURCE_SUMMARY_PATH = os.path.join("resource_stat", "resource_usage_summary.json")
+OUTPUT_DIR = os.path.join("generated_tasks", DATA_TYPE)
+TASK_LIST_PATH = os.path.join(OUTPUT_DIR, "tasks_list.json")
+
+# Setup timing paths and environment variables
+env_vars = get_environment_vars()
+RUN_ID = env_vars["RUN_ID"]
+RUN_COUNT = env_vars["RUN_COUNT"]
+timing_paths = setup_timing_paths(DATA_TYPE, "step1", DEFAULT_MODEL)
+TIMESTAMP_PATH = timing_paths["TIMESTAMP_PATH"]
+STEP1_CSV_PATH = timing_paths["STEP_CSV"]
+RESOURCE_CSV = timing_paths["RESOURCE_CSV"]
 
 # Script-wide timing start
 script_start_time = datetime.now(IST).isoformat()
 script_start_perf = time.perf_counter()
 
 # Log resource metrics at start
-RESOURCE_CSV = os.path.join(TIMESTAMP_PATH, f"step1_resource_{SANITIZED_MODEL}_{RUN_ID}.csv")
 log_resource_metrics(RESOURCE_CSV, "step1_task_generator", "start", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
 
-# Read all inputs
-with open(DATA_PATH, "r") as f:
-    sample_data = f.read()
-
-with open(META_PATH, "r") as f:
-    metadata = json.load(f)
-
-with open(CONTEXT_PATH, "r") as f:
-    context = f.read()
+# Load context for this data type
+context_data = load_context_for_data_type(DATA_TYPE)
+sample_data = context_data["sample_data"]
+metadata = context_data["metadata"]
+context = context_data["context"]
 
 # Ensure task list exists; if not create with empty tasks list
 if not os.path.exists(TASK_LIST_PATH):
@@ -274,8 +186,7 @@ if not str(raw_output).strip():
     script_end_perf = time.perf_counter()
     script_duration = script_end_perf - script_start_perf
     llm_duration = llm_end_perf - llm_start_perf
-    write_timing_csv(
-        STEP1_CSV_PATH,
+    _write_timing_csv(
         script_start_time,
         script_end_time,
         script_duration,
@@ -285,13 +196,12 @@ if not str(raw_output).strip():
         prompt_tokens,
         completion_tokens,
         total_tokens,
-        model_name,
     )
     sys.exit(1)
 
 # Parse JSON safely (handles extra NL text / code fences around JSON)
 try:
-    tasks_data = _extract_first_json_object(raw_output)
+    tasks_data = extract_first_json_object(raw_output)
 except (json.JSONDecodeError, ValueError) as e:
     print(f"Could not extract JSON from LLM response: {e}")
     print("Saving raw output for review.")
@@ -305,8 +215,7 @@ except (json.JSONDecodeError, ValueError) as e:
     script_end_perf = time.perf_counter()
     script_duration = script_end_perf - script_start_perf
     llm_duration = llm_end_perf - llm_start_perf
-    write_timing_csv(
-        STEP1_CSV_PATH,
+    _write_timing_csv(
         script_start_time,
         script_end_time,
         script_duration,
@@ -316,7 +225,6 @@ except (json.JSONDecodeError, ValueError) as e:
         prompt_tokens,
         completion_tokens,
         total_tokens,
-        model_name,
     )
     sys.exit(1)
 
@@ -331,8 +239,7 @@ if not isinstance(tasks_data, dict):
     script_end_perf = time.perf_counter()
     script_duration = script_end_perf - script_start_perf
     llm_duration = llm_end_perf - llm_start_perf
-    write_timing_csv(
-        STEP1_CSV_PATH,
+    _write_timing_csv(
         script_start_time,
         script_end_time,
         script_duration,
@@ -342,7 +249,6 @@ if not isinstance(tasks_data, dict):
         prompt_tokens,
         completion_tokens,
         total_tokens,
-        model_name,
     )
     sys.exit(1)
 
@@ -356,8 +262,7 @@ if len(tasks_list) == 0:
     script_end_perf = time.perf_counter()
     script_duration = script_end_perf - script_start_perf
     llm_duration = llm_end_perf - llm_start_perf
-    write_timing_csv(
-        STEP1_CSV_PATH,
+    _write_timing_csv(
         script_start_time,
         script_end_time,
         script_duration,
@@ -367,7 +272,6 @@ if len(tasks_list) == 0:
         prompt_tokens,
         completion_tokens,
         total_tokens,
-        model_name,
     )
     sys.exit(1)
 
@@ -403,8 +307,7 @@ llm_duration = llm_end_perf - llm_start_perf
 # Log resource metrics at end
 log_resource_metrics(RESOURCE_CSV, "step1_task_generator", "end", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
 
-write_timing_csv(
-    STEP1_CSV_PATH,
+_write_timing_csv(
     script_start_time,
     script_end_time,
     script_duration,
@@ -414,6 +317,5 @@ write_timing_csv(
     prompt_tokens,
     completion_tokens,
     total_tokens,
-    model_name,
 )
 

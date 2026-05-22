@@ -26,17 +26,16 @@ from openai import OpenAI
 from config import DATA_TYPE, LLM_BASE_URL, LLM_API_KEY, DEFAULT_MODEL
 from prompts.get_validated import SYSTEM_PROMPT
 from resource_monitor import log_resource_metrics
+from shared_utils import (
+    sanitize_model_name,
+    extract_first_json_object,
+    get_environment_vars,
+    setup_timing_paths,
+    append_timing_rows_to_csv,
+    IST,
+)
 
 
-def _sanitize_model_name(model: str) -> str:
-    """Sanitize model name for use in filenames."""
-    return (
-        (model or "model")
-        .replace(" ", "_")
-        .replace(":", "_")
-        .replace("/", "_")
-        .replace("\\", "_")
-    )
 
 # Windows-safe stdout/stderr
 if hasattr(sys.stdout, "reconfigure"):
@@ -47,15 +46,15 @@ if hasattr(sys.stderr, "reconfigure"):
 CLIENT_TIMEOUT = 120  # seconds
 client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY, timeout=CLIENT_TIMEOUT)
 
-TIMESTAMP_PATH = os.path.join("timestamp_path", DATA_TYPE)
 # Per-run CSV path with model name and run ID (step3 = validator)
-IST = timezone(timedelta(hours=5, minutes=30))
-# Use RUN_ID from environment (passed from pipeline) or generate new one
-RUN_ID = os.environ.get("RUN_ID") or datetime.now(IST).strftime("%Y%m%d_%H%M%S")
-# Optional run count (passed from pipeline)
-RUN_COUNT = os.environ.get("RUN_COUNT") or ""
-SANITIZED_MODEL = _sanitize_model_name(DEFAULT_MODEL)
-STEP3_CSV = os.path.join(TIMESTAMP_PATH, f"step3_{SANITIZED_MODEL}_{RUN_ID}.csv")
+env_vars = get_environment_vars()
+RUN_ID = env_vars["RUN_ID"]
+RUN_COUNT = env_vars["RUN_COUNT"]
+timing_paths = setup_timing_paths(DATA_TYPE, "step3", DEFAULT_MODEL)
+TIMESTAMP_PATH = timing_paths["TIMESTAMP_PATH"]
+STEP3_CSV = timing_paths["STEP_CSV"]
+RESOURCE_CSV = timing_paths["RESOURCE_CSV"]
+SANITIZED_MODEL = sanitize_model_name(DEFAULT_MODEL)
 
 MAX_RETRIES = 2
 DEFAULT_TASKS_FILE = os.path.join("generated_tasks", DATA_TYPE, "new_tasks.json")
@@ -66,7 +65,6 @@ DEFAULT_VALIDATOR_LOG = os.path.join("validator", DATA_TYPE)
 TIMING_ROWS_WRITTEN = 0
 
 # Log resource metrics at start
-RESOURCE_CSV = os.path.join(TIMESTAMP_PATH, f"step3_resource_{SANITIZED_MODEL}_{RUN_ID}.csv")
 log_resource_metrics(RESOURCE_CSV, "step3_validator", "start", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
 
 

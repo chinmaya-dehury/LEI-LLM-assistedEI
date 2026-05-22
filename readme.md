@@ -37,6 +37,7 @@ LLM-assisted Edge Intelligence (LEI) bridges the gap between powerful cloud-base
 LEI-LLM-assistedEI/
 │
 ├── config.py                          # Generic LLM configuration (provider, API keys, model)
+├── .env.example                       # Example .env file with Ollama and cloud provider configs
 ├── pipeline.py                        # Main orchestrator: runs Steps 1-4 sequentially
 ├── resource_monitor.py                # Utility: logs CPU, memory, network metrics (used by all steps)
 │
@@ -128,6 +129,117 @@ LEI-LLM-assistedEI/
 * Logs resource metrics and execution stats
 
 
+## Shared Utilities Module
+
+### `shared_utils.py` — Cross-Pipeline Utility Functions
+
+To eliminate code duplication and improve maintainability, common functionality is consolidated in `shared_utils.py`. All pipeline steps import and use these utilities instead of defining their own versions.
+
+#### Core Functions:
+
+**1. Model Name Sanitization**
+```python
+sanitize_model_name(model: str) -> str
+```
+- Sanitizes model names for safe use in filenames
+- Removes/replaces special characters: spaces, colons, forward slashes, backslashes
+- Used by all steps (Step 1-4) to generate consistent CSV/log filenames
+- Example: `"gpt-4o:turbo"` → `"gpt-4o_turbo"`
+
+**2. JSON Extraction**
+```python
+extract_first_json_object(text: str) -> dict
+extract_json_blob(text: str) -> str
+```
+- `extract_first_json_object()`: Extracts and parses JSON object from text (handles code fences, extra NL text)
+- `extract_json_blob()`: Extracts JSON string without parsing (used for extracting JSON before decision-making)
+- Robust against LLM output variations (warnings, markdown fences, surrounding text)
+- Used in Steps 1-2 to parse LLM responses
+
+**3. Environment & Timing**
+```python
+get_environment_vars() -> Dict[str, str]
+get_current_time_ist() -> str
+get_current_time_perf() -> float
+```
+- `get_environment_vars()`: Retrieves RUN_ID and RUN_COUNT from environment or generates defaults
+- `get_current_time_ist()`: Returns ISO-format timestamp in IST (India Standard Time, UTC+5:30)
+- `get_current_time_perf()`: Returns performance counter for precise timing measurement
+
+**4. Path & CSV Setup**
+```python
+setup_timing_paths(data_type: str, step_name: str, model_name: str) -> Dict[str, str]
+ensure_csv_with_headers(csv_path: str, fieldnames: List[str]) -> bool
+```
+- `setup_timing_paths()`: Generates timestamped directory and CSV file paths for each pipeline step
+  - Returns dict with keys: `TIMESTAMP_PATH`, `STEP_CSV`, `RESOURCE_CSV`, `RUN_ID`, `SANITIZED_MODEL`
+  - Ensures paths are relative and system-agnostic (no hardcoded Windows/Linux paths)
+  - Used by all 4 pipeline steps to maintain consistent naming conventions
+- `ensure_csv_with_headers()`: Creates CSV file with headers if missing
+  - Idempotent: safe to call multiple times
+  - Used for initializing step-specific CSV logs
+
+**5. CSV Operations**
+```python
+append_timing_rows_to_csv(csv_path: str, rows: list, fieldnames: list) -> None
+load_resource_summary(resource_summary_path: str) -> Dict[str, Any]
+```
+- `append_timing_rows_to_csv()`: Appends rows to CSV with automatic header creation
+  - Handles file creation, field validation, resource metric injection
+  - Used by all steps for consistent CSV logging across pipeline
+- `load_resource_summary()`: Loads CPU/memory metrics from `resource_stat/resource_usage_summary.json`
+  - Returns dict with keys: `resource_generated_at`, `avg_cpu_1m`, `avg_mem_1m`, `avg_cpu_5m`, `avg_mem_5m`
+  - Gracefully handles missing/malformed files
+
+**6. Data Loading**
+```python
+load_context_for_data_type(data_type: str) -> Dict[str, Any]
+```
+- Loads `sample_data.csv`, `metadata.json`, `context.txt` for a given data type
+- Returns dict with keys: `sample_data` (str), `metadata` (dict), `context` (str)
+- Handles missing files gracefully (returns empty values)
+- Used in Steps 1-2 to feed LLM with contextual data
+
+**7. Text Processing**
+```python
+truncate(text: str, max_chars: int) -> str
+normalize_code_string(code: str) -> str
+```
+- `truncate()`: Safely truncates text to max length with ellipsis indicator
+- `normalize_code_string()`: Removes code fences and unescapes common sequences
+- Used in code generation and validation steps
+
+#### Design Principles:
+
+- **Path Agnostic**: All paths are relative (e.g., `"data/{data_type}"`, `"timestamp_path/{data_type}"`) — works on any OS without modification
+- **No Hardcoding**: No system-specific or Windows/Linux-specific paths embedded in functions
+- **Idempotent Operations**: Safe to call multiple times (CSV creation, timing appends won't corrupt data)
+- **Graceful Degradation**: Missing files/fields return sensible defaults instead of crashing
+
+#### Usage Across Pipeline:
+
+| Function | Step 1 | Step 2 | Step 3 | Step 4 |
+|----------|--------|--------|--------|--------|
+| `sanitize_model_name()` | ✓ | ✓ | ✓ | ✓ |
+| `extract_first_json_object()` | ✓ | ✓ | ✓ | – |
+| `get_environment_vars()` | ✓ | ✓ | ✓ | ✓ |
+| `setup_timing_paths()` | ✓ | ✓ | ✓ | ✓ |
+| `append_timing_rows_to_csv()` | ✓ | ✓ | ✓ | ✓ |
+| `load_context_for_data_type()` | ✓ | ✓ | ✓ | – |
+| `load_resource_summary()` | ✓ | ✓ | ✓ | – |
+| `truncate()` | – | ✓ | – | – |
+
+### CSV Naming Convention
+
+Each pipeline step generates its own CSV log with consistent naming:
+- **Step 1 (Task Generator)**: `step1_{SANITIZED_MODEL}_{RUN_ID}.csv`
+- **Step 2 (Code Generator)**: `step2_{SANITIZED_MODEL}_{RUN_ID}.csv`
+- **Step 3 (Validator)**: `step3_{SANITIZED_MODEL}_{RUN_ID}.csv`
+- **Step 4 (Scheduler)**: `step4_{SANITIZED_MODEL}_{RUN_ID}.csv`
+- **Resource Metrics**: `step{N}_resource_{SANITIZED_MODEL}_{RUN_ID}.csv` (generated by `log_resource_metrics()`)
+
+All CSVs are stored in `timestamp_path/{DATA_TYPE}/` directory with timestamped rotation.
+
 ## Independent Components (Not in Main Pipeline)
 
 * **resource_monitor.py** — Captures system metrics (CPU, memory, network I/O, temperature) and logs to CSV for performance evaluation across all pipeline steps.
@@ -157,9 +269,41 @@ cd LEI-LLM-assistedEI
    pip install -r requirements.txt
    ```
 
-3. Configure your environment:
-   * Set your LLM API key: `export LLM_API_KEY="your_api_key_here"` (or set `OPENAI_API_KEY` or `GEMINI_API_KEY` as needed)
-   * Update `config.py` to set `DATA_TYPE` (e.g., `DATA_TYPE="air_quality"`)
+3. Configure your environment (choose ONE option below):
+
+   **OPTION A: Use a Cloud LLM Provider (ChatGPT, Gemini, Groq, Claude, etc.)**
+   
+   Create a `.env` file in the project root with:
+   ```
+   LLM_PROVIDER=generic
+   LLM_BASE_URL=https://api.groq.com/openai/v1
+   LLM_API_KEY=your-groq-api-key-here
+   LLM_MODEL=llama-3.3-70b-versatile
+   ```
+   
+   For other providers, set `LLM_BASE_URL` and `LLM_API_KEY` accordingly:
+   - **OpenAI (ChatGPT)**: `https://api.openai.com/v1`
+   - **Google Gemini**: `https://generativelanguage.googleapis.com/v1beta/openai`
+   - **Anthropic Claude**: `https://api.anthropic.com/v1`
+   - See `.env.example` for more options
+   
+   **OPTION B: Use Ollama (Local LLM - Self-Hosted)**
+   
+   1. Install Ollama: https://ollama.ai
+   2. Start Ollama: `ollama serve`
+   3. Pull a model: `ollama pull llama2` (or any available model)
+   4. Create a `.env` file in the project root with:
+   ```
+   LLM_PROVIDER=ollama
+   LLM_BASE_URL=http://localhost:11434/v1
+   LLM_API_KEY=ollama
+   LLM_MODEL=llama2
+   ```
+   
+   See `.env.example` for detailed configuration examples for all providers.
+   
+   4. Update `config.py` to set `DATA_TYPE` if needed (e.g., `DATA_TYPE="air_quality"`)
+      - Options: `temp_humidity`, `air_quality`, `soil`, `wind`
 
 ## Run the complete pipeline
 

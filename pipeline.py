@@ -4,11 +4,12 @@ Master pipeline for LEI-LLM-assistedEI.
 Adds timestamped CSV logging (script start/end, duration, status) so runs
 can be correlated with downstream step logs. The pipeline executes the single
 configured model from config.py and records that model in downstream CSV logs.
+
+Modified on: 20-05-2026
 """
 
 import csv
 import os
-import shutil
 import subprocess
 import sys
 import time
@@ -17,6 +18,7 @@ from pathlib import Path
 from typing import Optional
 
 from config import DATA_TYPE, DEFAULT_MODEL
+from shared_utils import sanitize_model_name, IST
 
 
 BASE_DIR = Path(__file__).parent.resolve()
@@ -25,36 +27,14 @@ STEP_2_SCRIPT = BASE_DIR / "code_generator.py"
 STEP_3_SCRIPT = BASE_DIR / "scheduler" / "edge_scheduler_sequential.py"
 
 TIMESTAMP_DIR = BASE_DIR / "timestamp_path" / DATA_TYPE
-IST = timezone(timedelta(hours=5, minutes=30))
 RUN_ID = ""
 PIPELINE_CSV: Path | None = None
-
-
-def _sanitize_model_name(model: str) -> str:
-	return (
-		(model or "model")
-		.replace(" ", "_")
-		.replace(":", "_")
-		.replace("/", "_")
-		.replace("\\", "_")
-	)
 
 
 def _set_pipeline_run(model: str) -> None:
 	global RUN_ID, PIPELINE_CSV
 	RUN_ID = datetime.now(IST).strftime("%Y%m%d_%H%M%S")
-	PIPELINE_CSV = TIMESTAMP_DIR / f"pipeline_timestamp_{_sanitize_model_name(model)}_{RUN_ID}.csv"
-
-
-def _clean_before_run() -> None:
-	paths = [
-		BASE_DIR / "generated_tasks" / DATA_TYPE,
-		BASE_DIR / "output" / DATA_TYPE,
-	]
-	for path in paths:
-		if path.exists():
-			shutil.rmtree(path)
-		path.mkdir(parents=True, exist_ok=True)
+	PIPELINE_CSV = TIMESTAMP_DIR / f"pipeline_timestamp_{sanitize_model_name(model)}_{RUN_ID}.csv"
 
 
 def _append_pipeline_rows(rows: list[dict]) -> None:
@@ -193,7 +173,7 @@ def run_pipeline() -> None:
 
 	for run_num in range(1, 6):
 		print(f"\nRunning pipeline for model {model} Run {run_num}")
-		_clean_before_run()
+		# Removed _clean_before_run() to preserve generated_tasks and output directories
 		env_override = {
 			"LLM_MODEL": model,
 			"RUN_ID": RUN_ID,
