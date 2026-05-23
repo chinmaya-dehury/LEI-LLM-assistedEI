@@ -1,0 +1,34 @@
+{
+  "tasks": [
+    {
+      "task_name": "pollutant_source_apportionment",
+      "description": "Use receptor models to estimate the contribution of different sources to pollutant concentrations, helping to identify potential pollution sources.",
+      "data_type": "air_quality",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "air_quality_index_spatial_clustering",
+      "description": "Apply spatial clustering algorithms to group areas with similar air quality index values, enabling the identification of pollution hotspots.",
+      "data_type": "air_quality",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "diurnal_variation_of_individual_pollutants",
+      "description": "Analyze the diurnal variation of individual pollutants to identify unique patterns and correlations that can inform pollution mitigation strategies.",
+      "data_type": "air_quality",
+      "status": "failed to generate correct code"
+    },
+    {
+      "task_name": "seasonal_decomposition_of_air_quality_data",
+      "description": "Decompose air quality data into trend, seasonal, and residual components to better understand the underlying patterns and relationships.",
+      "data_type": "air_quality",
+      "status": "failed to generate correct code"
+    },
+    {
+      "task_name": "exposure_assessment_for_sensitive_populations",
+      "description": "Develop exposure assessments for sensitive populations, such as children, the elderly, and those with pre-existing conditions, to provide targeted health advice.",
+      "data_type": "air_quality",
+      "status": "failed to generate correct code"
+    }
+  ]
+}

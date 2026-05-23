@@ -1,0 +1,11 @@
+timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
+2026-05-23T13:15:26.279966+05:30,step2_code_generator,start,1,,llama-3.3-70b-versatile,10.2,41.3,210416103,1264593854,649984,1369927,
+2026-05-23T13:15:53.917693+05:30,step2_code_generator,end,1,,llama-3.3-70b-versatile,3.5,42.8,210800129,1269895408,653239,1374577,
+2026-05-23T13:16:35.807895+05:30,step2_code_generator,start,2,,llama-3.3-70b-versatile,2.8,42.8,211126582,1275782064,656653,1379636,
+2026-05-23T13:17:10.426682+05:30,step2_code_generator,end,2,,llama-3.3-70b-versatile,4.8,42.7,211619869,1282527029,660882,1385543,
+2026-05-23T13:19:05.961385+05:30,step2_code_generator,start,3,,llama-3.3-70b-versatile,4.5,42.7,215347041,1337943783,673376,1427310,
+2026-05-23T13:19:24.872563+05:30,step2_code_generator,end,3,,llama-3.3-70b-versatile,7.0,42.8,215582319,1338220429,673811,1427970,
+2026-05-23T13:21:08.678441+05:30,step2_code_generator,start,4,,llama-3.3-70b-versatile,4.1,42.1,216520977,1347153725,676720,1438716,
+2026-05-23T13:21:29.505792+05:30,step2_code_generator,end,4,,llama-3.3-70b-versatile,6.7,42.1,216647122,1348856159,677052,1440659,
+2026-05-23T13:23:58.042527+05:30,step2_code_generator,start,5,,llama-3.3-70b-versatile,4.7,42.1,217226161,1357202820,678945,1450232,
+2026-05-23T13:24:02.443753+05:30,step2_code_generator,end,5,,llama-3.3-70b-versatile,11.3,42.4,217301365,1357433194,679101,1450542,

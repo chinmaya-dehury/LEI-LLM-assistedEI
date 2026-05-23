@@ -1,0 +1,142 @@
+{
+    "task_name": "diurnal_variation_analysis",
+    "description": "Analyze the diurnal variation in air quality to identify patterns and trends in pollution levels throughout the day.",
+    "result_summary": [
+        {
+            "name": "Hour 9 Average Pollution Levels",
+            "value": {
+                "co": 496.8071428571428,
+                "no": 0.9621428571428571,
+                "no2": 7.216428571428572,
+                "o3": 87.07642857142856,
+                "so2": 3.582142857142857,
+                "pm2_5": 93.40142857142858,
+                "pm10": 110.57214285714285,
+                "nh3": 2.4414285714285717
+            },
+            "description": "Average pollution levels for hour 9",
+            "timestamp": "2026-05-23T16:27:38.248869"
+        },
+        {
+            "name": "Hour 10 Average Pollution Levels",
+            "value": {
+                "co": 459.1938461538461,
+                "no": 0.7246153846153847,
+                "no2": 5.770769230769232,
+                "o3": 95.02384615384615,
+                "so2": 3.79,
+                "pm2_5": 92.71153846153847,
+                "pm10": 105.30538461538461,
+                "nh3": 0.9338461538461539
+            },
+            "description": "Average pollution levels for hour 10",
+            "timestamp": "2026-05-23T16:27:38.248903"
+        },
+        {
+            "name": "Hour 11 Average Pollution Levels",
+            "value": {
+                "co": 437.68,
+                "no": 0.44500000000000006,
+                "no2": 4.465,
+                "o3": 107.5,
+                "so2": 4.335,
+                "pm2_5": 96.645,
+                "pm10": 106.68,
+                "nh3": 0.075
+            },
+            "description": "Average pollution levels for hour 11",
+            "timestamp": "2026-05-23T16:27:38.248928"
+        },
+        {
+            "name": "Hour 12 Average Pollution Levels",
+            "value": {
+                "co": 366.50444444444446,
+                "no": 0.1811111111111111,
+                "no2": 2.6822222222222223,
+                "o3": 113.03722222222223,
+                "so2": 3.451666666666666,
+                "pm2_5": 70.59833333333333,
+                "pm10": 77.9661111111111,
+                "nh3": 0.015000000000000001
+            },
+            "description": "Average pollution levels for hour 12",
+            "timestamp": "2026-05-23T16:27:38.248949"
+        },
+        {
+            "name": "Hour 13 Average Pollution Levels",
+            "value": {
+                "co": 361.18666666666667,
+                "no": 0.09333333333333334,
+                "no2": 2.5433333333333334,
+                "o3": 119.50666666666666,
+                "so2": 3.1966666666666668,
+                "pm2_5": 69.27333333333333,
+                "pm10": 75.60333333333334,
+                "nh3": 0.0
+            },
+            "description": "Average pollution levels for hour 13",
+            "timestamp": "2026-05-23T16:27:38.248970"
+        },
+        {
+            "name": "Hour 14 Average Pollution Levels",
+            "value": {
+                "co": 329.62,
+                "no": 0.09000000000000001,
+                "no2": 2.36,
+                "o3": 123.29833333333335,
+                "so2": 3.9324999999999997,
+                "pm2_5": 70.19333333333334,
+                "pm10": 76.86166666666666,
+                "nh3": 0.014166666666666668
+            },
+            "description": "Average pollution levels for hour 14",
+            "timestamp": "2026-05-23T16:27:38.248989"
+        },
+        {
+            "name": "Hour 15 Average Pollution Levels",
+            "value": {
+                "co": 336.53666666666663,
+                "no": 0.15666666666666668,
+                "no2": 3.4733333333333336,
+                "o3": 116.28333333333333,
+                "so2": 3.42,
+                "pm2_5": 62.13666666666667,
+                "pm10": 68.9,
+                "nh3": 0.5733333333333334
+            },
+            "description": "Average pollution levels for hour 15",
+            "timestamp": "2026-05-23T16:27:38.249008"
+        },
+        {
+            "name": "Hour 16 Average Pollution Levels",
+            "value": {
+                "co": 373.008,
+                "no": 0.196,
+                "no2": 6.654,
+                "o3": 107.62400000000001,
+                "so2": 3.2419999999999995,
+                "pm2_5": 60.59199999999999,
+                "pm10": 68.408,
+                "nh3": 1.88
+            },
+            "description": "Average pollution levels for hour 16",
+            "timestamp": "2026-05-23T16:27:38.249025"
+        },
+        {
+            "name": "Hour 17 Average Pollution Levels",
+            "value": {
+                "co": 398.03999999999996,
+                "no": 0.03916666666666666,
+                "no2": 9.3225,
+                "o3": 109.8925,
+                "so2": 4.1925,
+                "pm2_5": 73.43,
+                "pm10": 82.3125,
+                "nh3": 2.1175
+            },
+            "description": "Average pollution levels for hour 17",
+            "timestamp": "2026-05-23T16:27:38.249043"
+        }
+    ],
+    "result_generated_at": "2026-05-23T16:27:38.249046"
+}

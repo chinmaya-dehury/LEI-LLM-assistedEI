@@ -44,9 +44,10 @@ LEI-LLM-assistedEI/
 ├── task_generator.py                  # Step 1: Generate task list from data + LLM
 ├── code_generator.py                  # Step 2: Generate Python code for each task
 ├── validator.py                       # Step 3: Validate and fix generated code
+│   └── val_semantic.py                # Semantic validation: strict Pydantic v2 models for task output validation
 │
 ├── scheduler/
-│   └── edge_scheduler_sequential.py   # Step 4: Execute validated tasks
+│   └── edge_scheduler.py              # Step 4: Execute validated tasks with concurrent orchestration
 │
 ├── prompts/                           # LLM prompt templates
 │   ├── get_tasks.py
@@ -56,8 +57,7 @@ LEI-LLM-assistedEI/
 ├── data/                              # Input layer: sample data, metadata, context
 │   ├── air_quality/
 │   ├── soil/
-│   ├── temp_humidity/
-│   └── wind/
+│   └── ...
 │
 ├── generated_tasks/                   # Output from Steps 1-2: task lists and generated scripts
 │   ├── <DATA_TYPE>/
@@ -112,133 +112,32 @@ LEI-LLM-assistedEI/
 * Logs resource metrics and code generation stats
 
 ### Step 3: Validator
-`validator.py` executes and validates generated code.
+`validator.py` executes and validates generated code with semantic validation.
 
 * Runs each task script with test data
-* Validates execution, error handling, output format
-* Auto-corrects failures via LLM-assisted code repair
+* **Semantic Validation** (via `val_semantic.py`): 
+  - Strict Pydantic v2 validation with `strict=True, extra="forbid"`
+  - Rejects type coercion and hallucinated fields
+  - Validates task output structure: `{task_name, result_summary: [{key, value, metric?}]}`
+  - Business rule checks: task name matching, minimum result counts
+* Auto-corrects failures via LLM-assisted code repair (up to 2 retries)
+* On validation error: extracts error details and passes to LLM for correction
 * Outputs: validation summaries and metrics
-* Logs resource metrics and validation stats
+* Logs resource metrics and validation stats via `write_validator_detailed_row()`
 
 ### Step 4: Edge Scheduler
-`scheduler/edge_scheduler_sequential.py` executes validated tasks sequentially.
+`scheduler/edge_scheduler.py` executes validated tasks with concurrent orchestration.
 
-* Discovers and runs all scripts in `generated_tasks/<DATA_TYPE>/`
-* Collects execution results and timings
-* Outputs: `output/<DATA_TYPE>/task_output_*.json`
-* Logs resource metrics and execution stats
+* **Concurrent Execution**: ProcessPoolExecutor with 4 configurable workers for parallel task execution
+* **Task Discovery**: Automatically discovers all scripts in `generated_tasks/<DATA_TYPE>/`
+* **Retry Support**: Automatic retry mechanism (up to 2 retries) for failed tasks with priority-based queuing
+* **Graceful Shutdown**: Signal handling (SIGINT/SIGTERM) for clean process termination
+* **Task Isolation**: Subprocess-based execution prevents one failed task from crashing the scheduler
+* **Timeout Protection**: 120-second timeout per task with proper error handling
+* **Outputs**: `output/<DATA_TYPE>/task_output_*.json` with execution results and metrics
+* **Logs**: CSV metrics via `write_scheduler_detailed_row()` in shared_utils.py
 
 
-## Shared Utilities Module
-
-### `shared_utils.py` — Cross-Pipeline Utility Functions
-
-To eliminate code duplication and improve maintainability, common functionality is consolidated in `shared_utils.py`. All pipeline steps import and use these utilities instead of defining their own versions.
-
-#### Core Functions:
-
-**1. Model Name Sanitization**
-```python
-sanitize_model_name(model: str) -> str
-```
-- Sanitizes model names for safe use in filenames
-- Removes/replaces special characters: spaces, colons, forward slashes, backslashes
-- Used by all steps (Step 1-4) to generate consistent CSV/log filenames
-- Example: `"gpt-4o:turbo"` → `"gpt-4o_turbo"`
-
-**2. JSON Extraction**
-```python
-extract_first_json_object(text: str) -> dict
-extract_json_blob(text: str) -> str
-```
-- `extract_first_json_object()`: Extracts and parses JSON object from text (handles code fences, extra NL text)
-- `extract_json_blob()`: Extracts JSON string without parsing (used for extracting JSON before decision-making)
-- Robust against LLM output variations (warnings, markdown fences, surrounding text)
-- Used in Steps 1-2 to parse LLM responses
-
-**3. Environment & Timing**
-```python
-get_environment_vars() -> Dict[str, str]
-get_current_time_ist() -> str
-get_current_time_perf() -> float
-```
-- `get_environment_vars()`: Retrieves RUN_ID and RUN_COUNT from environment or generates defaults
-- `get_current_time_ist()`: Returns ISO-format timestamp in IST (India Standard Time, UTC+5:30)
-- `get_current_time_perf()`: Returns performance counter for precise timing measurement
-
-**4. Path & CSV Setup**
-```python
-setup_timing_paths(data_type: str, step_name: str, model_name: str) -> Dict[str, str]
-ensure_csv_with_headers(csv_path: str, fieldnames: List[str]) -> bool
-```
-- `setup_timing_paths()`: Generates timestamped directory and CSV file paths for each pipeline step
-  - Returns dict with keys: `TIMESTAMP_PATH`, `STEP_CSV`, `RESOURCE_CSV`, `RUN_ID`, `SANITIZED_MODEL`
-  - Ensures paths are relative and system-agnostic (no hardcoded Windows/Linux paths)
-  - Used by all 4 pipeline steps to maintain consistent naming conventions
-- `ensure_csv_with_headers()`: Creates CSV file with headers if missing
-  - Idempotent: safe to call multiple times
-  - Used for initializing step-specific CSV logs
-
-**5. CSV Operations**
-```python
-append_timing_rows_to_csv(csv_path: str, rows: list, fieldnames: list) -> None
-load_resource_summary(resource_summary_path: str) -> Dict[str, Any]
-```
-- `append_timing_rows_to_csv()`: Appends rows to CSV with automatic header creation
-  - Handles file creation, field validation, resource metric injection
-  - Used by all steps for consistent CSV logging across pipeline
-- `load_resource_summary()`: Loads CPU/memory metrics from `resource_stat/resource_usage_summary.json`
-  - Returns dict with keys: `resource_generated_at`, `avg_cpu_1m`, `avg_mem_1m`, `avg_cpu_5m`, `avg_mem_5m`
-  - Gracefully handles missing/malformed files
-
-**6. Data Loading**
-```python
-load_context_for_data_type(data_type: str) -> Dict[str, Any]
-```
-- Loads `sample_data.csv`, `metadata.json`, `context.txt` for a given data type
-- Returns dict with keys: `sample_data` (str), `metadata` (dict), `context` (str)
-- Handles missing files gracefully (returns empty values)
-- Used in Steps 1-2 to feed LLM with contextual data
-
-**7. Text Processing**
-```python
-truncate(text: str, max_chars: int) -> str
-normalize_code_string(code: str) -> str
-```
-- `truncate()`: Safely truncates text to max length with ellipsis indicator
-- `normalize_code_string()`: Removes code fences and unescapes common sequences
-- Used in code generation and validation steps
-
-#### Design Principles:
-
-- **Path Agnostic**: All paths are relative (e.g., `"data/{data_type}"`, `"timestamp_path/{data_type}"`) — works on any OS without modification
-- **No Hardcoding**: No system-specific or Windows/Linux-specific paths embedded in functions
-- **Idempotent Operations**: Safe to call multiple times (CSV creation, timing appends won't corrupt data)
-- **Graceful Degradation**: Missing files/fields return sensible defaults instead of crashing
-
-#### Usage Across Pipeline:
-
-| Function | Step 1 | Step 2 | Step 3 | Step 4 |
-|----------|--------|--------|--------|--------|
-| `sanitize_model_name()` | ✓ | ✓ | ✓ | ✓ |
-| `extract_first_json_object()` | ✓ | ✓ | ✓ | – |
-| `get_environment_vars()` | ✓ | ✓ | ✓ | ✓ |
-| `setup_timing_paths()` | ✓ | ✓ | ✓ | ✓ |
-| `append_timing_rows_to_csv()` | ✓ | ✓ | ✓ | ✓ |
-| `load_context_for_data_type()` | ✓ | ✓ | ✓ | – |
-| `load_resource_summary()` | ✓ | ✓ | ✓ | – |
-| `truncate()` | – | ✓ | – | – |
-
-### CSV Naming Convention
-
-Each pipeline step generates its own CSV log with consistent naming:
-- **Step 1 (Task Generator)**: `step1_{SANITIZED_MODEL}_{RUN_ID}.csv`
-- **Step 2 (Code Generator)**: `step2_{SANITIZED_MODEL}_{RUN_ID}.csv`
-- **Step 3 (Validator)**: `step3_{SANITIZED_MODEL}_{RUN_ID}.csv`
-- **Step 4 (Scheduler)**: `step4_{SANITIZED_MODEL}_{RUN_ID}.csv`
-- **Resource Metrics**: `step{N}_resource_{SANITIZED_MODEL}_{RUN_ID}.csv` (generated by `log_resource_metrics()`)
-
-All CSVs are stored in `timestamp_path/{DATA_TYPE}/` directory with timestamped rotation.
 
 ## Independent Components (Not in Main Pipeline)
 
@@ -275,6 +174,7 @@ cd LEI-LLM-assistedEI
    
    Create a `.env` file in the project root with:
    ```
+   DATA_TYPE=air_quality
    LLM_PROVIDER=generic
    LLM_BASE_URL=https://api.groq.com/openai/v1
    LLM_API_KEY=your-groq-api-key-here
@@ -294,6 +194,7 @@ cd LEI-LLM-assistedEI
    3. Pull a model: `ollama pull llama2` (or any available model)
    4. Create a `.env` file in the project root with:
    ```
+   DATA_TYPE=air_quality
    LLM_PROVIDER=ollama
    LLM_BASE_URL=http://localhost:11434/v1
    LLM_API_KEY=ollama
@@ -342,12 +243,26 @@ python resource_stat/stop_monitor.py
 
 * **Step 4 – Execute tasks on edge:**
   ```
-  python scheduler/edge_scheduler_sequential.py
+  python scheduler/edge_scheduler.py
   ```
 ## Future Work
 
 - Publish Intelligence (Dashboard Enhancement)
 - Scheduler Algorithm Improvements
 
-## License (To Add)
+## Citation
+
+If you use this code, please cite it using the following BibTeX entry:
+
+```bibtex
+@article{dehury2026llm,
+  title={LLM-assisted Agentic Edge Intelligence Framework},
+  author={Dehury, Chinmaya Kumar and Kushwaha, Siddharth Singh and Zhang, Qiyang and Saleh, Alaa and Donta, Praveen Kumar},
+  journal={arXiv preprint arXiv:2604.09607},
+  year={2026}
+}
+```
+
+## License
+
 This project is open-source and available under the MIT License. See LICENSE file for details.

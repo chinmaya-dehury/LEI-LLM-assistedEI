@@ -1,0 +1,19 @@
+{
+    "task_name": "seasonal_variation_analysis",
+    "description": "Analyze the seasonal variation in pollution levels to determine if there is an increase in pollution during winter or summer months.",
+    "result_summary": [
+        {
+            "name": "Winter Pollution Level",
+            "value": NaN,
+            "description": "Average pollution level during winter months.",
+            "timestamp": "2026-05-23T16:27:45.197280"
+        },
+        {
+            "name": "Summer Pollution Level",
+            "value": NaN,
+            "description": "Average pollution level during summer months.",
+            "timestamp": "2026-05-23T16:27:45.197298"
+        }
+    ],
+    "result_generated_at": "2026-05-23T16:27:45.197301"
+}

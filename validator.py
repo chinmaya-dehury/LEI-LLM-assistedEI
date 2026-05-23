@@ -6,6 +6,7 @@ If a task fails, logs the error, calls the LLM for fixes (up to 2 retries),
 replaces the script on success, or moves it to failed/ when retries are exhausted.
 
 Code updated: added FutureWarning/deprecation warning handling logic.
+Modified on: 23-05-2026
 
 """
 
@@ -14,9 +15,8 @@ import os
 import sys
 import subprocess
 import time
-import csv
 from string import Template
-from typing import Dict, List
+from typing import Dict, List, Any, Optional
 import shutil
 from datetime import datetime, timezone, timedelta
 import re
@@ -31,10 +31,10 @@ from shared_utils import (
     extract_first_json_object,
     get_environment_vars,
     setup_timing_paths,
-    append_timing_rows_to_csv,
+    write_validator_detailed_row,
     IST,
 )
-
+from val_semantic import TaskOutput, _validate_output_structure
 
 
 # Windows-safe stdout/stderr
@@ -62,66 +62,8 @@ DEFAULT_SCRIPTS_DIR = os.path.join("generated_tasks", DATA_TYPE)
 ERROR_LOG_PATH = os.path.join(DEFAULT_SCRIPTS_DIR, "error.txt")
 DEFAULT_VALIDATOR_LOG = os.path.join("validator", DATA_TYPE)
 
-TIMING_ROWS_WRITTEN = 0
-
 # Log resource metrics at start
 log_resource_metrics(RESOURCE_CSV, "step3_validator", "start", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
-
-
-def _append_timing_rows(rows: List[dict]) -> None:
-    global TIMING_ROWS_WRITTEN
-    os.makedirs(TIMESTAMP_PATH, exist_ok=True)
-    file_exists = os.path.exists(STEP3_CSV) and os.path.getsize(STEP3_CSV) > 0
-    fieldnames = [
-        "step",
-        "model",
-        "run_count",
-        "task_name",
-        "status",
-        "attempt",
-        "script_start_time_ist",
-        "script_end_time_ist",
-        "script_duration_sec",
-        "llm_start_time_ist",
-        "llm_end_time_ist",
-        "llm_duration_sec",
-        "prompt_tokens",
-        "completion_tokens",
-        "total_tokens",
-        "prompt_tokens_per_sec",
-        "completion_tokens_per_sec",
-    ]
-
-    with open(STEP3_CSV, "a", newline="", encoding="utf-8") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        if not file_exists:
-            writer.writeheader()
-        for row in rows:
-            writer.writerow(row)
-            TIMING_ROWS_WRITTEN += 1
-
-
-def _log_task_result(task_name: str, status: str, attempt: int = 0) -> None:
-    """Log a task validation result (passed/failed) to CSV without LLM timing."""
-    _append_timing_rows([{
-        "step": "validation",
-        "model": DEFAULT_MODEL,
-        "run_count": RUN_COUNT,
-        "task_name": task_name,
-        "status": status,
-        "attempt": attempt,
-        "script_start_time_ist": "",
-        "script_end_time_ist": "",
-        "script_duration_sec": "",
-        "llm_start_time_ist": "",
-        "llm_end_time_ist": "",
-        "llm_duration_sec": "",
-        "prompt_tokens": "",
-        "completion_tokens": "",
-        "total_tokens": "",
-        "prompt_tokens_per_sec": "",
-        "completion_tokens_per_sec": "",
-    }])
 
 
 # Script-level timing
@@ -316,7 +258,16 @@ def _stderr_is_only_warning(stderr: str) -> bool:
     return True
 
 
-def _build_correction_prompt(task: Dict, runtime_error: str, exit_code: int, assets: Dict) -> str:
+def _build_correction_prompt(task: Dict, runtime_error: str, exit_code: int, assets: Dict, validation_error: str = "") -> str:
+    validation_section = ""
+    if validation_error:
+        validation_section = f"""
+SEMANTIC VALIDATION ERROR:
+{validation_error}
+
+The output was valid JSON but failed semantic validation. Fix the code to produce output matching the expected schema.
+"""
+    
     return f"""
 Sample Data:
 {assets['sample_data'][:3000]}
@@ -333,6 +284,7 @@ Data Type: {task.get('data_type', DATA_TYPE)}
 
 RUNTIME ERROR (exit code {exit_code}):
 {runtime_error}
+{validation_section}
 
 ORIGINAL CODE THAT FAILED:
 {task.get('code', '')}
@@ -577,10 +529,10 @@ def _extract_code_from_llm_response(raw: str) -> str:
     return ""
 
 
-def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, assets: Dict, attempt: int) -> Dict:
+def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, assets: Dict, attempt: int, validation_error: str = "") -> Dict:
     datatype = task.get("data_type", DATA_TYPE)
     system_prompt = Template(SYSTEM_PROMPT).substitute(DATA_TYPE=datatype)
-    user_prompt = _build_correction_prompt(task, runtime_error, exit_code, assets)
+    user_prompt = _build_correction_prompt(task, runtime_error, exit_code, assets, validation_error)
 
     llm_start_time = datetime.now(IST).isoformat()
     llm_start_perf = time.perf_counter()
@@ -594,27 +546,12 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
 
         script_end_time = datetime.now(IST).isoformat()
         script_duration = time.perf_counter() - SCRIPT_START_PERF
-        _append_timing_rows([
-            {
-                "step": "llm_call_failed",
-                "model": DEFAULT_MODEL,
-                "run_count": RUN_COUNT,
-                "task_name": task.get("task_name", ""),
-                "status": "llm_error",
-                "attempt": attempt,
-                "script_start_time_ist": SCRIPT_START_TIME,
-                "script_end_time_ist": script_end_time,
-                "script_duration_sec": script_duration,
-                "llm_start_time_ist": llm_start_time,
-                "llm_end_time_ist": llm_end_time,
-                "llm_duration_sec": llm_duration,
-                "prompt_tokens": 0,
-                "completion_tokens": 0,
-                "total_tokens": 0,
-                "prompt_tokens_per_sec": 0,
-                "completion_tokens_per_sec": 0,
-            }
-        ])
+        write_validator_detailed_row(
+            STEP3_CSV, "llm_call_failed", DEFAULT_MODEL, RUN_COUNT,
+            task.get("task_name", ""), "llm_error", str(attempt),
+            SCRIPT_START_TIME, script_end_time, script_duration,
+            llm_start_time, llm_end_time, llm_duration, 0, 0, 0
+        )
         print(f"[Validator] LLM call failed: {e}")
         return {
             "task_name": task.get("task_name"),
@@ -631,32 +568,14 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
     completion_tokens = int(native.get("completion_tokens") or 0)
     total_tokens = prompt_tokens + completion_tokens
 
-    prompt_tps = prompt_tokens / llm_duration if llm_duration > 0 else 0
-    completion_tps = completion_tokens / llm_duration if llm_duration > 0 else 0
-
     raw = native.get("content") or ""
 
-    _append_timing_rows([
-        {
-            "step": "llm_call",
-            "model": native.get("model") or DEFAULT_MODEL,
-            "run_count": RUN_COUNT,
-            "task_name": task.get("task_name", ""),
-            "status": "correction_attempt",
-            "attempt": attempt,
-            "script_start_time_ist": SCRIPT_START_TIME,
-            "script_end_time_ist": datetime.now(IST).isoformat(),
-            "script_duration_sec": time.perf_counter() - SCRIPT_START_PERF,
-            "llm_start_time_ist": llm_start_time,
-            "llm_end_time_ist": llm_end_time,
-            "llm_duration_sec": llm_duration,
-            "prompt_tokens": prompt_tokens,
-            "completion_tokens": completion_tokens,
-            "total_tokens": total_tokens,
-            "prompt_tokens_per_sec": prompt_tps,
-            "completion_tokens_per_sec": completion_tps,
-        }
-    ])
+    write_validator_detailed_row(
+        STEP3_CSV, "llm_call", native.get("model") or DEFAULT_MODEL, RUN_COUNT,
+        task.get("task_name", ""), "correction_attempt", str(attempt),
+        SCRIPT_START_TIME, datetime.now(IST).isoformat(), time.perf_counter() - SCRIPT_START_PERF,
+        llm_start_time, llm_end_time, llm_duration, prompt_tokens, completion_tokens, total_tokens
+    )
 
     # Try to parse as JSON first
     parsed = _extract_json_from_text(raw)
@@ -709,74 +628,99 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
         
         # Check various success conditions
         if result_json:
-            # Case 1: Proper object with matching task_name
-            if result_json.get("task_name") == task_name:
-                if warnings_only:
-                    print(f"⚠️ {task_name} emitted warnings but completed successfully.")
-                    message = "Executed successfully (warning ignored)"
-                else:
-                    print(f"✅ {task_name} passed validation")
-                    message = "Executed successfully"
-                _log_task_result(task_name, "passed", 0)
-                return {
-                    "task_name": task_name,
-                    "status": "passed",
-                    "message": message,
-                }
+            # Perform semantic validation on ALL valid JSON outputs
+            validated_output, validation_error = _validate_output_structure(result_json, task_name, min_results=1)
             
-            # Case 2: Array output (result_summary only) - also valid
-            if result_json.get("_array_output") or "result_summary" in result_json:
-                if warnings_only:
-                    print(f"⚠️ {task_name} emitted warnings but produced valid JSON array output.")
-                    message = "Executed successfully (array output, warning ignored)"
-                else:
-                    print(f"✅ {task_name} passed validation (JSON array output)")
-                    message = "Executed successfully (array output)"
-                _log_task_result(task_name, "passed", 0)
-                return {
-                    "task_name": task_name,
-                    "status": "passed",
-                    "message": message,
-                }
-            
-            # Case 3: JSON object without task_name but otherwise valid structure
-            if isinstance(result_json, dict) and len(result_json) > 0:
-                # Has some data, consider it valid
-                if warnings_only:
-                    print(f"⚠️ {task_name} emitted warnings but produced valid JSON output.")
-                    message = "Executed successfully (JSON output, warning ignored)"
-                else:
-                    print(f"✅ {task_name} passed validation (JSON output)")
-                    message = "Executed successfully (JSON output)"
-                _log_task_result(task_name, "passed", 0)
-                return {
-                    "task_name": task_name,
-                    "status": "passed",
-                    "message": message,
-                }
+            if validated_output is not None:
+                # Validation passed - output is properly structured
+                # Case 1: Proper object with matching task_name
+                if result_json.get("task_name") == task_name:
+                    if warnings_only:
+                        print(f"⚠️ {task_name} emitted warnings but completed successfully.")
+                        message = "Executed successfully (warning ignored)"
+                    else:
+                        print(f"✅ {task_name} passed validation")
+                        message = "Executed successfully"
+                    write_validator_detailed_row(
+                        STEP3_CSV, "validation", DEFAULT_MODEL, RUN_COUNT, task_name, "passed", "0",
+                        SCRIPT_START_TIME, datetime.now(IST).isoformat(), time.perf_counter() - SCRIPT_START_PERF
+                    )
+                    return {
+                        "task_name": task_name,
+                        "status": "passed",
+                        "message": message,
+                    }
+                
+                # Case 2: Array output (result_summary only) - also valid
+                if result_json.get("_array_output") or "result_summary" in result_json:
+                    if warnings_only:
+                        print(f"⚠️ {task_name} emitted warnings but produced valid JSON array output.")
+                        message = "Executed successfully (array output, warning ignored)"
+                    else:
+                        print(f"✅ {task_name} passed validation (JSON array output)")
+                        message = "Executed successfully (array output)"
+                    write_validator_detailed_row(
+                        STEP3_CSV, "validation", DEFAULT_MODEL, RUN_COUNT, task_name, "passed", "0",
+                        SCRIPT_START_TIME, datetime.now(IST).isoformat(), time.perf_counter() - SCRIPT_START_PERF
+                    )
+                    return {
+                        "task_name": task_name,
+                        "status": "passed",
+                        "message": message,
+                    }
+                
+                # Case 3: JSON object without task_name but otherwise valid structure
+                if isinstance(result_json, dict) and len(result_json) > 0:
+                    # Has some data, consider it valid
+                    if warnings_only:
+                        print(f"⚠️ {task_name} emitted warnings but produced valid JSON output.")
+                        message = "Executed successfully (JSON output, warning ignored)"
+                    else:
+                        print(f"✅ {task_name} passed validation (JSON output)")
+                        message = "Executed successfully (JSON output)"
+                    write_validator_detailed_row(
+                        STEP3_CSV, "validation", DEFAULT_MODEL, RUN_COUNT, task_name, "passed", "0",
+                        SCRIPT_START_TIME, datetime.now(IST).isoformat(), time.perf_counter() - SCRIPT_START_PERF
+                    )
+                    return {
+                        "task_name": task_name,
+                        "status": "passed",
+                        "message": message,
+                    }
+            else:
+                # Semantic validation failed - log and fall through to retry logic
+                print(f"⚠️ {task_name} produced JSON but failed semantic validation:")
+                print(f"   {validation_error}")
+                _append_error_log(task_name, 0, f"Semantic validation failed:\n{validation_error}")
+                # Fall through to retry logic with validation error
 
-        if warnings_only:
+        if warnings_only and exec_result["exit_code"] == 0:
             # treat warning-only runs with non-JSON output as warning-only success variant
             print(f"⚠️ {task_name} completed with warnings; JSON output could not be parsed but run succeeded.")
-            _log_task_result(task_name, "passed", 0)
+            write_validator_detailed_row(
+                STEP3_CSV, "validation", DEFAULT_MODEL, RUN_COUNT, task_name, "passed", "0",
+                SCRIPT_START_TIME, datetime.now(IST).isoformat(), time.perf_counter() - SCRIPT_START_PERF
+            )
             return {
                 "task_name": task_name,
                 "status": "passed",
                 "message": "Executed successfully (warning ignored)",
             }
         
-        _append_error_log(
-            task_name,
-            0,
-            f"Exit 0 but invalid/missing JSON output.\nStdout:\n{exec_result['stdout']}\nStderr:\n{exec_result['stderr']}",
-        )
-        print(f"❌ {task_name} exit 0 but output missing valid JSON")
-        # Fall through to retry logic below
-    else:
-        # Non-zero exit code
-        _append_error_log(task_name, exec_result["exit_code"], exec_result["stderr"] or exec_result["stdout"])
-        print(f"⚠️ {task_name} failed (exit {exec_result['exit_code']})")
-        # Fall through to retry logic below
+        if exec_result["exit_code"] == 0 and not result_json:
+            _append_error_log(
+                task_name,
+                0,
+                f"Exit 0 but invalid/missing JSON output.\nStdout:\n{exec_result['stdout']}\nStderr:\n{exec_result['stderr']}",
+            )
+            print(f"❌ {task_name} exit 0 but output missing valid JSON")
+            # Fall through to retry logic below
+        elif exec_result["exit_code"] != 0:
+            # Non-zero exit code
+            _append_error_log(task_name, exec_result["exit_code"], exec_result["stderr"] or exec_result["stdout"])
+            print(f"⚠️ {task_name} failed (exit {exec_result['exit_code']})")
+            # Fall through to retry logic below
+
 
     # Retry/correction logic (only reached if task failed validation above)
     try:
@@ -790,31 +734,23 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
     assets = _load_context_for(datatype)
 
     # Log initial attempt (attempt 0) with no LLM interaction
-    _append_timing_rows([
-        {
-            "step": "initial_run",
-            "model": DEFAULT_MODEL,
-            "run_count": RUN_COUNT,
-            "task_name": task_name,
-            "status": "initial_validation",
-            "attempt": 0,
-            "script_start_time_ist": SCRIPT_START_TIME,
-            "script_end_time_ist": datetime.now(IST).isoformat(),
-            "script_duration_sec": time.perf_counter() - SCRIPT_START_PERF,
-            "llm_start_time_ist": "",
-            "llm_end_time_ist": "",
-            "llm_duration_sec": "",
-            "prompt_tokens": "",
-            "completion_tokens": "",
-            "total_tokens": "",
-            "prompt_tokens_per_sec": "",
-            "completion_tokens_per_sec": "",
-        }
-    ])
+    write_validator_detailed_row(
+        STEP3_CSV, "initial_run", DEFAULT_MODEL, RUN_COUNT, task_name, "initial_validation", "0",
+        SCRIPT_START_TIME, datetime.now(IST).isoformat(), time.perf_counter() - SCRIPT_START_PERF
+    )
 
 
     for attempt in range(1, MAX_RETRIES + 1):
         print(f"[Validator] Retry {attempt}/{MAX_RETRIES} for {task_name}...")
+
+        # Determine validation error from previous attempt (if any)
+        validation_error_msg = ""
+        if exec_result["exit_code"] == 0:
+            result_json = _parse_json_from_output(exec_result["stdout"])
+            if result_json:
+                validated_output, validation_error = _validate_output_structure(result_json, task_name, min_results=1)
+                if validation_error:
+                    validation_error_msg = validation_error
 
         correction = _call_llm_for_correction(
             task_info,
@@ -822,6 +758,7 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
             exec_result["exit_code"],
             assets,
             attempt,
+            validation_error_msg,
         )
 
         if not correction.get("corrected_code"):
@@ -842,13 +779,23 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
 
         if exec_result["exit_code"] == 0:
             result_json = _parse_json_from_output(exec_result["stdout"])
-            # Accept any valid JSON output
+            # Accept valid JSON output that also passes semantic validation
             if result_json:
-                shutil.move(temp_path, script_path)
-                # Log a 'passed' status timing row for this attempt
-                _log_task_result(task_name, "passed", attempt)
-                print(f"✅ {task_name} corrected and validated successfully")
-                return {"task_name": task_name, "status": "passed", "message": f"Fixed after {attempt} attempt(s)"}
+                validated_output, validation_error = _validate_output_structure(result_json, task_name, min_results=1)
+                if validated_output is not None:
+                    # Both JSON and semantic validation passed
+                    shutil.move(temp_path, script_path)
+                    # Log a 'passed' status timing row for this attempt
+                    write_validator_detailed_row(
+                        STEP3_CSV, "validation", DEFAULT_MODEL, RUN_COUNT, task_name, "passed", str(attempt),
+                        SCRIPT_START_TIME, datetime.now(IST).isoformat(), time.perf_counter() - SCRIPT_START_PERF
+                    )
+                    print(f"✅ {task_name} corrected and validated successfully")
+                    return {"task_name": task_name, "status": "passed", "message": f"Fixed after {attempt} attempt(s)"}
+                else:
+                    # Semantic validation failed - log and continue to next retry
+                    print(f"⚠️ Corrected code has valid JSON but failed semantic validation: {validation_error}")
+                    _append_error_log(task_name, 0, f"Semantic validation failed:\n{validation_error}")
 
         _append_error_log(task_name, exec_result["exit_code"], exec_result["stderr"] or exec_result["stdout"])
         task_info["code"] = corrected_code
@@ -930,9 +877,6 @@ def validate_all_generated_tasks(tasks_file: str, scripts_dir: str) -> Dict[str,
 def main() -> None:
     os.makedirs(DEFAULT_SCRIPTS_DIR, exist_ok=True)
 
-    # Ensure CSV exists (at least header) even if no LLM calls happen.
-    _append_timing_rows([])
-
     summary = validate_all_generated_tasks(DEFAULT_TASKS_FILE, DEFAULT_SCRIPTS_DIR)
 
     # Ensure validator log directory exists
@@ -986,30 +930,11 @@ def main() -> None:
         json.dump(all_runs_data, f, ensure_ascii=False, indent=2)
     print(f"[Validator] Master summary saved to {master_summary_path}")
 
-    # If no timing rows were written (all tasks passed, no correction attempts),
-    # add a single run-level record so the CSV isn't header-only.
-    if TIMING_ROWS_WRITTEN == 0:
-        _append_timing_rows([
-            {
-                "step": "validator_run",
-                "model": DEFAULT_MODEL,
-                "run_count": RUN_COUNT,
-                "task_name": "",
-                "status": "no_corrections_needed",
-                "attempt": "",
-                "script_start_time_ist": SCRIPT_START_TIME,
-                "script_end_time_ist": datetime.now(IST).isoformat(),
-                "script_duration_sec": time.perf_counter() - SCRIPT_START_PERF,
-                "llm_start_time_ist": "",
-                "llm_end_time_ist": "",
-                "llm_duration_sec": "",
-                "prompt_tokens": "",
-                "completion_tokens": "",
-                "total_tokens": "",
-                "prompt_tokens_per_sec": "",
-                "completion_tokens_per_sec": "",
-            }
-        ])
+    # Always add a run-level record for this validator execution
+    write_validator_detailed_row(
+        STEP3_CSV, "validator_run", DEFAULT_MODEL, RUN_COUNT, "", "execution_complete", "",
+        SCRIPT_START_TIME, datetime.now(IST).isoformat(), time.perf_counter() - SCRIPT_START_PERF
+    )
 
 # Log resource metrics at end
 log_resource_metrics(RESOURCE_CSV, "step3_validator", "end", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)

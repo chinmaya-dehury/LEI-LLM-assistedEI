@@ -1,0 +1,1 @@
+{"task_name": "aqi_level_trend_analysis", "description": "Analyze the overall air quality score trend and categorize it into Good, Moderate, Unhealthy, Very Unhealthy, or Hazardous levels.", "result_summary": [{"name": "Good", "value": 117, "description": "Number of Good AQI levels", "timestamp": "2026-05-23T16:27:37.098315"}], "result_generated_at": "2026-05-23T16:27:37.098321"}

@@ -39,45 +39,12 @@ from shared_utils import (
     append_timing_rows_to_csv,
     load_context_for_data_type,
     load_resource_summary,
+    write_task_generator_csv,
     IST,
 )
 
 
-# Initialize the LLM client using an OpenAI-compatible base URL.
 client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY)
-
-
-def _write_timing_csv(script_start_time, script_end_time, script_duration, llm_start_time,
-                      llm_end_time, llm_duration, prompt_tokens, completion_tokens, total_tokens):
-    """Write timing data to CSV with resource summary."""
-    resource_vals = load_resource_summary(RESOURCE_SUMMARY_PATH)
-    fieldnames = [
-        "step", "model", "run_count", "script_start_time_ist", "script_end_time_ist",
-        "script_duration_sec", "llm_start_time_ist", "llm_end_time_ist", "llm_duration_sec",
-        "prompt_tokens", "completion_tokens", "total_tokens", "prompt_tokens_per_sec",
-        "completion_tokens_per_sec", "resource_generated_at", "resource_last_checked",
-        "avg_cpu_1m", "avg_mem_1m", "avg_cpu_5m", "avg_mem_5m"
-    ]
-    prompt_tps = prompt_tokens / llm_duration if llm_duration > 0 else 0
-    completion_tps = completion_tokens / llm_duration if llm_duration > 0 else 0
-    
-    append_timing_rows_to_csv(STEP1_CSV_PATH, [{
-        "step": "llm_call",
-        "model": DEFAULT_MODEL,
-        "run_count": RUN_COUNT,
-        "script_start_time_ist": script_start_time,
-        "script_end_time_ist": script_end_time,
-        "script_duration_sec": script_duration,
-        "llm_start_time_ist": llm_start_time,
-        "llm_end_time_ist": llm_end_time,
-        "llm_duration_sec": llm_duration,
-        "prompt_tokens": prompt_tokens,
-        "completion_tokens": completion_tokens,
-        "total_tokens": total_tokens,
-        "prompt_tokens_per_sec": prompt_tps,
-        "completion_tokens_per_sec": completion_tps,
-        **resource_vals,
-    }], fieldnames)
 
 # Paths
 BASE_PATH = os.path.join("data", DATA_TYPE)
@@ -186,7 +153,8 @@ if not str(raw_output).strip():
     script_end_perf = time.perf_counter()
     script_duration = script_end_perf - script_start_perf
     llm_duration = llm_end_perf - llm_start_perf
-    _write_timing_csv(
+    write_task_generator_csv(
+        STEP1_CSV_PATH,
         script_start_time,
         script_end_time,
         script_duration,
@@ -196,6 +164,8 @@ if not str(raw_output).strip():
         prompt_tokens,
         completion_tokens,
         total_tokens,
+        DEFAULT_MODEL,
+        RUN_COUNT,
     )
     sys.exit(1)
 
@@ -215,7 +185,8 @@ except (json.JSONDecodeError, ValueError) as e:
     script_end_perf = time.perf_counter()
     script_duration = script_end_perf - script_start_perf
     llm_duration = llm_end_perf - llm_start_perf
-    _write_timing_csv(
+    write_task_generator_csv(
+        STEP1_CSV_PATH,
         script_start_time,
         script_end_time,
         script_duration,
@@ -225,6 +196,8 @@ except (json.JSONDecodeError, ValueError) as e:
         prompt_tokens,
         completion_tokens,
         total_tokens,
+        DEFAULT_MODEL,
+        RUN_COUNT,
     )
     sys.exit(1)
 
@@ -239,7 +212,8 @@ if not isinstance(tasks_data, dict):
     script_end_perf = time.perf_counter()
     script_duration = script_end_perf - script_start_perf
     llm_duration = llm_end_perf - llm_start_perf
-    _write_timing_csv(
+    write_task_generator_csv(
+        STEP1_CSV_PATH,
         script_start_time,
         script_end_time,
         script_duration,
@@ -249,6 +223,8 @@ if not isinstance(tasks_data, dict):
         prompt_tokens,
         completion_tokens,
         total_tokens,
+        DEFAULT_MODEL,
+        RUN_COUNT,
     )
     sys.exit(1)
 
@@ -262,7 +238,8 @@ if len(tasks_list) == 0:
     script_end_perf = time.perf_counter()
     script_duration = script_end_perf - script_start_perf
     llm_duration = llm_end_perf - llm_start_perf
-    _write_timing_csv(
+    write_task_generator_csv(
+        STEP1_CSV_PATH,
         script_start_time,
         script_end_time,
         script_duration,
@@ -272,6 +249,8 @@ if len(tasks_list) == 0:
         prompt_tokens,
         completion_tokens,
         total_tokens,
+        DEFAULT_MODEL,
+        RUN_COUNT,
     )
     sys.exit(1)
 
@@ -307,7 +286,8 @@ llm_duration = llm_end_perf - llm_start_perf
 # Log resource metrics at end
 log_resource_metrics(RESOURCE_CSV, "step1_task_generator", "end", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
 
-_write_timing_csv(
+write_task_generator_csv(
+    STEP1_CSV_PATH,
     script_start_time,
     script_end_time,
     script_duration,
@@ -317,5 +297,7 @@ _write_timing_csv(
     prompt_tokens,
     completion_tokens,
     total_tokens,
+    DEFAULT_MODEL,
+    RUN_COUNT,
 )
 

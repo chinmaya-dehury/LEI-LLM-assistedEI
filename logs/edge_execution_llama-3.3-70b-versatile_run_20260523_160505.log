@@ -1,0 +1,36 @@
+2026-05-23 16:05:06,356 - __main__ - INFO - 
+============================================================
+2026-05-23 16:05:06,357 - __main__ - INFO - Edge Task Orchestrator Started
+2026-05-23 16:05:06,357 - __main__ - INFO - Start Time: 2026-05-23T16:05:06.357233+05:30
+2026-05-23 16:05:06,357 - __main__ - INFO - Data Type: air_quality
+2026-05-23 16:05:06,357 - __main__ - INFO - Tasks Directory: generated_tasks\air_quality
+2026-05-23 16:05:06,357 - __main__ - INFO - Worker Pool Size: 4
+2026-05-23 16:05:06,357 - __main__ - INFO - ============================================================
+
+2026-05-23 16:05:06,369 - __main__ - INFO - Discovered 19 tasks in generated_tasks\air_quality
+2026-05-23 16:05:06,370 - __main__ - INFO - Queued 19 tasks for execution
+2026-05-23 16:05:06,370 - __main__ - INFO - 
+============================================================
+2026-05-23 16:05:06,370 - __main__ - INFO - Starting concurrent task execution
+2026-05-23 16:05:06,370 - __main__ - INFO - Worker pool size: 4
+2026-05-23 16:05:06,370 - __main__ - INFO - Max retries per task: 2
+2026-05-23 16:05:06,370 - __main__ - INFO - ============================================================
+
+2026-05-23 16:06:20,060 - __main__ - INFO - 
+Received signal 2, initiating graceful shutdown...
+2026-05-23 16:06:20,061 - __main__ - INFO - Shutdown event received, cancelling pending tasks...
+2026-05-23 16:06:20,061 - __main__ - INFO - 
+============================================================
+2026-05-23 16:06:20,061 - __main__ - INFO - Execution Summary:
+2026-05-23 16:06:20,061 - __main__ - INFO -   Completed: 0
+2026-05-23 16:06:20,062 - __main__ - INFO -   Failed: 0
+2026-05-23 16:06:20,062 - __main__ - INFO -   Total: 0
+2026-05-23 16:06:20,062 - __main__ - INFO - ============================================================
+
+2026-05-23 16:06:20,062 - __main__ - INFO - Shutting down task orchestrator...
+2026-05-23 16:06:20,104 - __main__ - INFO - Orchestrator shutdown complete
+2026-05-23 16:06:20,626 - __main__ - INFO - 
+Edge Task Orchestrator Completed
+2026-05-23 16:06:20,626 - __main__ - INFO - End Time: 2026-05-23T16:06:20.626624+05:30
+2026-05-23 16:06:20,626 - __main__ - INFO - Total Duration: 74.79s
+2026-05-23 16:06:20,627 - __main__ - INFO - Log file: logs\edge_execution_llama-3.3-70b-versatile_run_20260523_160505.log

@@ -1,0 +1,16 @@
+{
+    "task_name": "peak_pollution_hours_detection",
+    "description": "Detect the peak pollution hours when air quality worsens and notify citizens accordingly.",
+    "result_summary": [
+        {
+            "name": "Peak Pollution Hours",
+            "value": [
+                11,
+                10
+            ],
+            "description": "Hours when air quality worsens",
+            "timestamp": "2026-05-23T16:27:40.647084"
+        }
+    ],
+    "result_generated_at": "2026-05-23T16:27:40.647088"
+}

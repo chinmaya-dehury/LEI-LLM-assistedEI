@@ -1,0 +1,127 @@
+{
+    "task_name": "monthly_average_comparison",
+    "description": "Compare the monthly average concentrations of different pollutants to identify seasonal patterns and trends, and determine if there are any significant changes over time.",
+    "result_summary": [
+        {
+            "name": "co monthly average",
+            "value": [
+                {
+                    "month": "2025-10",
+                    "co": 388.96
+                },
+                {
+                    "month": "2025-11",
+                    "co": 572.46
+                }
+            ],
+            "description": "Monthly average concentration of co",
+            "timestamp": "2026-05-23T16:27:39.975909"
+        },
+        {
+            "name": "no monthly average",
+            "value": [
+                {
+                    "month": "2025-10",
+                    "no": 0.2494690265486726
+                },
+                {
+                    "month": "2025-11",
+                    "no": 2.7225
+                }
+            ],
+            "description": "Monthly average concentration of no",
+            "timestamp": "2026-05-23T16:27:39.976212"
+        },
+        {
+            "name": "no2 monthly average",
+            "value": [
+                {
+                    "month": "2025-10",
+                    "no2": 4.771150442477876
+                },
+                {
+                    "month": "2025-11",
+                    "no2": 12.23
+                }
+            ],
+            "description": "Monthly average concentration of no2",
+            "timestamp": "2026-05-23T16:27:39.976482"
+        },
+        {
+            "name": "o3 monthly average",
+            "value": [
+                {
+                    "month": "2025-10",
+                    "o3": 109.43840707964603
+                },
+                {
+                    "month": "2025-11",
+                    "o3": 69.195
+                }
+            ],
+            "description": "Monthly average concentration of o3",
+            "timestamp": "2026-05-23T16:27:39.976760"
+        },
+        {
+            "name": "so2 monthly average",
+            "value": [
+                {
+                    "month": "2025-10",
+                    "so2": 3.62424778761062
+                },
+                {
+                    "month": "2025-11",
+                    "so2": 5.327500000000001
+                }
+            ],
+            "description": "Monthly average concentration of so2",
+            "timestamp": "2026-05-23T16:27:39.977013"
+        },
+        {
+            "name": "pm2_5 monthly average",
+            "value": [
+                {
+                    "month": "2025-10",
+                    "pm2_5": 76.42061946902655
+                },
+                {
+                    "month": "2025-11",
+                    "pm2_5": 66.6225
+                }
+            ],
+            "description": "Monthly average concentration of pm2_5",
+            "timestamp": "2026-05-23T16:27:39.977256"
+        },
+        {
+            "name": "pm10 monthly average",
+            "value": [
+                {
+                    "month": "2025-10",
+                    "pm10": 84.45690265486725
+                },
+                {
+                    "month": "2025-11",
+                    "pm10": 115.03
+                }
+            ],
+            "description": "Monthly average concentration of pm10",
+            "timestamp": "2026-05-23T16:27:39.977488"
+        },
+        {
+            "name": "nh3 monthly average",
+            "value": [
+                {
+                    "month": "2025-10",
+                    "nh3": 0.6002654867256637
+                },
+                {
+                    "month": "2025-11",
+                    "nh3": 10.940000000000001
+                }
+            ],
+            "description": "Monthly average concentration of nh3",
+            "timestamp": "2026-05-23T16:27:39.977722"
+        }
+    ],
+    "result_generated_at": "2026-05-23T16:27:39.977725"
+}
