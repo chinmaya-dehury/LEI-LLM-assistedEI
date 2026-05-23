@@ -1,0 +1,134 @@
+{
+  "tasks": [
+    {
+      "task_name": "aqi_level_trend_analysis",
+      "description": "Analyze the overall air quality score trend and categorize it into Good, Moderate, Unhealthy, Very Unhealthy, or Hazardous levels.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "main_pollutant_identification",
+      "description": "Identify the main pollutant contributing to poor air quality and determine its concentration level.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "peak_pollution_hours_detection",
+      "description": "Detect the peak pollution hours when air quality worsens and notify citizens accordingly.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "source_inference_analysis",
+      "description": "Analyze the pollution data to infer the potential sources of pollution, such as traffic, industry, or agriculture.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "seasonal_variation_analysis",
+      "description": "Analyze the seasonal variation in pollution levels to determine if there is an increase in pollution during winter or summer months.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "health_risk_mapping",
+      "description": "Map the health risks associated with pollution levels, including respiratory and cardiovascular hazards, to provide citizens with valuable insights.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "component_correlation_analysis",
+      "description": "Analyze the correlation between different air quality components, such as CO, NO, NO2, O3, SO2, PM2.5, and PM10, to identify potential relationships and patterns.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "spatial_variation_analysis",
+      "description": "Analyze the spatial variation in air quality across different locations to identify areas with poor air quality and potential sources of pollution.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "diurnal_variation_analysis",
+      "description": "Analyze the diurnal variation in air quality to identify patterns and trends in pollution levels throughout the day.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "weather_condition_analysis",
+      "description": "Analyze the impact of weather conditions, such as temperature, humidity, and wind speed, on air quality to identify potential relationships and patterns.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "pollution_levelforecasting",
+      "description": "Develop a forecasting model to predict future air quality levels based on historical data and trends.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "pollutant_concentration_ratio_analysis",
+      "description": "Analyze the ratio of different pollutant concentrations to identify potential patterns and correlations.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "air_quality_index_category_distribution",
+      "description": "Analyze the distribution of air quality index categories (e.g., Good, Moderate, Unhealthy) over time to identify trends and patterns.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "location_based_pollution_comparison",
+      "description": "Compare the pollution levels at different locations to identify areas with poor air quality and potential sources of pollution.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "temporal_trend_analysis_of_individual_pollutants",
+      "description": "Analyze the temporal trends of individual pollutants (e.g., CO, NO, NO2, O3, SO2, PM2.5, PM10) to identify patterns and correlations.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "air_quality_alert_system",
+      "description": "Develop an alert system to notify citizens when the air quality exceeds a certain threshold, providing them with valuable insights and recommendations.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "pollutant_exceedance_notification",
+      "description": "Trigger notifications when pollutant concentrations exceed threshold values, such as CO > 1000 \u03bcg/m3 or PM2.5 > 35 \u03bcg/m3.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "air_quality_index_category_transition_analysis",
+      "description": "Analyze the transition patterns between different air quality index categories (e.g., Good to Moderate, Moderate to Unhealthy) to identify common triggers and trends.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "temporal_autocorrelation_analysis",
+      "description": "Examine the temporal autocorrelation of air quality metrics, such as daily or weekly cycles, to identify repeating patterns and correlations.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "monthly_average_comparison",
+      "description": "Compare the monthly average concentrations of different pollutants to identify seasonal patterns and trends, and determine if there are any significant changes over time.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "pollutant_concentration_ratio_trend_analysis",
+      "description": "Analyze the trends in pollutant concentration ratios, such as PM2.5/PM10 or NO2/NO, to identify potential changes in emission sources or atmospheric processes.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "pollutant_source_apportionment",
+      "description": "Use receptor models to estimate the contribution of different sources to pollutant concentrations, helping to identify potential pollution sources.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "air_quality_index_spatial_clustering",
+      "description": "Apply spatial clustering algorithms to group areas with similar air quality index values, enabling the identification of pollution hotspots.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "diurnal_variation_of_individual_pollutants",
+      "description": "Analyze the diurnal variation of individual pollutants to identify unique patterns and correlations that can inform pollution mitigation strategies.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "seasonal_decomposition_of_air_quality_data",
+      "description": "Decompose air quality data into trend, seasonal, and residual components to better understand the underlying patterns and relationships.",
+      "data_type": "air_quality"
+    },
+    {
+      "task_name": "exposure_assessment_for_sensitive_populations",
+      "description": "Develop exposure assessments for sensitive populations, such as children, the elderly, and those with pre-existing conditions, to provide targeted health advice.",
+      "data_type": "air_quality"
+    }
+  ]
+}

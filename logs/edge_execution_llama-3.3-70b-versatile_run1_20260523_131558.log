@@ -1,0 +1,66 @@
+ Edge Executor started at 2026-05-23 13:15:59
+Scanning directory: generated_tasks/air_quality
+Found 6 tasks to execute.
+============================================================
+
+ Task 1 of 6
+
+ Executing: generated_tasks/air_quality\aqi_level_trend_analysis.py
+   Start Time: 13:15:59
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.38 sec
+------------------------------------------------------------
+
+ Task 2 of 6
+
+ Executing: generated_tasks/air_quality\health_risk_mapping.py
+   Start Time: 13:16:04
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.37 sec
+------------------------------------------------------------
+
+ Task 3 of 6
+
+ Executing: generated_tasks/air_quality\main_pollutant_identification.py
+   Start Time: 13:16:10
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.38 sec
+   Output:
+      Main pollutant:  co
+      Main pollutant concentration:  395.23350427350425
+------------------------------------------------------------
+
+ Task 4 of 6
+
+ Executing: generated_tasks/air_quality\peak_pollution_hours_detection.py
+   Start Time: 13:16:15
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.39 sec
+------------------------------------------------------------
+
+ Task 5 of 6
+
+ Executing: generated_tasks/air_quality\seasonal_variation_analysis.py
+   Start Time: 13:16:20
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.38 sec
+------------------------------------------------------------
+
+ Task 6 of 6
+
+ Executing: generated_tasks/air_quality\source_inference_analysis.py
+   Start Time: 13:16:26
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.39 sec
+   Output:
+      {'task_name': 'source_inference_analysis', 'description': 'Analyze the pollution data to infer the potential sources of pollution', 'result_summary': [{'name': 'Traffic', 'value': np.float64(133.53122507122507), 'description': 'Traffic is the main source of pollution', 'timestamp': '2026-05-23T13:16:26.632618'}], 'result_generated_at': '2026-05-23T13:16:26.632622'}
+------------------------------------------------------------
+
+ All tasks executed. Check the log file for details.
+Log file saved at: logs\edge_execution_llama-3.3-70b-versatile_run1_20260523_131558.log

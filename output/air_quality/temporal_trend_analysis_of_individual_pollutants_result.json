@@ -1,0 +1,55 @@
+{
+    "task_name": "temporal_trend_analysis_of_individual_pollutants",
+    "description": "Analyze the temporal trends of individual pollutants",
+    "result_summary": [
+        {
+            "name": "co",
+            "value": 392.49692035398226,
+            "description": "Temporal trend of co",
+            "timestamp": "2026-05-23T16:27:47.068514"
+        },
+        {
+            "name": "no",
+            "value": 0.29336283185840706,
+            "description": "Temporal trend of no",
+            "timestamp": "2026-05-23T16:27:47.068590"
+        },
+        {
+            "name": "no2",
+            "value": 4.877823008849557,
+            "description": "Temporal trend of no2",
+            "timestamp": "2026-05-23T16:27:47.068640"
+        },
+        {
+            "name": "o3",
+            "value": 108.9260353982301,
+            "description": "Temporal trend of o3",
+            "timestamp": "2026-05-23T16:27:47.068682"
+        },
+        {
+            "name": "so2",
+            "value": 3.684141592920354,
+            "description": "Temporal trend of so2",
+            "timestamp": "2026-05-23T16:27:47.068727"
+        },
+        {
+            "name": "pm2_5",
+            "value": 76.62490265486724,
+            "description": "Temporal trend of pm2_5",
+            "timestamp": "2026-05-23T16:27:47.068766"
+        },
+        {
+            "name": "pm10",
+            "value": 85.39916814159292,
+            "description": "Temporal trend of pm10",
+            "timestamp": "2026-05-23T16:27:47.068804"
+        },
+        {
+            "name": "nh3",
+            "value": 0.7812035398230088,
+            "description": "Temporal trend of nh3",
+            "timestamp": "2026-05-23T16:27:47.068840"
+        }
+    ],
+    "result_generated_at": "2026-05-23T16:27:47.068844"
+}

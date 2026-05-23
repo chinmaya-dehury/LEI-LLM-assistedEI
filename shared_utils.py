@@ -272,7 +272,7 @@ def load_resource_summary(resource_summary_path: str = "resource_stat/resource_u
         return default_vals
 
 
-def ensure_csv_with_headers(csv_path: str, fieldnames: List[str]) -> bool:
+def ensure_csv_with_headers(csv_path: str, fieldnames: list) -> bool:
     """
     Ensure CSV file exists with headers. Creates file if missing.
     
@@ -283,7 +283,6 @@ def ensure_csv_with_headers(csv_path: str, fieldnames: List[str]) -> bool:
     Returns:
         True if file was created, False if it already existed
     """
-    import os
     os.makedirs(os.path.dirname(csv_path) or ".", exist_ok=True)
     
     file_exists = os.path.exists(csv_path) and os.path.getsize(csv_path) > 0
@@ -295,3 +294,304 @@ def ensure_csv_with_headers(csv_path: str, fieldnames: List[str]) -> bool:
         return True
     
     return False
+
+
+def write_task_generator_csv(csv_path: str, script_start_time: str, script_end_time: str, 
+                             script_duration: float, llm_start_time: str, llm_end_time: str, 
+                             llm_duration: float, prompt_tokens: int, completion_tokens: int, 
+                             total_tokens: int, model_name: str, run_count: str) -> None:
+    """
+    Write task generator (step1) CSV row with resource summary.
+    
+    Args:
+        csv_path: Path to step1 CSV file
+        script_start_time: Script start time (IST ISO format)
+        script_end_time: Script end time (IST ISO format)
+        script_duration: Total script duration in seconds
+        llm_start_time: LLM call start time (IST ISO format)
+        llm_end_time: LLM call end time (IST ISO format)
+        llm_duration: LLM call duration in seconds
+        prompt_tokens: Input tokens count
+        completion_tokens: Output tokens count
+        total_tokens: Total tokens count
+        model_name: LLM model name
+        run_count: Run count identifier
+    """
+    resource_vals = load_resource_summary()
+    fieldnames = [
+        "step", "model", "run_count", "script_start_time_ist", "script_end_time_ist",
+        "script_duration_sec", "llm_start_time_ist", "llm_end_time_ist", "llm_duration_sec",
+        "prompt_tokens", "completion_tokens", "total_tokens", "prompt_tokens_per_sec",
+        "completion_tokens_per_sec", "resource_generated_at", "resource_last_checked",
+        "avg_cpu_1m", "avg_mem_1m", "avg_cpu_5m", "avg_mem_5m"
+    ]
+    prompt_tps = prompt_tokens / llm_duration if llm_duration > 0 else 0
+    completion_tps = completion_tokens / llm_duration if llm_duration > 0 else 0
+    
+    append_timing_rows_to_csv(csv_path, [{
+        "step": "llm_call",
+        "model": model_name,
+        "run_count": run_count,
+        "script_start_time_ist": script_start_time,
+        "script_end_time_ist": script_end_time,
+        "script_duration_sec": script_duration,
+        "llm_start_time_ist": llm_start_time,
+        "llm_end_time_ist": llm_end_time,
+        "llm_duration_sec": llm_duration,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "total_tokens": total_tokens,
+        "prompt_tokens_per_sec": prompt_tps,
+        "completion_tokens_per_sec": completion_tps,
+        **resource_vals,
+    }], fieldnames)
+
+
+def write_code_generator_csv(csv_path: str, script_start_time: str, script_end_time: str,
+                             script_duration: float, llm_start_time: str, llm_end_time: str,
+                             llm_duration: float, prompt_tokens: int, completion_tokens: int,
+                             total_tokens: int, model_name: str, run_count: str, 
+                             task_name: str = "") -> None:
+    """
+    Write code generator (step2) CSV row with resource summary and task info.
+    
+    Args:
+        csv_path: Path to step2 CSV file
+        script_start_time: Script start time (IST ISO format)
+        script_end_time: Script end time (IST ISO format)
+        script_duration: Total script duration in seconds
+        llm_start_time: LLM call start time (IST ISO format)
+        llm_end_time: LLM call end time (IST ISO format)
+        llm_duration: LLM call duration in seconds
+        prompt_tokens: Input tokens count
+        completion_tokens: Output tokens count
+        total_tokens: Total tokens count
+        model_name: LLM model name
+        run_count: Run count identifier
+        task_name: Name of the task being processed
+    """
+    resource_vals = load_resource_summary()
+    fieldnames = [
+        "step", "model", "run_count", "task_name", "script_start_time_ist", "script_end_time_ist",
+        "script_duration_sec", "llm_start_time_ist", "llm_end_time_ist", "llm_duration_sec",
+        "prompt_tokens", "completion_tokens", "total_tokens", "prompt_tokens_per_sec",
+        "completion_tokens_per_sec", "resource_generated_at", "resource_last_checked",
+        "avg_cpu_1m", "avg_mem_1m", "avg_cpu_5m", "avg_mem_5m"
+    ]
+    prompt_tps = prompt_tokens / llm_duration if llm_duration > 0 else 0
+    completion_tps = completion_tokens / llm_duration if llm_duration > 0 else 0
+    
+    append_timing_rows_to_csv(csv_path, [{
+        "step": "code_gen",
+        "model": model_name,
+        "run_count": run_count,
+        "task_name": task_name,
+        "script_start_time_ist": script_start_time,
+        "script_end_time_ist": script_end_time,
+        "script_duration_sec": script_duration,
+        "llm_start_time_ist": llm_start_time,
+        "llm_end_time_ist": llm_end_time,
+        "llm_duration_sec": llm_duration,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "total_tokens": total_tokens,
+        "prompt_tokens_per_sec": prompt_tps,
+        "completion_tokens_per_sec": completion_tps,
+        **resource_vals,
+    }], fieldnames)
+
+
+def write_validator_csv(csv_path: str, script_start_time: str, script_end_time: str,
+                        script_duration: float, llm_start_time: str, llm_end_time: str,
+                        llm_duration: float, prompt_tokens: int, completion_tokens: int,
+                        total_tokens: int, model_name: str, run_count: str,
+                        task_name: str = "", validation_status: str = "") -> None:
+    """
+    Write validator (step3) CSV row with resource summary, task info, and validation status.
+    
+    Args:
+        csv_path: Path to step3 CSV file
+        script_start_time: Script start time (IST ISO format)
+        script_end_time: Script end time (IST ISO format)
+        script_duration: Total script duration in seconds
+        llm_start_time: LLM call start time (IST ISO format)
+        llm_end_time: LLM call end time (IST ISO format)
+        llm_duration: LLM call duration in seconds
+        prompt_tokens: Input tokens count
+        completion_tokens: Output tokens count
+        total_tokens: Total tokens count
+        model_name: LLM model name
+        run_count: Run count identifier
+        task_name: Name of the task being validated
+        validation_status: Validation result (e.g., "passed", "corrected", "failed")
+    """
+    resource_vals = load_resource_summary()
+    fieldnames = [
+        "step", "model", "run_count", "task_name", "validation_status", "script_start_time_ist",
+        "script_end_time_ist", "script_duration_sec", "llm_start_time_ist", "llm_end_time_ist",
+        "llm_duration_sec", "prompt_tokens", "completion_tokens", "total_tokens",
+        "prompt_tokens_per_sec", "completion_tokens_per_sec", "resource_generated_at",
+        "resource_last_checked", "avg_cpu_1m", "avg_mem_1m", "avg_cpu_5m", "avg_mem_5m"
+    ]
+    prompt_tps = prompt_tokens / llm_duration if llm_duration > 0 else 0
+    completion_tps = completion_tokens / llm_duration if llm_duration > 0 else 0
+    
+    append_timing_rows_to_csv(csv_path, [{
+        "step": "validate",
+        "model": model_name,
+        "run_count": run_count,
+        "task_name": task_name,
+        "validation_status": validation_status,
+        "script_start_time_ist": script_start_time,
+        "script_end_time_ist": script_end_time,
+        "script_duration_sec": script_duration,
+        "llm_start_time_ist": llm_start_time,
+        "llm_end_time_ist": llm_end_time,
+        "llm_duration_sec": llm_duration,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "total_tokens": total_tokens,
+        "prompt_tokens_per_sec": prompt_tps,
+        "completion_tokens_per_sec": completion_tps,
+        **resource_vals,
+    }], fieldnames)
+
+
+def write_scheduler_csv(csv_path: str, script_start_time: str, script_end_time: str,
+                        script_duration: float, model_name: str, run_count: str,
+                        task_name: str = "", execution_status: str = "") -> None:
+    """
+    Write scheduler (step4) CSV row with resource summary and execution info.
+    
+    Args:
+        csv_path: Path to step4 CSV file
+        script_start_time: Script start time (IST ISO format)
+        script_end_time: Script end time (IST ISO format)
+        script_duration: Task execution duration in seconds
+        model_name: LLM model name (for consistency)
+        run_count: Run count identifier
+        task_name: Name of the task executed
+        execution_status: Execution result (e.g., "success", "timeout", "error")
+    """
+    resource_vals = load_resource_summary()
+    fieldnames = [
+        "step", "model", "run_count", "task_name", "execution_status", "script_start_time_ist",
+        "script_end_time_ist", "script_duration_sec", "resource_generated_at", "resource_last_checked",
+        "avg_cpu_1m", "avg_mem_1m", "avg_cpu_5m", "avg_mem_5m"
+    ]
+    
+    append_timing_rows_to_csv(csv_path, [{
+        "step": "execute",
+        "model": model_name,
+        "run_count": run_count,
+        "task_name": task_name,
+        "execution_status": execution_status,
+        "script_start_time_ist": script_start_time,
+        "script_end_time_ist": script_end_time,
+        "script_duration_sec": script_duration,
+        **resource_vals,
+    }], fieldnames)
+
+
+def write_scheduler_detailed_row(csv_path: str, task_name: str, status: str, return_code: int = None,
+                                  script_start_time: str = "", script_end_time: str = "",
+                                  script_duration: float = 0.0, model_name: str = "", 
+                                  run_count: str = "") -> None:
+    """
+    Write a detailed scheduler/executor CSV row for task execution tracking.
+    Used by edge_scheduler_sequential.py for logging task runs.
+    
+    Args:
+        csv_path: Path to scheduler CSV file
+        task_name: Name of the task executed
+        status: Execution status (success, failed, timeout, error)
+        return_code: Process return code (None, 0, or error code)
+        script_start_time: Task start time (IST ISO format)
+        script_end_time: Task end time (IST ISO format)
+        script_duration: Task execution duration in seconds
+        model_name: LLM model name (for consistency)
+        run_count: Run count identifier
+    """
+    os.makedirs(os.path.dirname(csv_path) or ".", exist_ok=True)
+    
+    fieldnames = [
+        "step", "model", "run_count", "task_name",
+        "script_start_time_ist", "script_end_time_ist", "script_duration_sec",
+        "status", "return_code",
+    ]
+    
+    append_timing_rows_to_csv(csv_path, [{
+        "step": "task_run",
+        "model": model_name,
+        "run_count": run_count,
+        "task_name": task_name,
+        "script_start_time_ist": script_start_time,
+        "script_end_time_ist": script_end_time,
+        "script_duration_sec": script_duration if script_duration else "",
+        "status": status,
+        "return_code": return_code if return_code is not None else "",
+    }], fieldnames)
+
+
+def write_validator_detailed_row(csv_path: str, step: str, model_name: str, run_count: str,
+                                  task_name: str, status: str, attempt: str = "",
+                                  script_start_time: str = "", script_end_time: str = "",
+                                  script_duration: float = 0.0, llm_start_time: str = "",
+                                  llm_end_time: str = "", llm_duration: float = 0.0,
+                                  prompt_tokens: int = 0, completion_tokens: int = 0,
+                                  total_tokens: int = 0) -> None:
+    """
+    Write a detailed validator CSV row with multiple fields for tracking validation steps.
+    Handles various validation statuses: initial_run, llm_call, llm_call_failed, etc.
+    
+    Args:
+        csv_path: Path to validator CSV file
+        step: Step identifier (e.g., "initial_run", "llm_call", "llm_call_failed", "validation")
+        model_name: LLM model name
+        run_count: Run count identifier
+        task_name: Name of the task being validated
+        status: Validation status (e.g., "passed", "failed", "initial_validation")
+        attempt: Attempt number (can be empty string for non-retry steps)
+        script_start_time: Script start time (IST ISO format)
+        script_end_time: Script end time (IST ISO format)
+        script_duration: Total duration in seconds
+        llm_start_time: LLM call start time (empty if no LLM call)
+        llm_end_time: LLM call end time (empty if no LLM call)
+        llm_duration: LLM call duration in seconds (0 if no LLM call)
+        prompt_tokens: Input tokens count (0 if no LLM call)
+        completion_tokens: Output tokens count (0 if no LLM call)
+        total_tokens: Total tokens count (0 if no LLM call)
+    """
+    os.makedirs(os.path.dirname(csv_path) or ".", exist_ok=True)
+    
+    fieldnames = [
+        "step", "model", "run_count", "task_name", "status", "attempt",
+        "script_start_time_ist", "script_end_time_ist", "script_duration_sec",
+        "llm_start_time_ist", "llm_end_time_ist", "llm_duration_sec",
+        "prompt_tokens", "completion_tokens", "total_tokens",
+        "prompt_tokens_per_sec", "completion_tokens_per_sec",
+    ]
+    
+    # Calculate tokens per second
+    prompt_tps = prompt_tokens / llm_duration if llm_duration > 0 else ""
+    completion_tps = completion_tokens / llm_duration if llm_duration > 0 else ""
+    
+    append_timing_rows_to_csv(csv_path, [{
+        "step": step,
+        "model": model_name,
+        "run_count": run_count,
+        "task_name": task_name,
+        "status": status,
+        "attempt": attempt,
+        "script_start_time_ist": script_start_time,
+        "script_end_time_ist": script_end_time,
+        "script_duration_sec": script_duration if script_duration else "",
+        "llm_start_time_ist": llm_start_time,
+        "llm_end_time_ist": llm_end_time,
+        "llm_duration_sec": llm_duration if llm_duration else "",
+        "prompt_tokens": prompt_tokens if prompt_tokens else "",
+        "completion_tokens": completion_tokens if completion_tokens else "",
+        "total_tokens": total_tokens if total_tokens else "",
+        "prompt_tokens_per_sec": prompt_tps,
+        "completion_tokens_per_sec": completion_tps,
+    }], fieldnames)

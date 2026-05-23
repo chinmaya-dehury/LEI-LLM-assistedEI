@@ -1,0 +1,13 @@
+{
+    "task_name": "air_quality_index_spatial_clustering",
+    "description": "Apply spatial clustering algorithms to group areas with similar air quality index values, enabling the identification of pollution hotspots.",
+    "result_summary": [
+        {
+            "name": "Cluster 0 AQI Average",
+            "value": 4.3076923076923075,
+            "description": "Average AQI for cluster 0",
+            "timestamp": "2026-05-23T16:27:36.362170"
+        }
+    ],
+    "result_generated_at": "2026-05-23T16:27:36.362178"
+}

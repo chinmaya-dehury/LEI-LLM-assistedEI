@@ -1,0 +1,40 @@
+{
+  "id": "chatcmpl-49f39a2b-93fb-46fa-81f7-e2947bfd2e56",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "{\n  \"tasks\": [\n    {\n      \"task_name\": \"air_quality_index_category_transition_analysis\",\n      \"description\": \"Analyze the transition patterns between different air quality index categories to identify common triggers and trends.\",\n      \"code\": \"import pandas as pd\\nimport numpy as np\\nimport os\\nfrom datetime import datetime\\n\\ndata_path = os.path.join(\\\"data\\\", \\\"air_quality\\\", \\\"raw_data.csv\\\")\\n\\ndf = pd.read_csv(data_path)\\n\\ndf['timestamp_utc'] = pd.to_datetime(df['timestamp_utc'])\\n\\ndf['aqi_category'] = pd.cut(df['aqi_uk'], bins=[0, 3, 6, 8, 10], labels=['Good', 'Moderate', 'Unhealthy', 'Very Unhealthy', 'Severe'])\\n\\ndf['aqi_category_shift'] = df['aqi_category'].shift(1)\\n\\ndf_transition = df[(df['aqi_category'] != df['aqi_category_shift']) & (df['aqi_category_shift'].notna())]\\n\\ndf_transition['transition'] = df_transition.apply(lambda row: f'{row[\"aqi_category_shift\"]} to {row[\"aqi_category\"]}', axis=1)\\n\\ntransition_counts = df_transition['transition'].value_counts().to_dict()\\n\\nresult_summary = []\\nfor transition, count in transition_counts.items():\\n    result_summary.append({\\n        \\\"name\\\": transition,\\n        \\\"value\\\": count,\\n        \\\"description\\\": f'Transition from one air quality category to another',\\n        \\\"timestamp\\\": datetime.now().isoformat()\\n    })\\n\\nresult = {\\n    \\\"task_name\\\": \\\"air_quality_index_category_transition_analysis\\\",\\n    \\\"description\\\": \\\"Analyze the transition patterns between different air quality index categories to identify common triggers and trends.\\\",\\n    \\\"result_summary\\\": result_summary,\\n    \\\"result_generated_at\\\": datetime.now().isoformat()\\n}\\n\\nimport json\\nwith open(os.path.join(\\\"output\\\", \\\"air_quality\\\", \\\"air_quality_index_category_transition_analysis_result.json\\\"), 'w') as f:\\n    json.dump(result, f, indent=4)\"\n    }\n  ]\n}",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1779522670,
+  "model": "llama-3.3-70b-versatile",
+  "object": "chat.completion",
+  "service_tier": "on_demand",
+  "system_fingerprint": "fp_3272ea2d91",
+  "usage": {
+    "completion_tokens": 474,
+    "prompt_tokens": 2036,
+    "total_tokens": 2510,
+    "completion_tokens_details": null,
+    "prompt_tokens_details": null,
+    "queue_time": 0.162122404,
+    "prompt_time": 0.110593555,
+    "completion_time": 1.089387319,
+    "total_time": 1.199980874
+  },
+  "usage_breakdown": null,
+  "x_groq": {
+    "id": "req_01ks9x22zkefcb33t90a4kw6zh",
+    "seed": 642420142
+  }
+}

@@ -1,0 +1,270 @@
+ Edge Executor started at 2026-05-23 13:19:48
+Scanning directory: generated_tasks/air_quality
+Found 14 tasks to execute.
+============================================================
+
+ Task 1 of 14
+
+ Executing: generated_tasks/air_quality\air_quality_alert_system.py
+   Start Time: 13:19:48
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.38 sec
+   Output:
+      AQI: 148.425, Category: Unhealthy for sensitive groups
+      AQI: 148.425, Category: Unhealthy for sensitive groups
+      AQI: 156.1578947368421, Category: Unhealthy
+      AQI: 156.1578947368421, Category: Unhealthy
+      AQI: 156.1578947368421, Category: Unhealthy
+      AQI: 156.1578947368421, Category: Unhealthy
+      AQI: 156.1578947368421, Category: Unhealthy
+      AQI: 156.1578947368421, Category: Unhealthy
+      AQI: 164.83157894736843, Category: Unhealthy
+      AQI: 164.83157894736843, Category: Unhealthy
+      AQI: 164.83157894736843, Category: Unhealthy
+      AQI: 164.83157894736843, Category: Unhealthy
+      AQI: 164.83157894736843, Category: Unhealthy
+      AQI: 164.83157894736843, Category: Unhealthy
+      AQI: 164.02105263157895, Category: Unhealthy
+      AQI: 164.02105263157895, Category: Unhealthy
+      AQI: 164.02105263157895, Category: Unhealthy
+      AQI: 164.02105263157895, Category: Unhealthy
+      AQI: 164.02105263157895, Category: Unhealthy
+      AQI: 164.02105263157895, Category: Unhealthy
+      AQI: 164.02105263157895, Category: Unhealthy
+      AQI: 162.69473684210527, Category: Unhealthy
+      AQI: 165.0842105263158, Category: Unhealthy
+      AQI: 165.0842105263158, Category: Unhealthy
+      AQI: 165.0842105263158, Category: Unhealthy
+      AQI: 165.0842105263158, Category: Unhealthy
+      AQI: 165.0842105263158, Category: Unhealthy
+      AQI: 165.0842105263158, Category: Unhealthy
+      AQI: 170.02105263157895, Category: Unhealthy
+      AQI: 170.02105263157895, Category: Unhealthy
+      AQI: 170.02105263157895, Category: Unhealthy
+      AQI: 170.02105263157895, Category: Unhealthy
+      AQI: 170.02105263157895, Category: Unhealthy
+      AQI: 170.02105263157895, Category: Unhealthy
+      AQI: 176.29473684210527, Category: Unhealthy
+      AQI: 176.29473684210527, Category: Unhealthy
+      AQI: 176.29473684210527, Category: Unhealthy
+      AQI: 181.7684210526316, Category: Unhealthy
+      AQI: 181.7684210526316, Category: Unhealthy
+      AQI: 181.7684210526316, Category: Unhealthy
+      AQI: 181.7684210526316, Category: Unhealthy
+      AQI: 193.22105263157894, Category: Unhealthy
+      AQI: 193.22105263157894, Category: Unhealthy
+      AQI: 193.22105263157894, Category: Unhealthy
+      AQI: 193.22105263157894, Category: Unhealthy
+      AQI: 193.22105263157894, Category: Unhealthy
+      AQI: 193.22105263157894, Category: Unhealthy
+      AQI: 185.47894736842105, Category: Unhealthy
+      AQI: 185.47894736842105, Category: Unhealthy
+      AQI: 185.47894736842105, Category: Unhealthy
+      AQI: 185.47894736842105, Category: Unhealthy
+      AQI: 185.47894736842105, Category: Unhealthy
+      AQI: 185.47894736842105, Category: Unhealthy
+      AQI: 178.5842105263158, Category: Unhealthy
+      AQI: 178.5842105263158, Category: Unhealthy
+      AQI: 178.5842105263158, Category: Unhealthy
+      AQI: 178.5842105263158, Category: Unhealthy
+      AQI: 178.5842105263158, Category: Unhealthy
+      AQI: 178.5842105263158, Category: Unhealthy
+      AQI: 162.1, Category: Unhealthy
+      AQI: 162.1, Category: Unhealthy
+      AQI: 162.1, Category: Unhealthy
+      AQI: 162.1, Category: Unhealthy
+      AQI: 162.1, Category: Unhealthy
+      AQI: 162.1, Category: Unhealthy
+      AQI: 154.60526315789474, Category: Unhealthy
+      AQI: 154.60526315789474, Category: Unhealthy
+      AQI: 153.57894736842107, Category: Unhealthy
+      AQI: 153.57894736842107, Category: Unhealthy
+      AQI: 153.57894736842107, Category: Unhealthy
+      AQI: 153.57894736842107, Category: Unhealthy
+      AQI: 153.57894736842107, Category: Unhealthy
+      AQI: 154.5421052631579, Category: Unhealthy
+      AQI: 154.5421052631579, Category: Unhealthy
+      AQI: 154.5421052631579, Category: Unhealthy
+      AQI: 154.5421052631579, Category: Unhealthy
+      AQI: 154.5421052631579, Category: Unhealthy
+      AQI: 154.5421052631579, Category: Unhealthy
+      AQI: 155.74736842105264, Category: Unhealthy
+      AQI: 155.74736842105264, Category: Unhealthy
+      AQI: 155.74736842105264, Category: Unhealthy
+      AQI: 155.74736842105264, Category: Unhealthy
+      AQI: 155.74736842105264, Category: Unhealthy
+      AQI: 155.74736842105264, Category: Unhealthy
+      AQI: 156.46842105263158, Category: Unhealthy
+      AQI: 156.46842105263158, Category: Unhealthy
+      AQI: 156.46842105263158, Category: Unhealthy
+      AQI: 124.57499999999999, Category: Unhealthy for sensitive groups
+      AQI: 124.57499999999999, Category: Unhealthy for sensitive groups
+      AQI: 124.57499999999999, Category: Unhealthy for sensitive groups
+      AQI: 124.57499999999999, Category: Unhealthy for sensitive groups
+      AQI: 124.57499999999999, Category: Unhealthy for sensitive groups
+      AQI: 81.96581196581197, Category: Moderate
+      AQI: 86.1965811965812, Category: Moderate
+      AQI: 86.1965811965812, Category: Moderate
+      AQI: 86.1965811965812, Category: Moderate
+      AQI: 86.1965811965812, Category: Moderate
+      AQI: 86.1965811965812, Category: Moderate
+      AQI: 86.1965811965812, Category: Moderate
+      AQI: 93.76068376068375, Category: Moderate
+      AQI: 93.76068376068375, Category: Moderate
+      AQI: 93.76068376068375, Category: Moderate
+      AQI: 93.76068376068375, Category: Moderate
+      AQI: 93.76068376068375, Category: Moderate
+      AQI: 93.76068376068375, Category: Moderate
+      AQI: 99.50854700854703, Category: Moderate
+      AQI: 99.50854700854703, Category: Moderate
+      AQI: 99.50854700854703, Category: Moderate
+      AQI: 156.05263157894737, Category: Unhealthy
+      AQI: 156.05263157894737, Category: Unhealthy
+      AQI: 156.05263157894737, Category: Unhealthy
+      AQI: 155.46842105263158, Category: Unhealthy
+      {"task_name": "air_quality_alert_system", "description": "Develop an alert system to notify citizens when the air quality exceeds a certain threshold, providing them with valuable insights and recommendations.", "result_summary": [{"name": "AQI Alert", "value": 148.425, "description": "Unhealthy for sensitive groups", "timestamp": "2026-05-23T13:19:48.578673"}, {"name": "AQI Alert", "value": 148.425, "description": "Unhealthy for sensitive groups", "timestamp": "2026-05-23T13:19:48.578707"}, {"name": "AQI Alert", "value": 156.1578947368421, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.578796"}, {"name": "AQI Alert", "value": 156.1578947368421, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.578810"}, {"name": "AQI Alert", "value": 156.1578947368421, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.578824"}, {"name": "AQI Alert", "value": 156.1578947368421, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.578839"}, {"name": "AQI Alert", "value": 156.1578947368421, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.578853"}, {"name": "AQI Alert", "value": 156.1578947368421, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.578867"}, {"name": "AQI Alert", "value": 164.83157894736843, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.578881"}, {"name": "AQI Alert", "value": 164.83157894736843, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.578896"}, {"name": "AQI Alert", "value": 164.83157894736843, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.578911"}, {"name": "AQI Alert", "value": 164.83157894736843, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.578925"}, {"name": "AQI Alert", "value": 164.83157894736843, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.578938"}, {"name": "AQI Alert", "value": 164.83157894736843, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.578951"}, {"name": "AQI Alert", "value": 164.02105263157895, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.578964"}, {"name": "AQI Alert", "value": 164.02105263157895, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.578977"}, {"name": "AQI Alert", "value": 164.02105263157895, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.578990"}, {"name": "AQI Alert", "value": 164.02105263157895, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579003"}, {"name": "AQI Alert", "value": 164.02105263157895, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579016"}, {"name": "AQI Alert", "value": 164.02105263157895, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579029"}, {"name": "AQI Alert", "value": 164.02105263157895, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579042"}, {"name": "AQI Alert", "value": 162.69473684210527, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579056"}, {"name": "AQI Alert", "value": 165.0842105263158, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579069"}, {"name": "AQI Alert", "value": 165.0842105263158, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579095"}, {"name": "AQI Alert", "value": 165.0842105263158, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579115"}, {"name": "AQI Alert", "value": 165.0842105263158, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579130"}, {"name": "AQI Alert", "value": 165.0842105263158, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579144"}, {"name": "AQI Alert", "value": 165.0842105263158, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579157"}, {"name": "AQI Alert", "value": 170.02105263157895, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579171"}, {"name": "AQI Alert", "value": 170.02105263157895, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579184"}, {"name": "AQI Alert", "value": 170.02105263157895, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579197"}, {"name": "AQI Alert", "value": 170.02105263157895, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579210"}, {"name": "AQI Alert", "value": 170.02105263157895, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579223"}, {"name": "AQI Alert", "value": 170.02105263157895, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579236"}, {"name": "AQI Alert", "value": 176.29473684210527, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579250"}, {"name": "AQI Alert", "value": 176.29473684210527, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579263"}, {"name": "AQI Alert", "value": 176.29473684210527, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579280"}, {"name": "AQI Alert", "value": 181.7684210526316, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579295"}, {"name": "AQI Alert", "value": 181.7684210526316, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579310"}, {"name": "AQI Alert", "value": 181.7684210526316, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579324"}, {"name": "AQI Alert", "value": 181.7684210526316, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579338"}, {"name": "AQI Alert", "value": 193.22105263157894, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579352"}, {"name": "AQI Alert", "value": 193.22105263157894, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579366"}, {"name": "AQI Alert", "value": 193.22105263157894, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579379"}, {"name": "AQI Alert", "value": 193.22105263157894, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579392"}, {"name": "AQI Alert", "value": 193.22105263157894, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579405"}, {"name": "AQI Alert", "value": 193.22105263157894, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579418"}, {"name": "AQI Alert", "value": 185.47894736842105, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579431"}, {"name": "AQI Alert", "value": 185.47894736842105, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579445"}, {"name": "AQI Alert", "value": 185.47894736842105, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579457"}, {"name": "AQI Alert", "value": 185.47894736842105, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579470"}, {"name": "AQI Alert", "value": 185.47894736842105, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579483"}, {"name": "AQI Alert", "value": 185.47894736842105, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579497"}, {"name": "AQI Alert", "value": 178.5842105263158, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579510"}, {"name": "AQI Alert", "value": 178.5842105263158, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579524"}, {"name": "AQI Alert", "value": 178.5842105263158, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579537"}, {"name": "AQI Alert", "value": 178.5842105263158, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579550"}, {"name": "AQI Alert", "value": 178.5842105263158, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579564"}, {"name": "AQI Alert", "value": 178.5842105263158, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579577"}, {"name": "AQI Alert", "value": 162.1, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579589"}, {"name": "AQI Alert", "value": 162.1, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579603"}, {"name": "AQI Alert", "value": 162.1, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579616"}, {"name": "AQI Alert", "value": 162.1, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579629"}, {"name": "AQI Alert", "value": 162.1, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579641"}, {"name": "AQI Alert", "value": 162.1, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579655"}, {"name": "AQI Alert", "value": 154.60526315789474, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579668"}, {"name": "AQI Alert", "value": 154.60526315789474, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579681"}, {"name": "AQI Alert", "value": 153.57894736842107, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579694"}, {"name": "AQI Alert", "value": 153.57894736842107, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579708"}, {"name": "AQI Alert", "value": 153.57894736842107, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579721"}, {"name": "AQI Alert", "value": 153.57894736842107, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579734"}, {"name": "AQI Alert", "value": 153.57894736842107, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579748"}, {"name": "AQI Alert", "value": 154.5421052631579, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579761"}, {"name": "AQI Alert", "value": 154.5421052631579, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579775"}, {"name": "AQI Alert", "value": 154.5421052631579, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579789"}, {"name": "AQI Alert", "value": 154.5421052631579, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579803"}, {"name": "AQI Alert", "value": 154.5421052631579, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579818"}, {"name": "AQI Alert", "value": 154.5421052631579, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579831"}, {"name": "AQI Alert", "value": 155.74736842105264, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579843"}, {"name": "AQI Alert", "value": 155.74736842105264, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579860"}, {"name": "AQI Alert", "value": 155.74736842105264, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579873"}, {"name": "AQI Alert", "value": 155.74736842105264, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579886"}, {"name": "AQI Alert", "value": 155.74736842105264, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579899"}, {"name": "AQI Alert", "value": 155.74736842105264, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579912"}, {"name": "AQI Alert", "value": 156.46842105263158, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579925"}, {"name": "AQI Alert", "value": 156.46842105263158, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579938"}, {"name": "AQI Alert", "value": 156.46842105263158, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.579953"}, {"name": "AQI Alert", "value": 124.57499999999999, "description": "Unhealthy for sensitive groups", "timestamp": "2026-05-23T13:19:48.579966"}, {"name": "AQI Alert", "value": 124.57499999999999, "description": "Unhealthy for sensitive groups", "timestamp": "2026-05-23T13:19:48.579979"}, {"name": "AQI Alert", "value": 124.57499999999999, "description": "Unhealthy for sensitive groups", "timestamp": "2026-05-23T13:19:48.579993"}, {"name": "AQI Alert", "value": 124.57499999999999, "description": "Unhealthy for sensitive groups", "timestamp": "2026-05-23T13:19:48.580006"}, {"name": "AQI Alert", "value": 124.57499999999999, "description": "Unhealthy for sensitive groups", "timestamp": "2026-05-23T13:19:48.580018"}, {"name": "AQI Alert", "value": 81.96581196581197, "description": "Moderate", "timestamp": "2026-05-23T13:19:48.580032"}, {"name": "AQI Alert", "value": 86.1965811965812, "description": "Moderate", "timestamp": "2026-05-23T13:19:48.580045"}, {"name": "AQI Alert", "value": 86.1965811965812, "description": "Moderate", "timestamp": "2026-05-23T13:19:48.580058"}, {"name": "AQI Alert", "value": 86.1965811965812, "description": "Moderate", "timestamp": "2026-05-23T13:19:48.580070"}, {"name": "AQI Alert", "value": 86.1965811965812, "description": "Moderate", "timestamp": "2026-05-23T13:19:48.580083"}, {"name": "AQI Alert", "value": 86.1965811965812, "description": "Moderate", "timestamp": "2026-05-23T13:19:48.580096"}, {"name": "AQI Alert", "value": 86.1965811965812, "description": "Moderate", "timestamp": "2026-05-23T13:19:48.580109"}, {"name": "AQI Alert", "value": 93.76068376068375, "description": "Moderate", "timestamp": "2026-05-23T13:19:48.580122"}, {"name": "AQI Alert", "value": 93.76068376068375, "description": "Moderate", "timestamp": "2026-05-23T13:19:48.580137"}, {"name": "AQI Alert", "value": 93.76068376068375, "description": "Moderate", "timestamp": "2026-05-23T13:19:48.580149"}, {"name": "AQI Alert", "value": 93.76068376068375, "description": "Moderate", "timestamp": "2026-05-23T13:19:48.580162"}, {"name": "AQI Alert", "value": 93.76068376068375, "description": "Moderate", "timestamp": "2026-05-23T13:19:48.580175"}, {"name": "AQI Alert", "value": 93.76068376068375, "description": "Moderate", "timestamp": "2026-05-23T13:19:48.580187"}, {"name": "AQI Alert", "value": 99.50854700854703, "description": "Moderate", "timestamp": "2026-05-23T13:19:48.580200"}, {"name": "AQI Alert", "value": 99.50854700854703, "description": "Moderate", "timestamp": "2026-05-23T13:19:48.580212"}, {"name": "AQI Alert", "value": 99.50854700854703, "description": "Moderate", "timestamp": "2026-05-23T13:19:48.580226"}, {"name": "AQI Alert", "value": 156.05263157894737, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.580284"}, {"name": "AQI Alert", "value": 156.05263157894737, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.580342"}, {"name": "AQI Alert", "value": 156.05263157894737, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.580366"}, {"name": "AQI Alert", "value": 155.46842105263158, "description": "Unhealthy", "timestamp": "2026-05-23T13:19:48.580384"}], "result_generated_at": "2026-05-23T13:19:48.580396"}
+------------------------------------------------------------
+
+ Task 2 of 14
+
+ Executing: generated_tasks/air_quality\air_quality_index_category_distribution.py
+   Start Time: 13:19:53
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.38 sec
+------------------------------------------------------------
+
+ Task 3 of 14
+
+ Executing: generated_tasks/air_quality\aqi_level_trend_analysis.py
+   Start Time: 13:19:59
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.39 sec
+------------------------------------------------------------
+
+ Task 4 of 14
+
+ Executing: generated_tasks/air_quality\component_correlation_analysis.py
+   Start Time: 13:20:04
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.39 sec
+------------------------------------------------------------
+
+ Task 5 of 14
+
+ Executing: generated_tasks/air_quality\diurnal_variation_analysis.py
+   Start Time: 13:20:09
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.39 sec
+------------------------------------------------------------
+
+ Task 6 of 14
+
+ Executing: generated_tasks/air_quality\health_risk_mapping.py
+   Start Time: 13:20:15
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.45 sec
+------------------------------------------------------------
+
+ Task 7 of 14
+
+ Executing: generated_tasks/air_quality\main_pollutant_identification.py
+   Start Time: 13:20:20
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.40 sec
+   Output:
+      Main pollutant:  co
+      Main pollutant concentration:  395.23350427350425
+------------------------------------------------------------
+
+ Task 8 of 14
+
+ Executing: generated_tasks/air_quality\peak_pollution_hours_detection.py
+   Start Time: 13:20:26
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.40 sec
+------------------------------------------------------------
+
+ Task 9 of 14
+
+ Executing: generated_tasks/air_quality\pollutant_concentration_ratio_analysis.py
+   Start Time: 13:20:31
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.41 sec
+------------------------------------------------------------
+
+ Task 10 of 14
+
+ Executing: generated_tasks/air_quality\seasonal_variation_analysis.py
+   Start Time: 13:20:36
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.38 sec
+------------------------------------------------------------
+
+ Task 11 of 14
+
+ Executing: generated_tasks/air_quality\source_inference_analysis.py
+   Start Time: 13:20:42
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.37 sec
+   Output:
+      {'task_name': 'source_inference_analysis', 'description': 'Analyze the pollution data to infer the potential sources of pollution', 'result_summary': [{'name': 'Traffic', 'value': np.float64(133.53122507122507), 'description': 'Traffic is the main source of pollution', 'timestamp': '2026-05-23T13:20:42.596435'}], 'result_generated_at': '2026-05-23T13:20:42.596439'}
+------------------------------------------------------------
+
+ Task 12 of 14
+
+ Executing: generated_tasks/air_quality\spatial_variation_analysis.py
+   Start Time: 13:20:47
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.46 sec
+   Output:
+      Locations with poor air quality:
+      Empty DataFrame
+      Columns: [lat, lon, aqi_uk]
+      Index: []
+------------------------------------------------------------
+
+ Task 13 of 14
+
+ Executing: generated_tasks/air_quality\temporal_trend_analysis_of_individual_pollutants.py
+   Start Time: 13:20:53
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.43 sec
+------------------------------------------------------------
+
+ Task 14 of 14
+
+ Executing: generated_tasks/air_quality\weather_condition_analysis.py
+   Start Time: 13:20:58
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 0.41 sec
+   Output:
+      co        no  ...        pm10        nh3
+      timestamp_utc                        ...                       
+      2025-10-28     394.080000  0.010000  ...   59.380000   0.930000
+      2025-10-29     320.880682  0.364091  ...   93.915455   0.080227
+      2025-10-30     469.174130  0.136087  ...   96.140217   0.013043
+      2025-10-31     355.407619  0.280476  ...   41.435238   2.944762
+      2025-11-01            NaN       NaN  ...         NaN        NaN
+      2025-11-02            NaN       NaN  ...         NaN        NaN
+      2025-11-03     572.460000  2.722500  ...  115.030000  10.940000
+      
+      [7 rows x 8 columns]
+      {"task_name": "weather_condition_analysis", "description": "Analyze the impact of weather conditions on air quality", "result_summary": [{"name": "Daily Average Pollutant Levels", "value": {"2025-10-28": {"co": 394.08, "no": 0.01, "no2": 6.74, "o3": 105.05, "so2": 1.18, "pm2_5": 54.77, "pm10": 59.38, "nh3": 0.93}, "2025-10-29": {"co": 320.8806818181818, "no": 0.3640909090909091, "no2": 3.9302272727272727, "o3": 116.91409090909092, "so2": 5.824545454545454, "pm2_5": 83.72272727272728, "pm10": 93.91545454545454, "nh3": 0.08022727272727272}, "2025-10-30": {"co": 469.17413043478257, "no": 0.13608695652173913, "no2": 4.466521739130435, "o3": 110.93282608695652, "so2": 2.5689130434782608, "pm2_5": 89.45760869565218, "pm10": 96.14021739130435, "nh3": 0.013043478260869565}, "2025-10-31": {"co": 355.40761904761905, "no": 0.28047619047619043, "no2": 7.012857142857143, "o3": 90.91952380952382, "so2": 1.5585714285714287, "pm2_5": 34.62571428571429, "pm10": 41.43523809523809, "nh3": 2.9447619047619047}, "2025-11-01": {"co": NaN, "no": NaN, "no2": NaN, "o3": NaN, "so2": NaN, "pm2_5": NaN, "pm10": NaN, "nh3": NaN}, "2025-11-02": {"co": NaN, "no": NaN, "no2": NaN, "o3": NaN, "so2": NaN, "pm2_5": NaN, "pm10": NaN, "nh3": NaN}, "2025-11-03": {"co": 572.46, "no": 2.7225, "no2": 12.23, "o3": 69.195, "so2": 5.327500000000001, "pm2_5": 66.6225, "pm10": 115.03, "nh3": 10.940000000000001}}, "description": "Daily average levels of each pollutant", "timestamp": "2026-05-23T13:20:58.903833"}], "result_generated_at": "2026-05-23T13:20:58.903836"}
+------------------------------------------------------------
+
+ All tasks executed. Check the log file for details.
+Log file saved at: logs\edge_execution_llama-3.3-70b-versatile_run3_20260523_131947.log

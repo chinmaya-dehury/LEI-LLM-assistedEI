@@ -24,7 +24,7 @@ from shared_utils import sanitize_model_name, IST
 BASE_DIR = Path(__file__).parent.resolve()
 STEP_1_SCRIPT = BASE_DIR / "task_generator.py"
 STEP_2_SCRIPT = BASE_DIR / "code_generator.py"
-STEP_3_SCRIPT = BASE_DIR / "scheduler" / "edge_scheduler_sequential.py"
+STEP_3_SCRIPT = BASE_DIR / "scheduler" / "edge_scheduler.py"
 
 TIMESTAMP_DIR = BASE_DIR / "timestamp_path" / DATA_TYPE
 RUN_ID = ""
@@ -171,7 +171,7 @@ def run_pipeline() -> None:
 	failures: list[str] = []
 	_set_pipeline_run(model)
 
-	for run_num in range(1, 6):
+	for run_num in range(1, 2):
 		print(f"\nRunning pipeline for model {model} Run {run_num}")
 		# Removed _clean_before_run() to preserve generated_tasks and output directories
 		env_override = {
@@ -190,7 +190,7 @@ def run_pipeline() -> None:
 			print("\nStep 3/4: Validator run")
 			run_script("step3_validator", BASE_DIR / "validator.py", env_override=env_override)
 
-			print("\nStep 4/4: Executing generated tasks via edge_scheduler_sequential.py")
+			print("\nStep 4/4: Executing generated tasks via edge_scheduler.py")
 			run_script("step4_scheduler", STEP_3_SCRIPT, cwd=BASE_DIR, env_override=env_override)
 
 		except Exception as exc:

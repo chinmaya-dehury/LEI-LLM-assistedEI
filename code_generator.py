@@ -35,6 +35,7 @@ from shared_utils import (
     get_environment_vars,
     setup_timing_paths,
     append_timing_rows_to_csv,
+    write_code_generator_csv,
     IST,
 )
 
@@ -65,64 +66,6 @@ TIMESTAMP_PATH = timing_paths["TIMESTAMP_PATH"]
 STEP2_CSV = timing_paths["STEP_CSV"]
 RESOURCE_CSV = timing_paths["RESOURCE_CSV"]
 
-
-def _append_timing_rows(rows: list[dict]) -> None:
-    os.makedirs(TIMESTAMP_PATH, exist_ok=True)
-    file_exists = os.path.exists(STEP2_CSV) and os.path.getsize(STEP2_CSV) > 0
-    # Add run_count and resource summary fields from resource_stat/resource_usage_summary.json
-    fieldnames = [
-        "step",
-        "model",
-        "run_count",
-        "script_start_time_ist",
-        "script_end_time_ist",
-        "script_duration_sec",
-        "llm_start_time_ist",
-        "llm_end_time_ist",
-        "llm_duration_sec",
-        "prompt_tokens",
-        "completion_tokens",
-        "total_tokens",
-        "prompt_tokens_per_sec",
-        "completion_tokens_per_sec",
-        "tasks",
-        "resource_generated_at",
-        "resource_last_checked",
-        "avg_cpu_1m",
-        "avg_mem_1m",
-        "avg_cpu_5m",
-        "avg_mem_5m",
-    ]
-
-    # Try to read resource summary values
-    resource_vals = {}
-    try:
-        with open(RESOURCE_SUMMARY_PATH, "r", encoding="utf-8") as rf:
-            rs = json.load(rf)
-            resource_vals["resource_generated_at"] = rs.get("generated_at", "")
-            resource_vals["resource_last_checked"] = rs.get("last_checked", "")
-            sw = rs.get("summary_windows", {}) or {}
-            w1 = sw.get("1m", {}) or {}
-            w5 = sw.get("5m", {}) or {}
-            resource_vals["avg_cpu_1m"] = w1.get("avg_cpu", "")
-            resource_vals["avg_mem_1m"] = w1.get("avg_mem", "")
-            resource_vals["avg_cpu_5m"] = w5.get("avg_cpu", "")
-            resource_vals["avg_mem_5m"] = w5.get("avg_mem", "")
-    except Exception:
-        # leave resource_vals empty if file missing or malformed
-        resource_vals = {k: "" for k in [
-            "resource_generated_at", "resource_last_checked", "avg_cpu_1m",
-            "avg_mem_1m", "avg_cpu_5m", "avg_mem_5m"]}
-
-    with open(STEP2_CSV, "a", newline="", encoding="utf-8") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        if not file_exists:
-            writer.writeheader()
-        for row in rows:
-            # Add run_count and resource_vals to each row
-            row["run_count"] = row.get("run_count", RUN_COUNT)
-            row.update(resource_vals)
-            writer.writerow(row)
 
 # Step-level timing (for entire script)
 SCRIPT_START_TIME = datetime.now(IST).isoformat()
@@ -241,25 +184,21 @@ Tasks (<=2):
         script_duration = time.perf_counter() - SCRIPT_START_PERF
 
         # Log failed call timing
-        _append_timing_rows([
-            {
-                "step": "llm_call_failed",
-                "script_start_time_ist": SCRIPT_START_TIME,
-                "script_end_time_ist": script_end_time,
-                "script_duration_sec": script_duration,
-                # Do not populate llm_* timestamps when no response is received
-                "llm_start_time_ist": "",
-                "llm_end_time_ist": "",
-                "llm_duration_sec": 0,
-                "prompt_tokens": 0,
-                "completion_tokens": 0,
-                "total_tokens": 0,
-                "prompt_tokens_per_sec": 0,
-                "completion_tokens_per_sec": 0,
-                "model": DEFAULT_MODEL,
-                "tasks": ",".join([t.get("task_name", "") for t in task_payload.get("tasks", [])]) if isinstance(task_payload, dict) else "",
-            }
-        ])
+        write_code_generator_csv(
+            STEP2_CSV,
+            SCRIPT_START_TIME,
+            script_end_time,
+            script_duration,
+            "",
+            "",
+            0,
+            0,
+            0,
+            0,
+            DEFAULT_MODEL,
+            RUN_COUNT,
+            "",
+        )
         return None
 
     # Capture finish reason for diagnostics
@@ -302,24 +241,22 @@ Tasks (<=2):
     script_duration = time.perf_counter() - SCRIPT_START_PERF
 
     # Log successful call timing
-    _append_timing_rows([
-        {
-            "step": "llm_call",
-            "script_start_time_ist": SCRIPT_START_TIME,
-            "script_end_time_ist": script_end_time,
-            "script_duration_sec": script_duration,
-            "llm_start_time_ist": llm_start_time,
-            "llm_end_time_ist": llm_end_time,
-            "llm_duration_sec": llm_duration,
-            "prompt_tokens": prompt_tokens,
-            "completion_tokens": completion_tokens,
-            "total_tokens": total_tokens,
-            "prompt_tokens_per_sec": prompt_tps,
-            "completion_tokens_per_sec": completion_tps,
-            "model": used_model,
-            "tasks": ",".join([t.get("task_name", "") for t in task_payload.get("tasks", [])]) if isinstance(task_payload, dict) else "",
-        }
-    ])
+    task_names = ",".join([t.get("task_name", "") for t in task_payload.get("tasks", [])]) if isinstance(task_payload, dict) else ""
+    write_code_generator_csv(
+        STEP2_CSV,
+        SCRIPT_START_TIME,
+        script_end_time,
+        script_duration,
+        llm_start_time,
+        llm_end_time,
+        llm_duration,
+        prompt_tokens,
+        completion_tokens,
+        total_tokens,
+        used_model,
+        RUN_COUNT,
+        task_names,
+    )
 
     print(f"[Generator] Model '{used_model}' success in {llm_duration:.2f}s. Raw length={len(raw_output)}")
 
