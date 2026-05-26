@@ -1,0 +1,37 @@
+{
+    "task_name": "wind_event_clustering",
+    "description": "Apply clustering algorithms to group similar wind events based on wind speed, direction, and gusts.",
+    "result_summary": [
+        {
+            "name": "Cluster 0",
+            "value": 116,
+            "description": "Number of wind events in cluster 0",
+            "timestamp": "2026-05-26T11:23:01.654182"
+        },
+        {
+            "name": "Cluster 1",
+            "value": 100,
+            "description": "Number of wind events in cluster 1",
+            "timestamp": "2026-05-26T11:23:01.654425"
+        },
+        {
+            "name": "Cluster 2",
+            "value": 40,
+            "description": "Number of wind events in cluster 2",
+            "timestamp": "2026-05-26T11:23:01.654617"
+        },
+        {
+            "name": "Cluster 3",
+            "value": 68,
+            "description": "Number of wind events in cluster 3",
+            "timestamp": "2026-05-26T11:23:01.654790"
+        },
+        {
+            "name": "Cluster 4",
+            "value": 60,
+            "description": "Number of wind events in cluster 4",
+            "timestamp": "2026-05-26T11:23:01.654954"
+        }
+    ],
+    "result_generated_at": "2026-05-26T11:23:01.654957"
+}

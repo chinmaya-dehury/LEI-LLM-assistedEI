@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Complex Task Definition Schema",
+  "description": "Schema for high-level composite tasks synthesized from basic tasks",
+  "type": "object",
+  "required": ["task_name", "task_type", "description", "domains", "subtasks", "output_schema"],
+  "properties": {
+    "task_name": {
+      "type": "string",
+      "description": "Name of the complex task",
+      "minLength": 3,
+      "maxLength": 100
+    },
+    "task_type": {
+      "type": "string",
+      "enum": ["composite", "workflow", "pipeline"],
+      "description": "Type of complex task"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of what the complex task does"
+    },
+    "domains": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "List of domains involved in this complex task",
+      "examples": ["air_quality", "wind", "climate"]
+    },
+    "subtasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["subtask_name", "task_id", "domain", "status"],
+        "properties": {
+          "subtask_name": {"type": "string"},
+          "task_id": {"type": "string", "description": "Unique task identifier"},
+          "domain": {"type": "string", "description": "Domain of the subtask"},
+          "status": {
+            "type": "string",
+            "enum": ["available", "pending_generation", "missing"],
+            "description": "Availability status"
+          },
+          "inputs": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Input parameters"
+          },
+          "outputs": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Output parameters"
+          },
+          "depends_on": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "List of subtask names this depends on"
+          }
+        }
+      },
+      "minItems": 2,
+      "description": "Constituent subtasks forming the complex task"
+    },
+    "execution_order": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Recommended execution order of subtasks"
+    },
+    "data_flow": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from": {"type": "string", "description": "Source subtask"},
+          "to": {"type": "string", "description": "Target subtask"},
+          "data": {"type": "string", "description": "Data flowing between tasks"}
+        }
+      },
+      "description": "Data flow between subtasks"
+    },
+    "output_schema": {
+      "type": "object",
+      "description": "Schema of the final composite output"
+    },
+    "complexity_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 10,
+      "description": "Complexity rating (0-10)"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this complex task was generated"
+    },
+    "generation_metadata": {
+      "type": "object",
+      "properties": {
+        "generator": {"type": "string"},
+        "algorithm": {"type": "string"},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    }
+  }
+}

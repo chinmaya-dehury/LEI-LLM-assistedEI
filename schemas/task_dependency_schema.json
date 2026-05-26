@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Task Dependency Graph Schema",
+  "description": "Schema for representing task dependency relationships across domains",
+  "type": "object",
+  "properties": {
+    "domain1": {
+      "type": "string",
+      "description": "First domain in dependency analysis"
+    },
+    "domain2": {
+      "type": "string",
+      "description": "Second domain in dependency analysis"
+    },
+    "potential_connections": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "from_domain": {"type": "string"},
+              "to_domain": {"type": "string"},
+              "output_type": {"type": "string"},
+              "input_type": {"type": "string"},
+              "compatibility": {
+                "type": "string",
+                "enum": ["high", "medium", "low"]
+              }
+            },
+            "required": ["from_domain", "to_domain", "output_type", "input_type"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "from_task": {"type": "string"},
+              "to_task": {"type": "string"},
+              "from_domain": {"type": "string"},
+              "to_domain": {"type": "string"}
+            },
+            "required": ["from_task", "to_task", "from_domain", "to_domain"]
+          }
+        ]
+      },
+      "description": "List of potential connections between tasks or data types"
+    },
+    "data_compatibility": {
+      "type": "object",
+      "description": "Compatibility matrix between data types"
+    },
+    "execution_constraints": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Constraints on execution order or timing"
+    }
+  }
+}

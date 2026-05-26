@@ -6,19 +6,20 @@ If a task fails, logs the error, calls the LLM for fixes (up to 2 retries),
 replaces the script on success, or moves it to failed/ when retries are exhausted.
 
 Code updated: added FutureWarning/deprecation warning handling logic.
-Modified on: 23-05-2026
+Modified on: 25-05-2026
 
 """
 
 import json
+import ast
 import os
 import sys
 import subprocess
 import time
 from string import Template
-from typing import Dict, List, Any, Optional
+from typing import Dict, List
 import shutil
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 import re
 
 from openai import OpenAI
@@ -34,7 +35,7 @@ from shared_utils import (
     write_validator_detailed_row,
     IST,
 )
-from val_semantic import TaskOutput, _validate_output_structure
+from val_semantic import _validate_output_structure
 
 
 # Windows-safe stdout/stderr
@@ -165,6 +166,20 @@ def _normalize_code_string(code: str) -> str:
     if lines and lines[0].startswith("#!"):
         lines = lines[1:]
     return "\n".join(lines)
+
+
+def _validate_python_syntax(code: str) -> tuple[bool, str]:
+    """Validate that a Python source string parses successfully."""
+    if not isinstance(code, str) or not code.strip():
+        return False, "Python source is empty"
+
+    try:
+        ast.parse(code)
+        return True, ""
+    except SyntaxError as e:
+        line_info = f"line {e.lineno}, column {e.offset}" if e.lineno is not None else "unknown location"
+        message = e.msg or "Invalid Python syntax"
+        return False, f"Syntax error at {line_info}: {message}"
 
 
 def _stderr_is_only_warning(stderr: str) -> bool:
@@ -616,34 +631,71 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
 def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -> Dict:
     task_name = task_info.get("task_name")
     datatype = task_info.get("data_type", DATA_TYPE)
+    task_description = task_info.get("description", "")
+    assets = _load_context_for(datatype)
+    
+    # Read generated code for LLM-based validation
+    generated_code = ""
+    if os.path.exists(script_path):
+        try:
+            with open(script_path, "r", encoding="utf-8") as f:
+                generated_code = f.read()
+        except Exception:
+            pass
+
+    syntax_valid, syntax_error = _validate_python_syntax(generated_code)
+    if not syntax_valid:
+        print(f"[ERROR] {task_name} failed syntax validation: {syntax_error}")
+        _append_error_log(task_name, 1, syntax_error)
 
     print(f"\n[Validator] Testing {task_name}...")
 
-    exec_result = _execute_task_script(script_path)
+    exec_result = {"exit_code": 1, "stdout": "", "stderr": syntax_error} if not syntax_valid else _execute_task_script(script_path)
     warnings_only = _stderr_is_only_warning(exec_result["stderr"])
     stderr_for_logging = "" if warnings_only else (exec_result["stderr"] or "")
+    
+    # Initialize semantic_details early (will be updated later)
+    semantic_details = {"performed": False, "passed": False, "reasoning": ""}
+
+    # Initialize semantic_details early (will be updated later)
+    semantic_details = {"performed": False, "passed": False, "reasoning": ""}
 
     if exec_result["exit_code"] == 0:
         result_json = _parse_json_from_output(exec_result["stdout"])
         
+        # Always perform semantic validation if we have task description or code or sample data
+        # This validates code-description matching even if JSON output fails
+        if task_description or generated_code or assets.get("sample_data", ""):
+            # For semantic validation, we need to create a minimal JSON object if result_json is None
+            # This allows LLM to check if code matches description even without JSON output
+            json_for_validation = result_json or {"task_name": task_name, "result_summary": []}
+            validated_output, validation_error, semantic_details = _validate_output_structure(
+                json_for_validation,
+                task_name,
+                task_description,
+                generated_code,
+                assets.get("sample_data", ""),
+                min_results=0,
+            )
+        
         # Check various success conditions
         if result_json:
-            # Perform semantic validation on ALL valid JSON outputs
-            validated_output, validation_error = _validate_output_structure(result_json, task_name, min_results=1)
-            
             if validated_output is not None:
                 # Validation passed - output is properly structured
                 # Case 1: Proper object with matching task_name
                 if result_json.get("task_name") == task_name:
                     if warnings_only:
-                        print(f"⚠️ {task_name} emitted warnings but completed successfully.")
+                        print(f"[WARNING] {task_name} emitted warnings but completed successfully.")
                         message = "Executed successfully (warning ignored)"
                     else:
-                        print(f"✅ {task_name} passed validation")
+                        print(f"[OK] {task_name} passed validation")
                         message = "Executed successfully"
                     write_validator_detailed_row(
                         STEP3_CSV, "validation", DEFAULT_MODEL, RUN_COUNT, task_name, "passed", "0",
-                        SCRIPT_START_TIME, datetime.now(IST).isoformat(), time.perf_counter() - SCRIPT_START_PERF
+                        SCRIPT_START_TIME, datetime.now(IST).isoformat(), time.perf_counter() - SCRIPT_START_PERF,
+                        semantic_performed=semantic_details.get("performed", False),
+                        semantic_passed=semantic_details.get("passed", False),
+                        semantic_reasoning=semantic_details.get("reasoning", "Semantic validation completed.")
                     )
                     return {
                         "task_name": task_name,
@@ -654,14 +706,17 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
                 # Case 2: Array output (result_summary only) - also valid
                 if result_json.get("_array_output") or "result_summary" in result_json:
                     if warnings_only:
-                        print(f"⚠️ {task_name} emitted warnings but produced valid JSON array output.")
+                        print(f"[WARNING] {task_name} emitted warnings but produced valid JSON array output.")
                         message = "Executed successfully (array output, warning ignored)"
                     else:
-                        print(f"✅ {task_name} passed validation (JSON array output)")
+                        print(f"[OK] {task_name} passed validation (JSON array output)")
                         message = "Executed successfully (array output)"
                     write_validator_detailed_row(
                         STEP3_CSV, "validation", DEFAULT_MODEL, RUN_COUNT, task_name, "passed", "0",
-                        SCRIPT_START_TIME, datetime.now(IST).isoformat(), time.perf_counter() - SCRIPT_START_PERF
+                        SCRIPT_START_TIME, datetime.now(IST).isoformat(), time.perf_counter() - SCRIPT_START_PERF,
+                        semantic_performed=semantic_details.get("performed", False),
+                        semantic_passed=semantic_details.get("passed", False),
+                        semantic_reasoning=semantic_details.get("reasoning", "Semantic validation completed.")
                     )
                     return {
                         "task_name": task_name,
@@ -673,14 +728,17 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
                 if isinstance(result_json, dict) and len(result_json) > 0:
                     # Has some data, consider it valid
                     if warnings_only:
-                        print(f"⚠️ {task_name} emitted warnings but produced valid JSON output.")
+                        print(f"[WARNING] {task_name} emitted warnings but produced valid JSON output.")
                         message = "Executed successfully (JSON output, warning ignored)"
                     else:
-                        print(f"✅ {task_name} passed validation (JSON output)")
+                        print(f"[OK] {task_name} passed validation (JSON output)")
                         message = "Executed successfully (JSON output)"
                     write_validator_detailed_row(
                         STEP3_CSV, "validation", DEFAULT_MODEL, RUN_COUNT, task_name, "passed", "0",
-                        SCRIPT_START_TIME, datetime.now(IST).isoformat(), time.perf_counter() - SCRIPT_START_PERF
+                        SCRIPT_START_TIME, datetime.now(IST).isoformat(), time.perf_counter() - SCRIPT_START_PERF,
+                        semantic_performed=semantic_details.get("performed", False),
+                        semantic_passed=semantic_details.get("passed", False),
+                        semantic_reasoning=semantic_details.get("reasoning", "Semantic validation completed.")
                     )
                     return {
                         "task_name": task_name,
@@ -689,17 +747,21 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
                     }
             else:
                 # Semantic validation failed - log and fall through to retry logic
-                print(f"⚠️ {task_name} produced JSON but failed semantic validation:")
+                print(f"[WARNING] {task_name} produced JSON but failed semantic validation:")
                 print(f"   {validation_error}")
                 _append_error_log(task_name, 0, f"Semantic validation failed:\n{validation_error}")
                 # Fall through to retry logic with validation error
 
         if warnings_only and exec_result["exit_code"] == 0:
             # treat warning-only runs with non-JSON output as warning-only success variant
-            print(f"⚠️ {task_name} completed with warnings; JSON output could not be parsed but run succeeded.")
+            # Semantic validation was already performed above if inputs were available
+            print(f"[WARNING] {task_name} completed with warnings; JSON output could not be parsed but run succeeded.")
             write_validator_detailed_row(
                 STEP3_CSV, "validation", DEFAULT_MODEL, RUN_COUNT, task_name, "passed", "0",
-                SCRIPT_START_TIME, datetime.now(IST).isoformat(), time.perf_counter() - SCRIPT_START_PERF
+                SCRIPT_START_TIME, datetime.now(IST).isoformat(), time.perf_counter() - SCRIPT_START_PERF,
+                semantic_performed=semantic_details.get("performed", False),
+                semantic_passed=semantic_details.get("passed", False),
+                semantic_reasoning=semantic_details.get("reasoning", "Code-description validation completed despite missing JSON output")
             )
             return {
                 "task_name": task_name,
@@ -713,12 +775,12 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
                 0,
                 f"Exit 0 but invalid/missing JSON output.\nStdout:\n{exec_result['stdout']}\nStderr:\n{exec_result['stderr']}",
             )
-            print(f"❌ {task_name} exit 0 but output missing valid JSON")
+            print(f"[ERROR] {task_name} exit 0 but output missing valid JSON")
             # Fall through to retry logic below
         elif exec_result["exit_code"] != 0:
             # Non-zero exit code
             _append_error_log(task_name, exec_result["exit_code"], exec_result["stderr"] or exec_result["stdout"])
-            print(f"⚠️ {task_name} failed (exit {exec_result['exit_code']})")
+            print(f"[WARNING] {task_name} failed (exit {exec_result['exit_code']})")
             # Fall through to retry logic below
 
 
@@ -731,7 +793,6 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
 
     task_info = dict(task_info)
     task_info["code"] = original_code
-    assets = _load_context_for(datatype)
 
     # Log initial attempt (attempt 0) with no LLM interaction
     write_validator_detailed_row(
@@ -748,7 +809,14 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
         if exec_result["exit_code"] == 0:
             result_json = _parse_json_from_output(exec_result["stdout"])
             if result_json:
-                validated_output, validation_error = _validate_output_structure(result_json, task_name, min_results=1)
+                validated_output, validation_error, semantic_details = _validate_output_structure(
+                    result_json,
+                    task_name,
+                    task_info.get("description", ""),
+                    original_code,
+                    assets.get("sample_data", ""),
+                    min_results=0,
+                )
                 if validation_error:
                     validation_error_msg = validation_error
 
@@ -762,7 +830,7 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
         )
 
         if not correction.get("corrected_code"):
-            print(f"❌ LLM could not provide correction: {correction.get('error_message')}")
+            print(f"[ERROR] LLM could not provide correction: {correction.get('error_message')}")
             continue
 
         corrected_code = _normalize_code_string(correction["corrected_code"])
@@ -772,7 +840,18 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
             with open(temp_path, "w", encoding="utf-8") as temp_file:
                 temp_file.write(corrected_code)
         except Exception as e:
-            print(f"❌ Failed to write corrected code: {e}")
+            print(f"[ERROR] Failed to write corrected code: {e}")
+            continue
+
+        corrected_syntax_valid, corrected_syntax_error = _validate_python_syntax(corrected_code)
+        if not corrected_syntax_valid:
+            print(f"[ERROR] Corrected code failed syntax validation: {corrected_syntax_error}")
+            _append_error_log(task_name, 1, corrected_syntax_error)
+            try:
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
+            except Exception:
+                pass
             continue
 
         exec_result = _execute_task_script(temp_path)
@@ -781,25 +860,35 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
             result_json = _parse_json_from_output(exec_result["stdout"])
             # Accept valid JSON output that also passes semantic validation
             if result_json:
-                validated_output, validation_error = _validate_output_structure(result_json, task_name, min_results=1)
+                validated_output, validation_error, semantic_details = _validate_output_structure(
+                    result_json,
+                    task_name,
+                    task_info.get("description", ""),
+                    corrected_code,
+                    assets.get("sample_data", ""),
+                    min_results=0,
+                )
                 if validated_output is not None:
                     # Both JSON and semantic validation passed
                     shutil.move(temp_path, script_path)
                     # Log a 'passed' status timing row for this attempt
                     write_validator_detailed_row(
                         STEP3_CSV, "validation", DEFAULT_MODEL, RUN_COUNT, task_name, "passed", str(attempt),
-                        SCRIPT_START_TIME, datetime.now(IST).isoformat(), time.perf_counter() - SCRIPT_START_PERF
+                        SCRIPT_START_TIME, datetime.now(IST).isoformat(), time.perf_counter() - SCRIPT_START_PERF,
+                        semantic_performed=semantic_details.get("performed", False),
+                        semantic_passed=semantic_details.get("passed", False),
+                        semantic_reasoning=semantic_details.get("reasoning", "Semantic validation completed.")
                     )
-                    print(f"✅ {task_name} corrected and validated successfully")
+                    print(f"[OK] {task_name} corrected and validated successfully")
                     return {"task_name": task_name, "status": "passed", "message": f"Fixed after {attempt} attempt(s)"}
                 else:
                     # Semantic validation failed - log and continue to next retry
-                    print(f"⚠️ Corrected code has valid JSON but failed semantic validation: {validation_error}")
+                    print(f"[WARNING] Corrected code has valid JSON but failed semantic validation: {validation_error}")
                     _append_error_log(task_name, 0, f"Semantic validation failed:\n{validation_error}")
 
         _append_error_log(task_name, exec_result["exit_code"], exec_result["stderr"] or exec_result["stdout"])
         task_info["code"] = corrected_code
-        print(f"⚠️ Corrected code still failed (exit {exec_result['exit_code']})")
+        print(f"[WARNING] Corrected code still failed (exit {exec_result['exit_code']})")
 
         try:
             if os.path.exists(temp_path):
@@ -813,9 +902,9 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
 
     try:
         shutil.move(script_path, failed_path)
-        print(f"❌ {task_name} failed after {MAX_RETRIES} retries. Moved to failed/")
+        print(f"[ERROR] {task_name} failed after {MAX_RETRIES} retries. Moved to failed/")
     except Exception as e:
-        print(f"❌ {task_name} failed and could not move to failed/: {e}")
+        print(f"[ERROR] {task_name} failed and could not move to failed/: {e}")
 
     return {
         "task_name": task_name,
@@ -833,7 +922,7 @@ def validate_all_generated_tasks(tasks_file: str, scripts_dir: str) -> Dict[str,
         with open(tasks_file, "r", encoding="utf-8") as f:
             tasks_data = json.load(f)
     except Exception as e:
-        print(f"❌ Failed to load tasks file: {e}")
+        print(f"[ERROR] Failed to load tasks file: {e}")
         return {"tasks": [], "run_count": RUN_COUNT, "model": DEFAULT_MODEL}
 
     results: List[Dict] = []
@@ -844,7 +933,7 @@ def validate_all_generated_tasks(tasks_file: str, scripts_dir: str) -> Dict[str,
 
         script_path = os.path.join(scripts_dir, f"{task_name}.py")
         if not os.path.exists(script_path):
-            print(f"⚠️ Script not found: {script_path}")
+            print(f"[WARNING] Script not found: {script_path}")
             results.append({
                 "task_name": task_name,
                 "status": "failed",

@@ -1,0 +1,19 @@
+{
+    "task_name": "power_output_estimation",
+    "description": "Estimate the wind energy potential at turbine hub heights (80m, 120m) based on wind speed data.",
+    "result_summary": [
+        {
+            "name": "Average Power Output at 80m",
+            "value": 3453.9108351908158,
+            "description": "Average power output at 80m turbine hub height",
+            "timestamp": "2026-05-26T11:22:57.529714"
+        },
+        {
+            "name": "Average Power Output at 120m",
+            "value": 4783.898338362259,
+            "description": "Average power output at 120m turbine hub height",
+            "timestamp": "2026-05-26T11:22:57.529827"
+        }
+    ],
+    "result_generated_at": "2026-05-26T11:22:57.529829"
+}

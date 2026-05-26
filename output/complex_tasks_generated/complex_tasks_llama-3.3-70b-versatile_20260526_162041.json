@@ -1,0 +1,84 @@
+{
+  "composite_tasks": [
+    {
+      "task_name": "Air Quality and Wind Trend Analysis",
+      "description": "This composite task integrates air quality and wind data to analyze trends and correlations between the two domains.",
+      "business_value": "Understanding the relationship between air quality and wind trends can help identify potential sources of pollution and inform strategies for improving air quality.",
+      "domains": [
+        "AIR_QUALITY",
+        "WIND"
+      ],
+      "subtasks": [
+        {
+          "subtask_name": "Air Quality Trend Analysis",
+          "task_id": "aqi_level_trend_analysis",
+          "domain": "AIR_QUALITY",
+          "description": "Analyze the trend of air quality index over time.",
+          "inputs": [
+            "data_source",
+            "sampling_interval",
+            "data_format"
+          ],
+          "outputs": [
+            "air_quality_trend"
+          ],
+          "depends_on": []
+        },
+        {
+          "subtask_name": "Wind Trend Analysis",
+          "task_id": "diurnal_wind_patterns",
+          "domain": "WIND",
+          "description": "Analyze the trend of wind patterns over time.",
+          "inputs": [
+            "data_source",
+            "sampling_interval",
+            "data_format"
+          ],
+          "outputs": [
+            "wind_trend"
+          ],
+          "depends_on": []
+        },
+        {
+          "subtask_name": "Correlation Analysis",
+          "task_id": "needs_generation",
+          "domain": "COMPLEX",
+          "description": "Analyze the correlation between air quality and wind trends.",
+          "inputs": [
+            "air_quality_trend",
+            "wind_trend"
+          ],
+          "outputs": [
+            "correlation_result"
+          ],
+          "depends_on": [
+            "Air Quality Trend Analysis",
+            "Wind Trend Analysis"
+          ]
+        }
+      ],
+      "data_flow": [
+        {
+          "from": "Air Quality Trend Analysis",
+          "to": "Correlation Analysis",
+          "data": "air_quality_trend"
+        },
+        {
+          "from": "Wind Trend Analysis",
+          "to": "Correlation Analysis",
+          "data": "wind_trend"
+        }
+      ]
+    }
+  ],
+  "status": "success",
+  "llm_model": "llama-3.3-70b-versatile",
+  "start_time": "2026-05-26T16:20:41.310722+05:30",
+  "end_time": "2026-05-26T16:20:44.679357+05:30",
+  "duration_sec": 3.3686211000022013,
+  "token_usage": {
+    "prompt_tokens": 1356,
+    "completion_tokens": 837,
+    "total_tokens": 2193
+  }
+}

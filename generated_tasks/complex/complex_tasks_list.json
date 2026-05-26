@@ -1,0 +1,144 @@
+{
+  "composite_tasks": [
+    {
+      "task_name": "Air Quality and Wind Pattern Analysis",
+      "description": "This composite task integrates air quality and wind data to analyze patterns and correlations between the two domains.",
+      "business_value": "Understanding the relationship between air quality and wind patterns can help identify potential sources of pollution and inform strategies for improving air quality.",
+      "domains": [
+        "AIR_QUALITY",
+        "WIND"
+      ],
+      "subtasks": [
+        {
+          "subtask_name": "Air Quality Index Analysis",
+          "task_id": "air_quality_index_category_distribution",
+          "domain": "AIR_QUALITY",
+          "description": "Analyze the distribution of air quality index categories",
+          "inputs": [
+            "data_source",
+            "sampling_interval",
+            "data_format"
+          ],
+          "outputs": [
+            "air_quality_index"
+          ],
+          "depends_on": []
+        },
+        {
+          "subtask_name": "Wind Pattern Analysis",
+          "task_id": "diurnal_wind_patterns",
+          "domain": "WIND",
+          "description": "Analyze hourly wind patterns",
+          "inputs": [
+            "data_source",
+            "sampling_interval",
+            "data_format"
+          ],
+          "outputs": [
+            "wind_pattern"
+          ],
+          "depends_on": []
+        },
+        {
+          "subtask_name": "Correlation Analysis",
+          "task_id": "needs_generation",
+          "domain": "AIR_QUALITY",
+          "description": "Analyze the correlation between air quality index and wind patterns",
+          "inputs": [
+            "air_quality_index",
+            "wind_pattern"
+          ],
+          "outputs": [
+            "correlation_coefficient"
+          ],
+          "depends_on": [
+            "Air Quality Index Analysis",
+            "Wind Pattern Analysis"
+          ]
+        }
+      ],
+      "data_flow": [
+        {
+          "from": "Air Quality Index Analysis",
+          "to": "Correlation Analysis",
+          "data": "air_quality_index"
+        },
+        {
+          "from": "Wind Pattern Analysis",
+          "to": "Correlation Analysis",
+          "data": "wind_pattern"
+        }
+      ]
+    },
+    {
+      "task_name": "Air Quality and Wind Trend Analysis",
+      "description": "This composite task integrates air quality and wind data to analyze trends and correlations between the two domains.",
+      "business_value": "Understanding the relationship between air quality and wind trends can help identify potential sources of pollution and inform strategies for improving air quality.",
+      "domains": [
+        "AIR_QUALITY",
+        "WIND"
+      ],
+      "subtasks": [
+        {
+          "subtask_name": "Air Quality Trend Analysis",
+          "task_id": "aqi_level_trend_analysis",
+          "domain": "AIR_QUALITY",
+          "description": "Analyze air quality trends",
+          "inputs": [
+            "data_source",
+            "sampling_interval"
+          ],
+          "outputs": [
+            "air_quality_trend"
+          ],
+          "depends_on": []
+        },
+        {
+          "subtask_name": "Wind Trend Analysis",
+          "task_id": "diurnal_wind_patterns",
+          "domain": "WIND",
+          "description": "Analyze wind trends",
+          "inputs": [
+            "data_source",
+            "sampling_interval"
+          ],
+          "outputs": [
+            "wind_trend"
+          ],
+          "depends_on": []
+        },
+        {
+          "subtask_name": "Correlation Analysis",
+          "task_id": "cross_correlation_wind_analysis",
+          "domain": "WIND",
+          "description": "Analyze correlation between air quality and wind trends",
+          "inputs": [
+            "air_quality_trend",
+            "wind_trend"
+          ],
+          "outputs": [
+            "correlation_result"
+          ],
+          "depends_on": [
+            "Air Quality Trend Analysis",
+            "Wind Trend Analysis"
+          ]
+        }
+      ],
+      "data_flow": [
+        {
+          "from": "Air Quality Trend Analysis",
+          "to": "Correlation Analysis",
+          "data": "air_quality_trend"
+        },
+        {
+          "from": "Wind Trend Analysis",
+          "to": "Correlation Analysis",
+          "data": "wind_trend"
+        }
+      ]
+    }
+  ],
+  "updated_at": "2026-05-26T16:20:44.682322+05:30",
+  "total_count": 2
+}

@@ -9,6 +9,7 @@ Modified on: 20-05-2026
 """
 
 import csv
+import importlib.util
 import os
 import subprocess
 import sys
@@ -24,7 +25,7 @@ from shared_utils import sanitize_model_name, IST
 BASE_DIR = Path(__file__).parent.resolve()
 STEP_1_SCRIPT = BASE_DIR / "task_generator.py"
 STEP_2_SCRIPT = BASE_DIR / "code_generator.py"
-STEP_3_SCRIPT = BASE_DIR / "scheduler" / "edge_scheduler.py"
+STEP_3_SCRIPT = BASE_DIR / "scheduler" / "edge_scheduler_sequential.py"
 
 TIMESTAMP_DIR = BASE_DIR / "timestamp_path" / DATA_TYPE
 RUN_ID = ""
@@ -208,6 +209,36 @@ def run_pipeline() -> None:
 		sys.exit(1)
 
 
+def run_complex_task_synthesis() -> None:
+	"""Execute LLM-driven complex task synthesis."""
+	print("\n================ COMPLEX TASK SYNTHESIS (LLM-DRIVEN) ===============")
+	
+	try:
+		cts_path = BASE_DIR / "complex_task_synthesis"
+		if cts_path not in sys.path:
+			sys.path.insert(0, str(cts_path))
+		
+		# Import and run the orchestrator
+		import importlib.util
+		spec = importlib.util.spec_from_file_location(
+			"runner",
+			cts_path / "runner.py"
+		)
+		runner_module = importlib.util.module_from_spec(spec)
+		spec.loader.exec_module(runner_module)
+		
+		runner_module.run_complex_task_synthesis_workflow()
+		print("\n[OK] Complex task synthesis completed successfully")
+	
+	except Exception as exc:
+		print(f"\n[ERROR] Complex task synthesis failed: {exc}")
+		import traceback
+		traceback.print_exc()
+		sys.exit(1)
+
+
 if __name__ == "__main__":
 	run_pipeline()
+	# Optional: Uncomment to run complex task synthesis after pipeline
+	# run_complex_task_synthesis()
 

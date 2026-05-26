@@ -12,6 +12,8 @@ Notes:
 - Processes 1 task per LLM call (more reliable with OpenRouter/free routes).
 - Skips tasks whose .py already exists.
 - Updates new_tasks.json statuses (code_generated / failed to generate correct code).
+
+Modified on: 25-05-2026
 """
 
 import os
@@ -127,11 +129,11 @@ IMPORTANT:
 - Put any extra text AFTER the JSON object (but ideally output only JSON).
 
 Schema:
-{{"tasks":[{{"task_name":"<name1>","code":"<python code string>"}},{{"task_name":"<name2>","code":"<python code string>"}}]}}
+{{"tasks":[{{"task_name":"<name1>","description":"<task description>","code":"<python code string>"}},{{"task_name":"<name2>","description":"<task description>","code":"<python code string>"}}]}}
 
 Rules:
 - Escape all internal quotes in the code string properly.
-- Omit tasks with empty code.
+- Omit tasks with empty code or description.
 - If only one task provided, return one element.
 
 Sample Data:
@@ -279,7 +281,7 @@ Tasks (<=2):
         names = [t.get("task_name") for t in task_payload.get("tasks", [])]
         synthesized = []
         for idx, code in enumerate(code_blocks[:len(names)]):
-            synthesized.append({"task_name": names[idx], "code": code.strip()})
+            synthesized.append({"task_name": names[idx], "description": "", "code": code.strip()})
         if synthesized:
             tasks_json = {"tasks": synthesized}
 
@@ -301,9 +303,10 @@ Tasks (<=2):
     for t in tasks_json["tasks"]:
         tn = (t.get("task_name") or "").strip()
         code = t.get("code") or ""
+        description = t.get("description") or ""
         if not tn or tn not in requested_names:
             continue
-        cleaned.append({"task_name": tn, "code": code})
+        cleaned.append({"task_name": tn, "description": description, "code": code})
 
     # If names don’t match but counts do, map by index as a fallback
     if not cleaned and isinstance(tasks_json.get("tasks"), list):
@@ -311,7 +314,7 @@ Tasks (<=2):
         n = min(len(src), len(requested_order))
         if n > 0:
             cleaned = [
-                {"task_name": requested_order[i], "code": (src[i].get("code") or "").strip()}
+                {"task_name": requested_order[i], "description": (src[i].get("description") or "").strip(), "code": (src[i].get("code") or "").strip()}
                 for i in range(n)
                 if isinstance(src[i], dict)
             ]
@@ -439,7 +442,7 @@ def main() -> None:
 
     # ensure task list exists before trying to read it
     if not os.path.exists(TASK_LIST_PATH):
-        print(f"❌ Task list not found: {TASK_LIST_PATH}")
+        print(f"[ERROR] Task list not found: {TASK_LIST_PATH}")
         print("Create the new_tasks.json (or ensure pipeline writes it) and re-run.")
         sys.exit(1)
 
@@ -483,7 +486,7 @@ def main() -> None:
 
         if not generated or not generated.get("tasks"):
             update_task_status_in_file(tasks_payload, tn, "failed to generate correct code")
-            print(f" ❌ LLM did not return code for {tn}. Marked as failed.")
+            print(f" [ERROR] LLM did not return code for {tn}. Marked as failed.")
             with open(TASK_LIST_PATH, "w", encoding="utf-8") as out_file:
                 json.dump(tasks_payload, out_file, ensure_ascii=False, indent=2)
             continue
@@ -493,16 +496,24 @@ def main() -> None:
             filepath = os.path.join(OUTPUT_DIR, f"{tn}.py")
             try:
                 code_text = normalize_code_string(ret.get("code", ""))
+                
+                # Prepend task description as docstring for clarity and validation
+                description = t.get('description', '')
+                if description:
+                    code_with_docstring = f'"""\nTask: {tn}\nDescription: {description}\n"""\n\n{code_text}'
+                else:
+                    code_with_docstring = code_text
+                
                 with open(filepath, "w", encoding="utf-8") as wf:
-                    wf.write(code_text)
-                print(f" ✅ Saved: {tn}.py")
-                print(f"    Description: {t.get('description','')}\n")
+                    wf.write(code_with_docstring)
+                print(f" [OK] Saved: {tn}.py")
+                print(f"    Description: {description}\n")
                 update_task_status_in_file(tasks_payload, tn, "code_generated")
             except Exception as e:
-                print(f" ❌ Failed to save {tn}.py: {e}")
+                print(f" [ERROR] Failed to save {tn}.py: {e}")
                 update_task_status_in_file(tasks_payload, tn, "failed to generate correct code")
         else:
-            print(f" ❌ LLM did not return code for {tn}.")
+            print(f" [ERROR] LLM did not return code for {tn}.")
             update_task_status_in_file(tasks_payload, tn, "failed to generate correct code")
 
         with open(TASK_LIST_PATH, "w", encoding="utf-8") as out_file:
