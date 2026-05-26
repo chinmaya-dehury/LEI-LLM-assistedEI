@@ -9,3 +9,4 @@ ollama
 pyyaml
 pydantic>=2.0.0
 apscheduler>=3.10.0
+dotenv

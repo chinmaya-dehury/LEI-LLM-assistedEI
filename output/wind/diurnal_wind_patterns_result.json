@@ -1,0 +1,151 @@
+{
+    "task_name": "diurnal_wind_patterns",
+    "description": "Analyze hourly wind trends to understand day vs night wind behavior and identify diurnal patterns.",
+    "result_summary": [
+        {
+            "name": "Day Wind Speed at 6 hour",
+            "value": 8.580125275,
+            "description": "Average wind speed during day time",
+            "timestamp": "2026-05-26T11:22:56.483845"
+        },
+        {
+            "name": "Day Wind Speed at 7 hour",
+            "value": 8.09229513125,
+            "description": "Average wind speed during day time",
+            "timestamp": "2026-05-26T11:22:56.483871"
+        },
+        {
+            "name": "Day Wind Speed at 8 hour",
+            "value": 7.54438369375,
+            "description": "Average wind speed during day time",
+            "timestamp": "2026-05-26T11:22:56.483887"
+        },
+        {
+            "name": "Day Wind Speed at 9 hour",
+            "value": 6.9116723625,
+            "description": "Average wind speed during day time",
+            "timestamp": "2026-05-26T11:22:56.483899"
+        },
+        {
+            "name": "Day Wind Speed at 10 hour",
+            "value": 5.9973785125,
+            "description": "Average wind speed during day time",
+            "timestamp": "2026-05-26T11:22:56.483911"
+        },
+        {
+            "name": "Day Wind Speed at 11 hour",
+            "value": 4.8801398625,
+            "description": "Average wind speed during day time",
+            "timestamp": "2026-05-26T11:22:56.483921"
+        },
+        {
+            "name": "Day Wind Speed at 12 hour",
+            "value": 3.5414914175,
+            "description": "Average wind speed during day time",
+            "timestamp": "2026-05-26T11:22:56.483932"
+        },
+        {
+            "name": "Day Wind Speed at 13 hour",
+            "value": 3.23507053125,
+            "description": "Average wind speed during day time",
+            "timestamp": "2026-05-26T11:22:56.483942"
+        },
+        {
+            "name": "Day Wind Speed at 14 hour",
+            "value": 4.0239434,
+            "description": "Average wind speed during day time",
+            "timestamp": "2026-05-26T11:22:56.483951"
+        },
+        {
+            "name": "Day Wind Speed at 15 hour",
+            "value": 4.92608514375,
+            "description": "Average wind speed during day time",
+            "timestamp": "2026-05-26T11:22:56.483961"
+        },
+        {
+            "name": "Day Wind Speed at 16 hour",
+            "value": 5.6594179,
+            "description": "Average wind speed during day time",
+            "timestamp": "2026-05-26T11:22:56.483970"
+        },
+        {
+            "name": "Day Wind Speed at 17 hour",
+            "value": 6.03018615625,
+            "description": "Average wind speed during day time",
+            "timestamp": "2026-05-26T11:22:56.483980"
+        },
+        {
+            "name": "Day Wind Speed at 18 hour",
+            "value": 5.35351425,
+            "description": "Average wind speed during day time",
+            "timestamp": "2026-05-26T11:22:56.483989"
+        },
+        {
+            "name": "Night Wind Speed at 0 hour",
+            "value": 3.42409674375,
+            "description": "Average wind speed during night time",
+            "timestamp": "2026-05-26T11:22:56.484055"
+        },
+        {
+            "name": "Night Wind Speed at 1 hour",
+            "value": 3.35594834375,
+            "description": "Average wind speed during night time",
+            "timestamp": "2026-05-26T11:22:56.484073"
+        },
+        {
+            "name": "Night Wind Speed at 2 hour",
+            "value": 3.27027024,
+            "description": "Average wind speed during night time",
+            "timestamp": "2026-05-26T11:22:56.484086"
+        },
+        {
+            "name": "Night Wind Speed at 3 hour",
+            "value": 5.5898189106250005,
+            "description": "Average wind speed during night time",
+            "timestamp": "2026-05-26T11:22:56.484097"
+        },
+        {
+            "name": "Night Wind Speed at 4 hour",
+            "value": 7.8136897625,
+            "description": "Average wind speed during night time",
+            "timestamp": "2026-05-26T11:22:56.484108"
+        },
+        {
+            "name": "Night Wind Speed at 5 hour",
+            "value": 8.48627230625,
+            "description": "Average wind speed during night time",
+            "timestamp": "2026-05-26T11:22:56.484118"
+        },
+        {
+            "name": "Night Wind Speed at 19 hour",
+            "value": 4.86952954375,
+            "description": "Average wind speed during night time",
+            "timestamp": "2026-05-26T11:22:56.484128"
+        },
+        {
+            "name": "Night Wind Speed at 20 hour",
+            "value": 4.2477052875,
+            "description": "Average wind speed during night time",
+            "timestamp": "2026-05-26T11:22:56.484136"
+        },
+        {
+            "name": "Night Wind Speed at 21 hour",
+            "value": 3.75010990625,
+            "description": "Average wind speed during night time",
+            "timestamp": "2026-05-26T11:22:56.484146"
+        },
+        {
+            "name": "Night Wind Speed at 22 hour",
+            "value": 3.51796960625,
+            "description": "Average wind speed during night time",
+            "timestamp": "2026-05-26T11:22:56.484155"
+        },
+        {
+            "name": "Night Wind Speed at 23 hour",
+            "value": 3.502177075,
+            "description": "Average wind speed during night time",
+            "timestamp": "2026-05-26T11:22:56.484165"
+        }
+    ],
+    "result_generated_at": "2026-05-26T11:22:56.484167"
+}

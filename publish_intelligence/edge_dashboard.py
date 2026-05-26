@@ -147,7 +147,7 @@ st.sidebar.write(f"**Output Directory:** `output/{DATA_TYPE}/`")
 st.sidebar.write(f"**Metrics Directory:** `timestamp_path/{DATA_TYPE}/`")
 
 # Manual refresh button
-if st.sidebar.button("🔄 Refresh Now"):
+if st.sidebar.button("Refresh Now"):
     st.rerun()
 
 # Auto-refresh logic
@@ -181,13 +181,13 @@ if not csv_metrics.empty:
     avg_duration = csv_metrics[duration_col].astype(float).mean() if duration_col in csv_metrics.columns else 0
     
     status_col1.metric("Total Tasks", total)
-    status_col2.metric("✅ Successful", successful)
-    status_col3.metric("❌ Failed", failed)
+    status_col2.metric("Successful", successful)
+    status_col3.metric("Failed", failed)
     status_col4.metric("Avg Duration", format_duration(avg_duration))
 else:
     status_col1.metric("Total Tasks", 0)
-    status_col2.metric("✅ Successful", 0)
-    status_col3.metric("❌ Failed", 0)
+    status_col2.metric("Successful", 0)
+    status_col3.metric("Failed", 0)
     status_col4.metric("Avg Duration", "N/A")
 
 # Last update timestamp
@@ -212,7 +212,7 @@ else:
 # DETAILED TASK RESULTS
 # ============================================================================
 
-st.markdown("### 📋 Task Details")
+st.markdown("### Task Details")
 
 if execution_results:
     st.info(f"Found {len(execution_results)} execution result files")
@@ -264,7 +264,7 @@ else:
 # ============================================================================
 
 if not csv_metrics.empty:
-    st.markdown("### 📈 Performance Summary")
+    st.markdown("### Performance Summary")
     
     col1, col2 = st.columns(2)
     
@@ -288,7 +288,7 @@ if not csv_metrics.empty:
 
 st.markdown("---")
 st.caption(
-    f"🔄 Auto-refresh enabled (every {refresh_interval}s) | "
+    f"Auto-refresh enabled (every {refresh_interval}s) | "
     f"Last refresh: {datetime.now().strftime('%H:%M:%S')} | "
     f"Data Type: {DATA_TYPE}"
 )

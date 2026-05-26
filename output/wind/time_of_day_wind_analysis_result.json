@@ -1,0 +1,40 @@
+{
+    "task_name": "time_of_day_wind_analysis",
+    "description": "Examine wind speed and direction patterns at specific times of day to understand diel variations in wind behavior.",
+    "result_summary": [
+        {
+            "name": "morning_avg",
+            "value": {
+                "wind_speed_10m": 7.000999139583334,
+                "wind_speed_80m": 8.527789685208333,
+                "wind_speed_120m": 8.767840369375,
+                "wind_speed_180m": 9.991030072916667
+            },
+            "description": "Average wind speed at different heights during morning hours",
+            "timestamp": "2026-05-26T11:22:58.583679"
+        },
+        {
+            "name": "afternoon_avg",
+            "value": {
+                "wind_speed_10m": 4.569365758125,
+                "wind_speed_80m": 7.8181275999999995,
+                "wind_speed_120m": 9.100659851875,
+                "wind_speed_180m": 13.102973861904761
+            },
+            "description": "Average wind speed at different heights during afternoon hours",
+            "timestamp": "2026-05-26T11:22:58.583700"
+        },
+        {
+            "name": "evening_avg",
+            "value": {
+                "wind_speed_10m": 4.206834278125,
+                "wind_speed_80m": 6.133737020520833,
+                "wind_speed_120m": 6.919960246875,
+                "wind_speed_180m": 8.636538122916667
+            },
+            "description": "Average wind speed at different heights during evening hours",
+            "timestamp": "2026-05-26T11:22:58.583711"
+        }
+    ],
+    "result_generated_at": "2026-05-26T11:22:58.583712"
+}

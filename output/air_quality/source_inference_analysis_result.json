@@ -1,1 +1,0 @@
-{"task_name": "source_inference_analysis", "description": "Analyze the pollution data to infer the potential sources of pollution", "result_summary": [{"name": "Traffic", "value": 133.53122507122507, "description": "Traffic is the main source of pollution", "timestamp": "2026-05-23T16:27:45.809658"}], "result_generated_at": "2026-05-23T16:27:45.809664"}

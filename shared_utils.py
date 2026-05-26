@@ -539,10 +539,12 @@ def write_validator_detailed_row(csv_path: str, step: str, model_name: str, run_
                                   script_duration: float = 0.0, llm_start_time: str = "",
                                   llm_end_time: str = "", llm_duration: float = 0.0,
                                   prompt_tokens: int = 0, completion_tokens: int = 0,
-                                  total_tokens: int = 0) -> None:
+                                  total_tokens: int = 0, semantic_performed: bool = False,
+                                  semantic_passed: bool = False, semantic_reasoning: str = "") -> None:
     """
     Write a detailed validator CSV row with multiple fields for tracking validation steps.
     Handles various validation statuses: initial_run, llm_call, llm_call_failed, etc.
+    Includes semantic validation details for debugging and analysis.
     
     Args:
         csv_path: Path to validator CSV file
@@ -561,6 +563,9 @@ def write_validator_detailed_row(csv_path: str, step: str, model_name: str, run_
         prompt_tokens: Input tokens count (0 if no LLM call)
         completion_tokens: Output tokens count (0 if no LLM call)
         total_tokens: Total tokens count (0 if no LLM call)
+        semantic_performed: Whether semantic validation was performed
+        semantic_passed: Whether semantic validation passed (only if performed)
+        semantic_reasoning: LLM reasoning or error message from semantic check
     """
     os.makedirs(os.path.dirname(csv_path) or ".", exist_ok=True)
     
@@ -570,6 +575,7 @@ def write_validator_detailed_row(csv_path: str, step: str, model_name: str, run_
         "llm_start_time_ist", "llm_end_time_ist", "llm_duration_sec",
         "prompt_tokens", "completion_tokens", "total_tokens",
         "prompt_tokens_per_sec", "completion_tokens_per_sec",
+        "semantic_performed", "semantic_passed", "semantic_reasoning",
     ]
     
     # Calculate tokens per second
@@ -594,4 +600,7 @@ def write_validator_detailed_row(csv_path: str, step: str, model_name: str, run_
         "total_tokens": total_tokens if total_tokens else "",
         "prompt_tokens_per_sec": prompt_tps,
         "completion_tokens_per_sec": completion_tps,
+        "semantic_performed": "yes" if semantic_performed else "no",
+        "semantic_passed": "yes" if semantic_passed else "no" if semantic_performed else "",
+        "semantic_reasoning": semantic_reasoning[:500] if semantic_reasoning else "",  # Truncate to 500 chars
     }], fieldnames)

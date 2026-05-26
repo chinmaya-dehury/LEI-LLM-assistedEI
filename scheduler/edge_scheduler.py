@@ -17,7 +17,7 @@ Architecture:
   Validation + Logging + Metrics
 
 Author: Dr. Chinmaya Dehury
-Modified: 23-05-2026 (Refactored to production-grade orchestration)
+Modified: 25-05-2026 (Refactored to production-grade orchestration)
 """
 
 import os
@@ -308,19 +308,58 @@ class TaskValidator:
 # ============================================================================
 
 class ExecutionLogger:
-    """Handles logging and CSV metrics for task execution."""
+    """Handles logging and CSV metrics for task execution with enhanced output display."""
     
     def __init__(self, csv_path: str, model_name: str, run_count: str):
         self.csv_path = csv_path
         self.model_name = model_name
         self.run_count = run_count
         self.lock = Lock()
+        self.task_counter = 0
+        self.success_count = 0
+        self.failure_count = 0
     
-    def log_execution(self, task_name: str, execution_result: Dict, is_valid: bool):
-        """Log task execution to CSV and file."""
+    def _limit_output(self, text: str, max_lines: int = 50) -> str:
+        """Limit output to max lines and add indicator if truncated."""
+        if not text:
+            return ""
+        lines = text.split("\n")
+        if len(lines) > max_lines:
+            return "\n".join(lines[:max_lines]) + f"\n... ({len(lines) - max_lines} more lines)"
+        return text
+    
+    def _format_output_section(self, title: str, content: str, is_error: bool = False) -> str:
+        """Format output section with visual separators."""
+        if not content:
+            return ""
+        
+        separator = "─" * 70
+        content_limited = self._limit_output(content, max_lines=50)
+        
+        if is_error:
+            return f"\n{title}:\n{separator}\n{content_limited}\n{separator}"
+        else:
+            return f"\n{title}:\n{separator}\n{content_limited}\n{separator}"
+    
+    def _format_json_output(self, json_obj: dict, max_lines: int = 30) -> str:
+        """Format JSON output with pretty printing."""
+        try:
+            json_str = json.dumps(json_obj, indent=2, ensure_ascii=False)
+            return self._limit_output(json_str, max_lines=max_lines)
+        except:
+            return str(json_obj)
+    
+    def log_execution(self, task_name: str, execution_result: Dict, is_valid: bool, task_num: int = 1, total_tasks: int = 1):
+        """Log task execution to CSV and file with enhanced output."""
         with self.lock:
+            self.task_counter += 1
             status = "success" if is_valid else "failed"
+            if is_valid:
+                self.success_count += 1
+            else:
+                self.failure_count += 1
             
+            # Write to CSV
             write_scheduler_detailed_row(
                 csv_path=self.csv_path,
                 task_name=task_name,
@@ -332,27 +371,71 @@ class ExecutionLogger:
                 model_name=self.model_name,
                 run_count=self.run_count
             )
-            
-            logger.info(
-                f"Task {task_name}: {status.upper()} "
-                f"(duration={execution_result['duration']:.2f}s, "
-                f"return_code={execution_result['return_code']})"
-            )
     
-    def log_task_details(self, task_name: str, execution_result: Dict, output_sample: int = 500):
-        """Log detailed task execution information."""
-        logger.info(f"\n{'='*60}")
-        logger.info(f"Task: {task_name}")
-        logger.info(f"Duration: {execution_result['duration']:.2f}s")
-        logger.info(f"Return Code: {execution_result['return_code']}")
+    def log_task_details(self, task_name: str, execution_result: Dict, task_num: int = 1, total_tasks: int = 1):
+        """Log detailed task execution with enhanced formatting."""
+        is_valid = execution_result["success"]
+        status_text = "SUCCESS" if is_valid else "FAILED"
+        status_marker = "[OK]" if is_valid else "[FAILED]"
+        duration = execution_result["duration"]
+        return_code = execution_result["return_code"]
         
-        if execution_result["stdout"]:
-            stdout_sample = execution_result["stdout"][:output_sample]
-            logger.info(f"Output: {stdout_sample}...")
+        # Task header
+        header = f"\n{'=' * 70}\n"
+        header += f"[TASK] {task_name} [{task_num}/{total_tasks}]\n"
+        header += f"[TIME] {execution_result['start_time']}\n"
+        header += f"{status_marker} Status: {status_text}\n"
+        header += f"[DURATION] {duration:.3f} seconds\n"
+        header += f"[CODE] Return Code: {return_code}\n"
+        header += f"{'=' * 70}"
         
+        print(header)
+        logger.info(header)
+        
+        # Output sections
+        if execution_result["parsed_json"] is not None:
+            json_output = self._format_json_output(execution_result["parsed_json"])
+            output_section = f"\n[OUTPUT] JSON OUTPUT:\n{'-' * 70}\n{json_output}\n{'-' * 70}"
+            print(output_section)
+            logger.info(output_section)
+        elif execution_result["stdout"]:
+            stdout_output = self._limit_output(execution_result["stdout"].strip(), max_lines=100)
+            output_section = f"\n[OUTPUT] STDOUT OUTPUT:\n{'-' * 70}\n{stdout_output}\n{'-' * 70}"
+            print(output_section)
+            logger.info(output_section)
+        
+        # Error section (if any)
         if execution_result["stderr"]:
-            stderr_sample = execution_result["stderr"][:output_sample]
-            logger.warning(f"Errors: {stderr_sample}...")
+            stderr_output = self._limit_output(execution_result["stderr"].strip(), max_lines=50)
+            error_section = f"\n[ERROR] ERROR OUTPUT:\n{'-' * 70}\n{stderr_output}\n{'-' * 70}"
+            print(error_section)
+            logger.warning(error_section)
+        
+        # Summary box
+        summary = f"\n{'-' * 70}\n"
+        summary += f"Task: {task_name} | Status: {status_text} | Duration: {duration:.3f}s\n"
+        summary += f"{'-' * 70}\n"
+        
+        print(summary)
+        logger.info(summary)
+    
+    def log_summary(self, total_tasks: int, start_time_perf: float):
+        """Log execution summary."""
+        total_duration = time.perf_counter() - start_time_perf
+        success_rate = (self.success_count / total_tasks * 100) if total_tasks > 0 else 0
+        
+        summary = f"\n{'=' * 70}\n"
+        summary += f"[STATS] EXECUTION SUMMARY\n"
+        summary += f"{'=' * 70}\n"
+        summary += f"Total Tasks: {total_tasks}\n"
+        summary += f"[OK] Successful: {self.success_count}\n"
+        summary += f"[FAILED] Failed: {self.failure_count}\n"
+        summary += f"[OUTPUT] Success Rate: {success_rate:.1f}%\n"
+        summary += f"[DURATION] Total Duration: {total_duration:.2f} seconds\n"
+        summary += f"{'=' * 70}\n"
+        
+        print(summary)
+        logger.info(summary)
 
 
 # ============================================================================
@@ -369,6 +452,8 @@ class TaskOrchestrator:
         self.logger = ExecutionLogger(STEP4_CSV, DEFAULT_MODEL, RUN_COUNT)
         self.max_retries = max_retries
         self.worker_pool_size = worker_pool_size
+        self.total_tasks = 0
+        self.task_counter = 0
         
         # APScheduler setup (optional, for advanced scheduling)
         self.scheduler = None
@@ -385,18 +470,21 @@ class TaskOrchestrator:
     
     def queue_tasks(self, task_paths: List[Path]):
         """Queue all discovered tasks."""
+        self.total_tasks = len(task_paths)
         for idx, task_path in enumerate(task_paths):
             # Priority: earlier tasks have higher priority (lower number)
             priority = idx
             self.task_queue.enqueue(task_path, priority=priority, retry_count=0)
         
         logger.info(f"Queued {len(task_paths)} tasks for execution")
+        print(f"\n[TASK] Total Tasks to Execute: {self.total_tasks}\n")
     
-    def execute_single_task(self, task_path: Path, retry_count: int = 0) -> Tuple[bool, Dict]:
-        """Execute a single task and validate result."""
+    def execute_single_task(self, task_path: Path, retry_count: int = 0, task_num: int = 1, total_tasks: int = 1) -> Tuple[bool, Dict]:
+        """Execute a single task and validate result with enhanced output."""
         task_name = task_path.stem
         
-        logger.info(f"\nExecuting task: {task_name} (retry={retry_count})")
+        print(f"\n[WAIT] Executing [{task_num}/{total_tasks}]: {task_name}")
+        logger.info(f"Executing [{task_num}/{total_tasks}]: {task_name} (retry={retry_count})")
         
         # Execute task in subprocess
         execution_result = TaskExecutor.execute(task_path)
@@ -404,18 +492,22 @@ class TaskOrchestrator:
         # Validate result
         is_valid, status_msg = TaskValidator.validate_result(execution_result)
         
-        # Log execution
-        self.logger.log_execution(task_name, execution_result, is_valid)
-        self.logger.log_task_details(task_name, execution_result)
+        # Log execution with detailed output
+        self.logger.log_execution(task_name, execution_result, is_valid, task_num, total_tasks)
+        self.logger.log_task_details(task_name, execution_result, task_num, total_tasks)
         
         return is_valid, execution_result
     
     def run_concurrent(self):
         """Execute all queued tasks concurrently."""
+        print(f"\n{'=' * 70}")
+        print(f"[LAUNCH] STARTING CONCURRENT EXECUTION")
+        print(f"{'=' * 70}")
         logger.info(f"\n{'='*60}")
         logger.info(f"Starting concurrent task execution")
         logger.info(f"Worker pool size: {self.worker_pool_size}")
         logger.info(f"Max retries per task: {self.max_retries}")
+        logger.info(f"Total tasks to execute: {self.total_tasks}")
         logger.info(f"{'='*60}\n")
         
         futures = {}
@@ -426,11 +518,12 @@ class TaskOrchestrator:
             task_info = self.task_queue.get_next()
             if task_info:
                 task_path, retry_count = task_info
+                self.task_counter += 1
                 future = self.executor_pool.submit(
-                    self.execute_single_task, task_path, retry_count
+                    self.execute_single_task, task_path, retry_count, self.task_counter, self.total_tasks
                 )
                 futures[future] = task_path
-                task_metadata[future] = {"retry_count": retry_count}
+                task_metadata[future] = {"retry_count": retry_count, "task_num": self.task_counter}
         
         # Process completed tasks and queue retries
         while futures or self.task_queue.size() > 0:
@@ -463,7 +556,12 @@ class TaskOrchestrator:
                             logger.warning(
                                 f"Task {task_name} failed, retrying... ({retry_count + 1}/{self.max_retries})"
                             )
-                            self.task_queue.enqueue(task_path, priority=100, retry_count=retry_count + 1)
+                            self.task_counter += 1
+                            future = self.executor_pool.submit(
+                                self.execute_single_task, task_path, retry_count + 1, self.task_counter, self.total_tasks
+                            )
+                            futures[future] = task_path
+                            task_metadata[future] = {"retry_count": retry_count + 1, "task_num": self.task_counter}
                         else:
                             self.failed_tasks.append(task_name)
                             logger.error(f"Task {task_name} failed permanently after {self.max_retries} retries")
@@ -477,18 +575,83 @@ class TaskOrchestrator:
                 task_info = self.task_queue.get_next()
                 if task_info:
                     task_path, retry_count = task_info
+                    self.task_counter += 1
                     future = self.executor_pool.submit(
-                        self.execute_single_task, task_path, retry_count
+                        self.execute_single_task, task_path, retry_count, self.task_counter, self.total_tasks
                     )
                     futures[future] = task_path
-                    task_metadata[future] = {"retry_count": retry_count}
+                    task_metadata[future] = {"retry_count": retry_count, "task_num": self.task_counter}
         
-        logger.info(f"\n{'='*60}")
-        logger.info(f"Execution Summary:")
-        logger.info(f"  Completed: {len(self.completed_tasks)}")
-        logger.info(f"  Failed: {len(self.failed_tasks)}")
-        logger.info(f"  Total: {len(self.completed_tasks) + len(self.failed_tasks)}")
-        logger.info(f"{'='*60}\n")
+        # Print and log summary
+        self.logger.log_summary(self.total_tasks, SCRIPT_START_PERF)
+    
+    def run_scheduled(self, interval_minutes: int = 60, max_runs: int = None):
+        """Execute tasks on a schedule using APScheduler.
+        
+        Args:
+            interval_minutes: Minutes between task executions
+            max_runs: Maximum number of scheduled runs (None = infinite)
+        """
+        if not APSCHEDULER_AVAILABLE:
+            logger.error("APScheduler is not installed. Install with: pip install apscheduler")
+            return
+        
+        if not self.scheduler:
+            self.scheduler = BackgroundScheduler()
+        
+        run_count = {"count": 0}
+        
+        def scheduled_task():
+            """Wrapper for scheduled execution."""
+            run_count["count"] += 1
+            print(f"\n{'=' * 70}")
+            print(f"[TIME] SCHEDULED RUN #{run_count['count']} - {datetime.now(IST).isoformat()}")
+            print(f"{'=' * 70}\n")
+            logger.info(f"Starting scheduled run #{run_count['count']}")
+            
+            # Reset state for new run
+            self.completed_tasks.clear()
+            self.failed_tasks.clear()
+            self.task_counter = 0
+            
+            # Re-discover and queue tasks
+            task_paths = self.discover_tasks()
+            self.queue_tasks(task_paths)
+            
+            # Execute tasks
+            self.run_concurrent()
+            
+            # Stop scheduler if max runs reached
+            if max_runs and run_count["count"] >= max_runs:
+                logger.info(f"Reached max runs ({max_runs}), stopping scheduler")
+                self.scheduler.shutdown()
+        
+        try:
+            logger.info(f"Scheduling tasks every {interval_minutes} minutes")
+            print(f"\n[SCHEDULE] Scheduler configured: Every {interval_minutes} minutes")
+            if max_runs:
+                print(f"[SCHEDULE] Max runs: {max_runs}")
+            print(f"[SCHEDULE] Press Ctrl+C to stop\n")
+            
+            self.scheduler.add_job(
+                scheduled_task,
+                'interval',
+                minutes=interval_minutes,
+                id='task_scheduler'
+            )
+            
+            self.scheduler.start()
+            
+            # Keep running
+            while self.scheduler.running:
+                time.sleep(1)
+        
+        except (KeyboardInterrupt, SystemExit):
+            logger.info("Stopping scheduler due to interrupt")
+            if self.scheduler and self.scheduler.running:
+                self.scheduler.shutdown()
+        except Exception as e:
+            logger.error(f"Scheduler error: {e}\n{traceback.format_exc()}")
     
     def shutdown(self):
         """Gracefully shutdown orchestrator."""
@@ -514,24 +677,32 @@ def signal_handler(signum, frame):
 
 
 def main():
-    """Main entry point."""
+    """Main entry point with support for one-time and scheduled execution."""
     
     # Setup signal handlers for graceful shutdown
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
     
     try:
+        # Print startup banner
+        banner = f"""
+{'=' * 70}
+[LAUNCH] EDGE TASK ORCHESTRATOR - PRODUCTION EDITION
+{'=' * 70}
+[DATE] Start Time: {datetime.now(IST).isoformat()}
+[PACKAGE] Data Type: {DATA_TYPE}
+[MODEL] Model: {DEFAULT_MODEL}
+[FOLDER] Tasks Directory: {TASKS_DIR}
+[CONFIG] Worker Pool Size: 4
+[DURATION] Max Retries: 2
+{'=' * 70}
+        """
+        print(banner)
+        logger.info(banner)
+        
         # Log resource metrics at start
         log_resource_metrics(RESOURCE_CSV, "step4_scheduler", "start", 
                             model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
-        
-        logger.info(f"\n{'='*60}")
-        logger.info(f"Edge Task Orchestrator Started")
-        logger.info(f"Start Time: {datetime.now(IST).isoformat()}")
-        logger.info(f"Data Type: {DATA_TYPE}")
-        logger.info(f"Tasks Directory: {TASKS_DIR}")
-        logger.info(f"Worker Pool Size: 4")
-        logger.info(f"{'='*60}\n")
         
         # Initialize orchestrator
         orchestrator = TaskOrchestrator(TASKS_DIR, worker_pool_size=4, max_retries=2)
@@ -541,28 +712,68 @@ def main():
         
         if not task_paths:
             logger.error(f"No tasks found in {TASKS_DIR}. Exiting.")
+            print(f"\n[ERROR] No tasks found in {TASKS_DIR}\n")
             return
         
-        # Queue tasks for execution
-        orchestrator.queue_tasks(task_paths)
+        # Check for scheduling mode
+        # Set via environment: SCHEDULER_MODE=once (default) or SCHEDULER_MODE=recurring
+        # SCHEDULER_INTERVAL_MINUTES=60 (default)
+        # SCHEDULER_MAX_RUNS=10 (default=infinite)
+        scheduler_mode = os.environ.get("SCHEDULER_MODE", "once").lower()
+        scheduler_interval = int(os.environ.get("SCHEDULER_INTERVAL_MINUTES", "60"))
+        scheduler_max_runs = os.environ.get("SCHEDULER_MAX_RUNS", "")
+        scheduler_max_runs = int(scheduler_max_runs) if scheduler_max_runs else None
         
-        # Execute tasks concurrently
-        orchestrator.run_concurrent()
-        
-        # Shutdown
-        orchestrator.shutdown()
+        if scheduler_mode == "recurring" and APSCHEDULER_AVAILABLE:
+            print(f"\n[SCHEDULE] SCHEDULING MODE: Recurring (every {scheduler_interval} minutes)")
+            if scheduler_max_runs:
+                print(f"[SCHEDULE] Max runs: {scheduler_max_runs}\n")
+            logger.info(f"Running in scheduled mode: every {scheduler_interval} minutes")
+            
+            # Queue tasks for first run
+            orchestrator.queue_tasks(task_paths)
+            
+            # Run scheduled execution
+            orchestrator.run_scheduled(interval_minutes=scheduler_interval, max_runs=scheduler_max_runs)
+        else:
+            # One-time execution
+            if scheduler_mode == "recurring" and not APSCHEDULER_AVAILABLE:
+                print("\n[WARNING] APScheduler not installed. Running in one-time mode.")
+                print("Install APScheduler with: pip install apscheduler\n")
+                logger.warning("APScheduler not available, falling back to one-time execution")
+            
+            print(f"\n[PLAY] EXECUTION MODE: One-Time\n")
+            logger.info("Running in one-time execution mode")
+            
+            # Queue and execute tasks
+            orchestrator.queue_tasks(task_paths)
+            orchestrator.run_concurrent()
+            
+            # Shutdown
+            orchestrator.shutdown()
         
         # Log resource metrics at end
         log_resource_metrics(RESOURCE_CSV, "step4_scheduler", "end",
                             model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
         
-        logger.info(f"\nEdge Task Orchestrator Completed")
-        logger.info(f"End Time: {datetime.now(IST).isoformat()}")
-        logger.info(f"Total Duration: {time.perf_counter() - SCRIPT_START_PERF:.2f}s")
-        logger.info(f"Log file: {log_file}")
+        # Print final summary
+        final_summary = f"""
+{'=' * 70}
+[OK] ORCHESTRATOR COMPLETED
+{'=' * 70}
+[DATE] End Time: {datetime.now(IST).isoformat()}
+[DURATION] Total Duration: {time.perf_counter() - SCRIPT_START_PERF:.2f} seconds
+[OUTPUT] Success Rate: {(orchestrator.logger.success_count / orchestrator.total_tasks * 100 if orchestrator.total_tasks > 0 else 0):.1f}%
+[LOG] Log File: {log_file}
+[OUTPUT] CSV Output: {STEP4_CSV}
+{'=' * 70}
+        """
+        print(final_summary)
+        logger.info(final_summary)
         
     except Exception as e:
         logger.error(f"Fatal error in orchestrator: {e}\n{traceback.format_exc()}")
+        print(f"\n[ERROR] FATAL ERROR: {str(e)}\n")
         raise
     finally:
         SHUTDOWN_EVENT.set()

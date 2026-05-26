@@ -1,0 +1,13 @@
+{
+    "task_name": "turbulence_intensity",
+    "description": "Turbulence intensity calculation",
+    "result_summary": [
+        {
+            "name": "Mean Turbulence Intensity",
+            "value": 1.7153193174939307,
+            "description": "Mean gust-to-mean wind speed ratio",
+            "timestamp": "2026-05-26T11:22:58.970384"
+        }
+    ],
+    "result_generated_at": "2026-05-26T11:22:58.970388"
+}

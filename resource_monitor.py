@@ -66,7 +66,7 @@ def get_cpu_temperature() -> Optional[float]:
         
         return None
     except Exception as e:
-        print(f"⚠️ Could not read CPU temperature: {e}")
+        print(f"[WARNING] Could not read CPU temperature: {e}")
         return None
 
 
