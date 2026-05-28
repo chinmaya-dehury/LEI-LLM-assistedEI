@@ -931,7 +931,16 @@ def validate_all_generated_tasks(tasks_file: str, scripts_dir: str) -> Dict[str,
         if not task_name:
             continue
 
-        script_path = os.path.join(scripts_dir, f"{task_name}.py")
+        script_filename = task.get("script_filename")
+        if script_filename:
+            script_path = os.path.join(scripts_dir, script_filename)
+        else:
+            safe_name = str(task_name).replace(" ", "_").replace("-", "_").lower()
+            script_path = os.path.join(scripts_dir, f"{safe_name}.py")
+
+            if not os.path.exists(script_path):
+                script_path = os.path.join(scripts_dir, f"{safe_name}_executor.py")
+
         if not os.path.exists(script_path):
             print(f"[WARNING] Script not found: {script_path}")
             results.append({

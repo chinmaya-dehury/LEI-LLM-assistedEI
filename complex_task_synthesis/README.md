@@ -8,10 +8,10 @@ This module enables **automatic generation of composite (multi-domain) tasks** u
 
 ## How it works
 
-1. **LLM analyzes all available domains, sample data, metadata, and existing tasks**
-2. **LLM generates composite task specifications** (with subtasks, dependencies, and data flow)
-3. **Composite task generator** checks which subtasks are available and which need generation
-4. **Executor generator** creates an executable Python script for each composite task
+1. **LLM analyzes all available domains, sample data, metadata, and existing tasks**: analysis.py
+2. **LLM generates composite task specifications** (with subtasks, dependencies, and data flow): generation.py
+3. **Composite task generator** checks which subtasks are available and which need generation: generation.py
+4. **Executor generator** creates an executable Python script for each composite task: run_complex_tasks.py
 
 ## How to run
 
@@ -20,7 +20,7 @@ This module enables **automatic generation of composite (multi-domain) tasks** u
 Open a terminal in the project root and run:
 
 ```bash
-python -m complex_task_synthesis.runner
+python -m complex_task_synthesis.orchestration
 ```
 
 This will:
@@ -79,12 +79,10 @@ Example output for air quality + wind analysis:
 
 ## Core Components
 
-- `complex_task_generator_llm.py` — LLM-driven composite task generator
-- `composite_task_generator.py` — Builds and validates composite tasks
-- `workflow_executor_generator.py` — Generates executable Python scripts
-- `runner.py` — Main orchestrator
-- `task_analyzer.py` — Analyzes available tasks and domains
-- `dependency_resolver.py` — Resolves task dependencies
+- `generation.py` — Composite generation (includes LLM-driven generator)
+- `analysis.py` — Task analysis and dependency resolution
+- `generation.py` — Composite task and executor generation
+- `orchestration.py` — Main orchestrator
 - `utils.py` — Utility functions
 
 ## Output
@@ -98,7 +96,7 @@ Example output for air quality + wind analysis:
 
 ```bash
 # Generate
-python -m complex_task_synthesis.runner
+python -m complex_task_synthesis.orchestration
 
 # Run a specific task
 python run_complex_task.py air_quality_and_wind_pattern_analysis

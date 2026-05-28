@@ -1,144 +1,120 @@
 {
   "composite_tasks": [
     {
-      "task_name": "Air Quality and Wind Pattern Analysis",
-      "description": "This composite task integrates air quality and wind data to analyze patterns and correlations between the two domains.",
-      "business_value": "Understanding the relationship between air quality and wind patterns can help identify potential sources of pollution and inform strategies for improving air quality.",
+      "task_name": "Multi-Domain Environmental Risk Assessment",
+      "description": "Joint analysis across air quality, soil, temperature, and humidity to assess environmental risks",
       "domains": [
-        "AIR_QUALITY",
-        "WIND"
+        "air_quality",
+        "soil",
+        "temp_humidity"
       ],
+      "business_value": "Provides a comprehensive view of environmental risks by combining data from multiple domains",
       "subtasks": [
         {
           "subtask_name": "Air Quality Index Analysis",
           "task_id": "air_quality_index_category_distribution",
-          "domain": "AIR_QUALITY",
-          "description": "Analyze the distribution of air quality index categories",
-          "inputs": [
-            "data_source",
-            "sampling_interval",
-            "data_format"
-          ],
-          "outputs": [
-            "air_quality_index"
-          ],
+          "domain": "air_quality",
+          "depends_on": []
+        },
+        {
+          "subtask_name": "Soil Health Assessment",
+          "task_id": "root_zone_health_assessment",
+          "domain": "soil",
+          "depends_on": []
+        },
+        {
+          "subtask_name": "Temperature Humidity Analysis",
+          "task_id": "Temperature_Humidity_Correlation",
+          "domain": "temp_humidity",
+          "depends_on": []
+        },
+        {
+          "subtask_name": "Cross-Domain Anomaly Detection",
+          "task_id": "needs_generation",
+          "domain": "",
+          "depends_on": [
+            "air_quality_index_category_distribution",
+            "root_zone_health_assessment",
+            "Temperature_Humidity_Correlation"
+          ]
+        }
+      ],
+      "missing_capabilities": [
+        "cross-domain anomaly detection"
+      ],
+      "data_flow": [
+        {
+          "source": "air_quality_index_category_distribution",
+          "target": "Cross-Domain Anomaly Detection"
+        },
+        {
+          "source": "root_zone_health_assessment",
+          "target": "Cross-Domain Anomaly Detection"
+        },
+        {
+          "source": "Temperature_Humidity_Correlation",
+          "target": "Cross-Domain Anomaly Detection"
+        }
+      ]
+    },
+    {
+      "task_name": "Environmental Dependency Mapping",
+      "description": "Joint analysis across air quality, soil, and wind to understand environmental dependencies",
+      "domains": [
+        "air_quality",
+        "soil",
+        "wind"
+      ],
+      "business_value": "Provides insights into how different environmental factors interact with each other",
+      "subtasks": [
+        {
+          "subtask_name": "Air Quality Trend Analysis",
+          "task_id": "aqi_level_trend_analysis",
+          "domain": "air_quality",
+          "depends_on": []
+        },
+        {
+          "subtask_name": "Soil Moisture Balance Analysis",
+          "task_id": "root_zone_moisture_balance",
+          "domain": "soil",
           "depends_on": []
         },
         {
           "subtask_name": "Wind Pattern Analysis",
           "task_id": "diurnal_wind_patterns",
-          "domain": "WIND",
-          "description": "Analyze hourly wind patterns",
-          "inputs": [
-            "data_source",
-            "sampling_interval",
-            "data_format"
-          ],
-          "outputs": [
-            "wind_pattern"
-          ],
+          "domain": "wind",
           "depends_on": []
         },
         {
-          "subtask_name": "Correlation Analysis",
+          "subtask_name": "Multi-Domain Dependency Mapping",
           "task_id": "needs_generation",
-          "domain": "AIR_QUALITY",
-          "description": "Analyze the correlation between air quality index and wind patterns",
-          "inputs": [
-            "air_quality_index",
-            "wind_pattern"
-          ],
-          "outputs": [
-            "correlation_coefficient"
-          ],
+          "domain": "",
           "depends_on": [
-            "Air Quality Index Analysis",
-            "Wind Pattern Analysis"
+            "aqi_level_trend_analysis",
+            "root_zone_moisture_balance",
+            "diurnal_wind_patterns"
           ]
         }
       ],
-      "data_flow": [
-        {
-          "from": "Air Quality Index Analysis",
-          "to": "Correlation Analysis",
-          "data": "air_quality_index"
-        },
-        {
-          "from": "Wind Pattern Analysis",
-          "to": "Correlation Analysis",
-          "data": "wind_pattern"
-        }
-      ]
-    },
-    {
-      "task_name": "Air Quality and Wind Trend Analysis",
-      "description": "This composite task integrates air quality and wind data to analyze trends and correlations between the two domains.",
-      "business_value": "Understanding the relationship between air quality and wind trends can help identify potential sources of pollution and inform strategies for improving air quality.",
-      "domains": [
-        "AIR_QUALITY",
-        "WIND"
-      ],
-      "subtasks": [
-        {
-          "subtask_name": "Air Quality Trend Analysis",
-          "task_id": "aqi_level_trend_analysis",
-          "domain": "AIR_QUALITY",
-          "description": "Analyze air quality trends",
-          "inputs": [
-            "data_source",
-            "sampling_interval"
-          ],
-          "outputs": [
-            "air_quality_trend"
-          ],
-          "depends_on": []
-        },
-        {
-          "subtask_name": "Wind Trend Analysis",
-          "task_id": "diurnal_wind_patterns",
-          "domain": "WIND",
-          "description": "Analyze wind trends",
-          "inputs": [
-            "data_source",
-            "sampling_interval"
-          ],
-          "outputs": [
-            "wind_trend"
-          ],
-          "depends_on": []
-        },
-        {
-          "subtask_name": "Correlation Analysis",
-          "task_id": "cross_correlation_wind_analysis",
-          "domain": "WIND",
-          "description": "Analyze correlation between air quality and wind trends",
-          "inputs": [
-            "air_quality_trend",
-            "wind_trend"
-          ],
-          "outputs": [
-            "correlation_result"
-          ],
-          "depends_on": [
-            "Air Quality Trend Analysis",
-            "Wind Trend Analysis"
-          ]
-        }
+      "missing_capabilities": [
+        "multi-domain dependency mapping"
       ],
       "data_flow": [
         {
-          "from": "Air Quality Trend Analysis",
-          "to": "Correlation Analysis",
-          "data": "air_quality_trend"
+          "source": "aqi_level_trend_analysis",
+          "target": "Multi-Domain Dependency Mapping"
         },
         {
-          "from": "Wind Trend Analysis",
-          "to": "Correlation Analysis",
-          "data": "wind_trend"
+          "source": "root_zone_moisture_balance",
+          "target": "Multi-Domain Dependency Mapping"
+        },
+        {
+          "source": "diurnal_wind_patterns",
+          "target": "Multi-Domain Dependency Mapping"
         }
       ]
     }
   ],
-  "updated_at": "2026-05-26T16:20:44.682322+05:30",
+  "updated_at": "2026-05-28T14:01:21.718138+05:30",
   "total_count": 2
 }

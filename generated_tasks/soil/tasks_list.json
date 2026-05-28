@@ -1,0 +1,54 @@
+{
+  "tasks": [
+    {
+      "task_name": "soil_moisture_gradient_analysis",
+      "description": "Compute the soil moisture gradient across different depth layers (0-1cm, 1-3cm, 9-27cm) for irrigation optimization",
+      "data_type": "soil"
+    },
+    {
+      "task_name": "soil_temperature_stratification",
+      "description": "Analyze the soil temperature stratification and thermal profile dynamics for drought detection and root zone assessment",
+      "data_type": "soil"
+    },
+    {
+      "task_name": "temporal_moisture_trends",
+      "description": "Examine temporal moisture trends for predictive irrigation scheduling and crop yield prediction",
+      "data_type": "soil"
+    },
+    {
+      "task_name": "root_zone_health_assessment",
+      "description": "Evaluate the root zone health based on temperature-moisture balance for precision agriculture",
+      "data_type": "soil"
+    },
+    {
+      "task_name": "drought_stress_detection",
+      "description": "Detect drought stress and set early warning thresholds for irrigation management",
+      "data_type": "soil"
+    },
+    {
+      "task_name": "soil_moisture_threshold_analysis",
+      "description": "Determine optimal soil moisture thresholds for different crops at various growth stages for precise irrigation targets",
+      "data_type": "soil"
+    },
+    {
+      "task_name": "daily_soil_temperature_fluctuation_analysis",
+      "description": "Analyze daily fluctuations in soil temperature at different depths for insights into soil thermal dynamics",
+      "data_type": "soil"
+    },
+    {
+      "task_name": "soil_moisture_content_trend_forecasting",
+      "description": "Forecast future soil moisture content based on historical trends for proactive irrigation planning",
+      "data_type": "soil"
+    },
+    {
+      "task_name": "irrigation_event_detection",
+      "description": "Automatically detect irrigation events from soil moisture data to assess irrigation efficiency",
+      "data_type": "soil"
+    },
+    {
+      "task_name": "root_zone_moisture_balance",
+      "description": "Analyze the balance between soil moisture and temperature in the root zone for insights into root health and function",
+      "data_type": "soil"
+    }
+  ]
+}

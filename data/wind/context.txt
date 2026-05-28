@@ -1,18 +1,22 @@
-This sample dataset represents wind conditions at multiple altitude levels for weather monitoring or wind energy assessment.
-The IoT edge device collects wind speed, direction, and gust data at various heights (10m, 80m, 120m, 180m) every hour.
-The purpose is to monitor wind patterns, assess wind energy potential, and provide insights for renewable energy optimization or weather forecasting.
+This dataset represents wind conditions at multiple altitude levels for weather monitoring and wind energy assessment, including wind speed, direction, and gust measurements.
 
-Typical insights could include (but not limited to):
-- Wind shear analysis – speed variation across altitude layers (10m to 180m)
-- Wind direction consistency – directional stability across different heights
-- Turbulence intensity – gust-to-mean wind speed ratio for structural safety
-- Power output estimation – wind energy potential at turbine hub heights (80m, 120m)
-- Optimal turbine height recommendation – identifying altitude with best wind conditions
-- Diurnal wind patterns – hourly trends for day vs night wind behavior
-- Wind persistence analysis – duration of favorable wind speeds for energy generation
-- Directional shift detection – identifying wind veer patterns with altitude
-- Low wind event detection – calm periods impacting energy production
-- Strong gust warnings – extreme wind events for safety alerts
+The IoT edge device continuously collects sensor readings for wind resource monitoring, measuring wind speed and direction at different heights (10m, 80m) with gust data at hourly intervals.
 
-The LLM should generate small, efficient Python programs suitable for execution on the edge device.
-Each program should focus on one insight at a time and be optimized for limited computational resources.
+The objective is to support wind energy optimization, weather forecasting, and wind resource assessment for renewable energy and meteorological applications.
+
+The deployment environment includes edge devices (Raspberry Pi 4, quad-core ARM, 1-4GB RAM) at weather stations or wind farm facilities with periodic cloud synchronization.
+
+Useful analytical insights may include:
+- Wind shear analysis showing speed variation across different altitude layers
+- Wind direction consistency and directional veer patterns with altitude
+- Turbulence intensity quantification using gust-to-mean wind speed ratios
+- Wind energy potential estimation and power output prediction
+- Optimal height recommendation for wind turbine placement
+- Diurnal wind cycle patterns comparing day and night conditions
+- Wind persistence analysis for sustained energy generation periods
+- Low wind and high gust event detection for operational alerts
+- Seasonal wind resource variation and monthly trend analysis
+
+The LLM should generate small, efficient, and modular Python programs suitable for execution on resource-constrained edge devices.
+
+Each generated task should focus on a single analytical insight while avoiding duplicate or computationally expensive operations.

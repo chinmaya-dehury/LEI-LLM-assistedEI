@@ -1,0 +1,5 @@
+timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
+2026-05-28T12:16:00.148491+05:30,step4_scheduler,start,1,,llama-3.1-8b-instant,65.9,75.0,605101325,2030937665,1123268,1857764,
+2026-05-28T12:16:01.775228+05:30,step4_scheduler,end,1,,llama-3.1-8b-instant,62.8,75.0,605106205,2030948996,1123281,1857815,
+2026-05-28T12:20:30.763809+05:30,step4_scheduler,start,2,,llama-3.1-8b-instant,2.6,74.5,607154166,2057545431,1138724,1883664,
+2026-05-28T12:20:32.038047+05:30,step4_scheduler,end,2,,llama-3.1-8b-instant,2.7,74.5,607154486,2057546627,1138729,1883681,

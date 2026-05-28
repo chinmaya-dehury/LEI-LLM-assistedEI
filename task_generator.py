@@ -277,6 +277,16 @@ with open(TASK_LIST_PATH, "w", encoding="utf-8") as f:
     json.dump(tasks_data, f, indent=2)
 print("The list of all tasks with their description are successfully saved in "+TASK_LIST_PATH)
 
+# Clear the per-run new_tasks.json so it is empty after tasks are consumed
+try:
+    new_tasks_path = os.path.join(OUTPUT_DIR, "new_tasks.json")
+    if os.path.exists(new_tasks_path):
+        with open(new_tasks_path, 'w', encoding='utf-8') as nf:
+            json.dump({"tasks": []}, nf, indent=2)
+        print(f"[OK] Cleared new tasks file: {new_tasks_path}")
+except Exception as e:
+    print(f"[WARNING] Could not clear new_tasks.json: {e}")
+
 # Final script end timing and CSV logging
 script_end_time = datetime.now(IST).isoformat()
 script_end_perf = time.perf_counter()

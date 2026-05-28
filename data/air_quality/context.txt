@@ -1,14 +1,20 @@
-This sample dataset represents the air quality of a specific location (or for a coordinate on the globe).
-The IoT edge device collects current air pollution data in 10-15 minutes.
-The purpose is to monitor the air quality and obtain the insights that are useful for citizens.
-Example of some insights can be real-world health warnings, potential source, etc. 
-Typical insights could include (but not limited to):
--> AQI level trends – overall air quality score (Good–Severe).
--> Main pollutant identification – which pollutant contributes most to poor air.
--> Peak pollution hours – when air quality worsens (morning/evening).
--> Source inference – traffic, industry, or agriculture dominance.
--> Seasonal variation – pollution increase in winter vs summer.
--> Health risk mapping – respiratory and cardiovascular hazard levels.
+This dataset represents air quality measurements collected from IoT sensor networks deployed in urban and rural locations monitoring real-time pollution levels.
 
-The LLM should generate small, efficient Python programs suitable for execution on the edge device.
-Each program should focus on one insight at a time and be optimized for limited computational resources.
+The IoT edge device continuously collects sensor readings for air pollution monitoring, measuring six key pollutants (PM2.5, PM10, O3, NO2, CO) at 10-15 minute intervals.
+
+The objective is to support air quality assessment, public health warnings, and pollution trend analysis for environmental monitoring systems.
+
+The deployment environment includes low-power edge devices (Raspberry Pi 4 / ARM Cortex-A53, 512MB-2GB RAM) with periodic cloud synchronization and integration with air quality dashboards.
+
+Useful analytical insights may include:
+- Air Quality Index (AQI) level trends and category classification (Good, Moderate, Unhealthy, etc.)
+- Main pollutant identification for current air quality conditions
+- Peak pollution hour detection and temporal pattern analysis
+- Source inference based on pollutant signature patterns
+- Seasonal variation analysis and long-term pollution trends
+- Anomaly detection for sensor drift or unusual pollution spikes
+- Health risk mapping and vulnerable population alerts
+
+The LLM should generate small, efficient, and modular Python programs suitable for execution on resource-constrained edge devices.
+
+Each generated task should focus on a single analytical insight while avoiding duplicate or computationally expensive operations.
