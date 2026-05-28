@@ -1,0 +1,18 @@
+ Edge Executor started at 2026-05-28 12:16:00
+Scanning directory: generated_tasks/temp_humidity
+Found 1 tasks to execute.
+============================================================
+
+ Task 1 of 1
+
+ Executing: generated_tasks/temp_humidity\HVAC_System_Efficiency_Evaluation.py
+   Start Time: 12:16:00
+   Scheduler python: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\.lei\Scripts\python.exe
+    Status: SUCCESS
+   Duration: 1.10 sec
+   Output:
+      HVAC system efficiency: 0.00Â°C/h
+------------------------------------------------------------
+
+ All tasks executed. Check the log file for details.
+Log file saved at: logs\edge_execution_llama-3.1-8b-instant_run1_20260528_121600.log

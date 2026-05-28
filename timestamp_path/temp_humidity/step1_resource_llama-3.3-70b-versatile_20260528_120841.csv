@@ -1,0 +1,4 @@
+timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
+2026-05-28T12:08:41.762291+05:30,step1_task_generator,start,1,,llama-3.3-70b-versatile,2.2,42.8,593101261,2010530607,1103636,1829135,
+2026-05-28T12:08:43.821589+05:30,step1_task_generator,end,1,,llama-3.3-70b-versatile,1.5,42.8,593115679,2010542939,1103669,1829196,
+2026-05-28T12:09:05.085476+05:30,step1_task_generator,start,2,,llama-3.3-70b-versatile,1.1,43.6,593271043,2010649602,1103904,1829665,

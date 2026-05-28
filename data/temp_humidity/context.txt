@@ -1,12 +1,22 @@
-This sample dataset represents environmental conditions inside a smart building’s office room.
-The IoT edge device collects temperature and humidity readings every 5 minutes.
-The purpose is to monitor human comfort and detect any abnormal variations that may indicate cooling system malfunction, humidity rise, or poor ventilation.
-Typical insights could include (but not limited to):
-- Estimating comfort index using temperature and humidity
-- Detecting sudden changes or anomalies
-- Calculating hourly averages
-- Predicting next-hour conditions
-- Triggering alerts if comfort thresholds are exceeded
+This dataset represents environmental conditions inside a smart building's office room, including temperature and humidity readings essential for indoor comfort and HVAC system management.
 
-The LLM should generate small, efficient Python programs suitable for execution on the edge device.
-Each program should focus on one insight at a time and be optimized for limited computational resources.
+The IoT edge device continuously collects sensor readings for indoor environmental monitoring, measuring temperature and humidity at 5-minute intervals.
+
+The objective is to support human comfort monitoring, detect abnormal conditions indicating HVAC malfunctions, and enable building automation and energy optimization.
+
+The deployment environment includes edge devices (Raspberry Pi 4, quad-core 1.5GHz, 4GB RAM) in building rooms with local SQLite database and periodic cloud uploads.
+
+Useful analytical insights may include:
+- Comfort index estimation using temperature and humidity measurements
+- Anomaly detection for sudden environmental changes or sensor malfunctions
+- Hourly and daily average calculations for trend analysis
+- Next-hour or next-day condition predictions
+- Alert triggering when comfort thresholds are exceeded
+- Dew point calculations for moisture and condensation risk assessment
+- HVAC system efficiency evaluation based on temperature trends
+- Occupancy correlation analysis with environmental conditions
+- Seasonal baseline comparison and deviation detection
+
+The LLM should generate small, efficient, and modular Python programs suitable for execution on resource-constrained edge devices.
+
+Each generated task should focus on a single analytical insight while avoiding duplicate or computationally expensive operations.

@@ -1,0 +1,16 @@
+This dataset represents [DOMAIN/ENVIRONMENT DESCRIPTION].
+
+The IoT edge device continuously collects sensor readings for [PRIMARY PURPOSE].
+
+The objective is to support [MONITORING / ANALYTICAL GOALS].
+
+The deployment environment includes [OPTIONAL OPERATIONAL CONDITIONS].
+
+Useful analytical insights may include:
+- [Insight Type 1]
+- [Insight Type 2]
+- [Insight Type 3]
+
+The LLM should generate small, efficient, and modular Python programs suitable for execution on resource-constrained edge devices.
+
+Each generated task should focus on a single analytical insight while avoiding duplicate or computationally expensive operations.

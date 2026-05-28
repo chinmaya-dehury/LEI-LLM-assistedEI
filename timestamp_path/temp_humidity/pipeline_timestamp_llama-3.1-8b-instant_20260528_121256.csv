@@ -1,0 +1,9 @@
+run_id,model,run_count,step,script,start_time_ist,end_time_ist,duration_sec,status,return_code
+20260528_121256,llama-3.1-8b-instant,1,step1_task_generator,C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\task_generator.py,2026-05-28T12:12:56.900882+05:30,2026-05-28T12:13:02.544101+05:30,5.643190200004028,success,0
+20260528_121256,llama-3.1-8b-instant,1,step2_code_generator,C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\code_generator.py,2026-05-28T12:13:02.547025+05:30,2026-05-28T12:13:34.194833+05:30,31.647771499992814,success,0
+20260528_121256,llama-3.1-8b-instant,1,step3_validator,C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\validator.py,2026-05-28T12:13:34.199092+05:30,2026-05-28T12:15:59.935717+05:30,145.73658769999747,success,0
+20260528_121256,llama-3.1-8b-instant,1,step4_scheduler,C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\scheduler\edge_scheduler_sequential.py,2026-05-28T12:15:59.937222+05:30,2026-05-28T12:16:02.304558+05:30,2.367321500001708,success,0
+20260528_121256,llama-3.1-8b-instant,2,step1_task_generator,C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\task_generator.py,2026-05-28T12:16:02.306166+05:30,2026-05-28T12:16:20.187102+05:30,17.880916299996898,success,0
+20260528_121256,llama-3.1-8b-instant,2,step2_code_generator,C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\code_generator.py,2026-05-28T12:16:20.188527+05:30,2026-05-28T12:17:31.860613+05:30,71.67206069998792,success,0
+20260528_121256,llama-3.1-8b-instant,2,step3_validator,C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\validator.py,2026-05-28T12:17:31.862828+05:30,2026-05-28T12:20:30.689454+05:30,178.82660129998112,success,0
+20260528_121256,llama-3.1-8b-instant,2,step4_scheduler,C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\scheduler\edge_scheduler_sequential.py,2026-05-28T12:20:30.690130+05:30,2026-05-28T12:20:32.564488+05:30,1.874349500023527,success,0

@@ -172,7 +172,7 @@ def run_pipeline() -> None:
 	failures: list[str] = []
 	_set_pipeline_run(model)
 
-	for run_num in range(1, 2):
+	for run_num in range(1, 3):
 		print(f"\nRunning pipeline for model {model} Run {run_num}")
 		# Removed _clean_before_run() to preserve generated_tasks and output directories
 		env_override = {
@@ -221,8 +221,8 @@ def run_complex_task_synthesis() -> None:
 		# Import and run the orchestrator
 		import importlib.util
 		spec = importlib.util.spec_from_file_location(
-			"runner",
-			cts_path / "runner.py"
+			"orchestration",
+			cts_path / "orchestration.py"
 		)
 		runner_module = importlib.util.module_from_spec(spec)
 		spec.loader.exec_module(runner_module)
@@ -240,5 +240,5 @@ def run_complex_task_synthesis() -> None:
 if __name__ == "__main__":
 	run_pipeline()
 	# Optional: Uncomment to run complex task synthesis after pipeline
-	# run_complex_task_synthesis()
+	#run_complex_task_synthesis()
 

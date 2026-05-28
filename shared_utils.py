@@ -65,6 +65,33 @@ def extract_first_json_object(text: str) -> dict:
     return obj
 
 
+def extract_first_json_value(text: str):
+    """
+    Extract the first JSON value from text that may contain extra content.
+    Accepts either a JSON object or a JSON array.
+    """
+    if not isinstance(text, str):
+        raise ValueError("Input is not a string")
+
+    s = text.strip()
+
+    if s.startswith("```"):
+        s = s.split("\n", 1)[1] if "\n" in s else ""
+        if "```" in s:
+            s = s.rsplit("```", 1)[0].strip()
+
+    object_start = s.find("{")
+    array_start = s.find("[")
+    starts = [idx for idx in [object_start, array_start] if idx != -1]
+    if not starts:
+        raise ValueError("No JSON object or array start found in text")
+
+    start = min(starts)
+    decoder = json.JSONDecoder()
+    obj, _end = decoder.raw_decode(s[start:])
+    return obj
+
+
 def extract_json_blob(text: str) -> str:
     """
     Extract a JSON object string from text that may contain extra content.

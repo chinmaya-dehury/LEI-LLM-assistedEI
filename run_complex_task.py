@@ -26,7 +26,7 @@ def list_available_tasks():
     
     if not executors:
         print("[INFO] No complex task executors found")
-        print(f"[INFO] Generate them first: python -m complex_task_synthesis.runner")
+        print(f"[INFO] Generate them first: python -m complex_task_synthesis.orchestration")
         return
     
     print(f"\n{'=' * 80}")

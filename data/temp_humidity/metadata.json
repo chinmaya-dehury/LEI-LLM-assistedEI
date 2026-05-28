@@ -1,32 +1,61 @@
 {
-  "data_source": "IoT Environmental Sensor - Room A1",
-  "sampling_interval": "5 minutes",
-  "data_format": "CSV",
-  "columns": {
-    "timestamp": {
+  "domain": "temp_humidity",
+
+  "data_source": {
+    "source_type": "SENSOR",
+    "provider": "IoT Environmental Sensor",
+    "sampling_interval": "5 minutes",
+    "data_format": "CSV"
+  },
+
+  "location": {
+    "latitude": "null",
+    "longitude": "null"
+  },
+
+  "columns": [
+    {
+      "name": "timestamp",
       "type": "datetime",
-      "description": "Time at which the reading was recorded (local time)."
+      "unit": "ISO8601",
+      "range": "null",
+      "description": "Time at which the reading was recorded (local time)"
     },
-    "temperature_c": {
+    {
+      "name": "temperature_c",
       "type": "float",
       "unit": "degree Celsius",
-      "range": [15, 40],
-      "description": "Ambient temperature in degrees Celsius."
+      "range": "15-40",
+      "description": "Ambient temperature in degrees Celsius"
     },
-    "humidity_percent": {
+    {
+      "name": "humidity_percent",
       "type": "float",
       "unit": "percent",
-      "range": [20, 100],
-      "description": "Relative humidity of air in percentage."
+      "range": "20-100",
+      "description": "Relative humidity of air in percentage"
     }
-  },
+  ],
+
   "data_quality": {
     "missing_values": "none",
-    "sensor_accuracy": "±0.2°C, ±2% RH"
+    "sensor_accuracy": "+/-0.2°C, +/-2% RH"
   },
+
   "device_specs": {
-    "edge_device_model": "Raspberry Pi 4",
-    "compute_capability": "Quad-core 1.5GHz, 4GB RAM"
+    "edge_device": "Raspberry Pi 4",
+    "cpu": "Quad-core 1.5GHz",
+    "memory": "4GB RAM"
   },
-  "storage": "Local SQLite DB with periodic upload to cloud"
+
+  "resource_constraints": {
+    "low_cpu": "false",
+    "low_memory": "false",
+    "lightweight_execution_required": "false"
+  },
+
+  "storage": {
+    "type": "Local SQLite DB",
+    "sync_policy": "periodic upload to cloud"
+  }
 }

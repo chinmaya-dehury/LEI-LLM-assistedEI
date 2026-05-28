@@ -1,12 +1,12 @@
 {
-  "id": "chatcmpl-d66a3e9f-f29b-4ecb-b576-caff5c985a39",
+  "id": "chatcmpl-cd119423-40c5-47ff-955c-52a9e4dd2a6b",
   "choices": [
     {
       "finish_reason": "stop",
       "index": 0,
       "logprobs": null,
       "message": {
-        "content": "{\n  \"tasks\": [\n    {\n      \"task_name\": \"directional_shift_detection\",\n      \"description\": \"Detect wind veer patterns with altitude to understand changes in wind direction.\",\n      \"code\": \"import pandas as pd\\nimport os\\nimport json\\nfrom datetime import datetime\\n\\ndata_path = os.path.join(\\\"data\\\", \\\"wind\\\", \\\"raw_data.csv\\\")\\noutput_path = os.path.join(\\\"output\\\", \\\"wind\\\")\\ntask_name = \\\"directional_shift_detection\\\"\\n\\ndef detect_directional_shift(data):\\n    # Calculate wind direction differences between altitudes\\n    data['direction_diff_10m_80m'] = data['wind_direction_80m'] - data['wind_direction_10m']\\n    data['direction_diff_80m_120m'] = data['wind_direction_120m'] - data['wind_direction_80m']\\n    data['direction_diff_120m_180m'] = data['wind_direction_180m'] - data['wind_direction_120m']\\n    \\n    # Identify significant directional shifts\\n    significant_shifts = data[(abs(data['direction_diff_10m_80m']) > 30) | (abs(data['direction_diff_80m_120m']) > 30) | (abs(data['direction_diff_120m_180m']) > 30)]\\n    \\n    return significant_shifts\\n\\ndef main():\\n    # Load data\\n    data = pd.read_csv(data_path)\\n    \\n    # Detect directional shifts\\n    shifts = detect_directional_shift(data)\\n    \\n    # Save results\\n    result_summary = []\\n    for index, row in shifts.iterrows():\\n        result_summary.append({\\n            'name': 'Directional Shift',\\n            'value': f'{row[\"direction_diff_10m_80m\"]}, {row[\"direction_diff_80m_120m\"]}, {row[\"direction_diff_120m_180m\"]}',\\n            'description': 'Significant wind direction changes between altitudes',\\n            'timestamp': row['date']\\n        })\\n    \\n    result = {\\n        'task_name': task_name,\\n        'description': 'Detect wind veer patterns with altitude',\\n        'result_summary': result_summary,\\n        'result_generated_at': datetime.now().isoformat()\\n    }\\n    \\n    with open(os.path.join(output_path, f'{task_name}_result.json'), 'w') as f:\\n        json.dump(result, f)\\n    \\n    print('Result saved to', os.path.join(output_path, f'{task_name}_result.json'))\\n\\nif __name__ == '__main__':\\n    main()\"\n    }\n  ]\n}",
+        "content": "{\"tasks\":[{\"task_name\":\"Dew_Point_Calculation\",\"description\":\"Calculates the dew point temperature for moisture and condensation risk assessment\",\"code\":\"import os\\nimport json\\nimport pandas as pd\\nfrom datetime import datetime\\n\\ndew_point_results = []\\n\\ndata_path = os.path.join('data', 'temp_humidity', 'raw_data.csv')\\noutput_path = os.path.join('output', 'temp_humidity', 'Dew_Point_Calculation_result.json')\\n\\ndef calculate_dew_point(humidity, temperature):\\n    if humidity is None or temperature is None:\\n        return None\\n    try:\\n        Td = 243.04 * (np.log(humidity / 100) + ((17.625 * temperature) / (243.04 + temperature))) / (17.625 - np.log(humidity / 100) - ((17.625 * temperature) / (243.04 + temperature)))\\n        return Td\\n    except Exception as e:\\n        print(f'Error calculating dew point: {e}')\\n        return None\\n\\ndata = pd.read_csv(data_path)\\nfor index, row in data.iterrows():\\n    dew_point = calculate_dew_point(row['humidity_percent'], row['temperature_c'])\\n    if dew_point is not None:\\n        dew_point_results.append({'timestamp': row['timestamp'], 'dew_point': dew_point})\\n\\nresult_summary = []\\nfor result in dew_point_results:\\n    result_summary.append(f'Dew point at {result[\\'timestamp\\']} is {result[\\'dew_point\\']}')\\n\\nresult = {\\n    'task_name': 'Dew_Point_Calculation',\\n    'description': 'Calculates the dew point temperature for moisture and condensation risk assessment',\\n    'result_summary': result_summary,\\n    'result_generated_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')\\n}\\n\\nwith open(output_path, 'w') as f:\\n    json.dump(result, f)\\n\"}]}",
         "refusal": null,
         "role": "assistant",
         "annotations": null,
@@ -16,25 +16,25 @@
       }
     }
   ],
-  "created": 1779773345,
+  "created": 1779950334,
   "model": "llama-3.3-70b-versatile",
   "object": "chat.completion",
   "service_tier": "on_demand",
-  "system_fingerprint": "fp_3272ea2d91",
+  "system_fingerprint": "fp_45180df409",
   "usage": {
-    "completion_tokens": 598,
-    "prompt_tokens": 2212,
-    "total_tokens": 2810,
+    "completion_tokens": 449,
+    "prompt_tokens": 1272,
+    "total_tokens": 1721,
     "completion_tokens_details": null,
     "prompt_tokens_details": null,
-    "queue_time": 0.197019715,
-    "prompt_time": 0.146304023,
-    "completion_time": 1.23130179,
-    "total_time": 1.377605813
+    "queue_time": 0.160724448,
+    "prompt_time": 0.087218581,
+    "completion_time": 1.027549248,
+    "total_time": 1.114767829
   },
   "usage_breakdown": null,
   "x_groq": {
-    "id": "req_01kshc4270fvjsje7a01qr46av",
-    "seed": 1130490496
+    "id": "req_01kspmxbjbfj9v5bp41bn1agqk",
+    "seed": 2003573347
   }
 }

@@ -1,0 +1,4 @@
+step,model,run_count,task_name,script_start_time_ist,script_end_time_ist,script_duration_sec,status,return_code
+task_run,llama-3.1-8b-instant,1,HVAC_System_Efficiency_Evaluation,2026-05-28T06:46:00.671141+00:00,2026-05-28T06:46:01.773125+00:00,1.1019627999921795,success,0
+task_run,llama-3.1-8b-instant,2,HVAC_System_Efficiency_Evaluation,2026-05-28T06:50:31.274314+00:00,2026-05-28T06:50:31.671648+00:00,0.3973350999876857,success,0
+task_run,llama-3.1-8b-instant,2,Temperature_Humidity_Correlation,2026-05-28T06:50:31.672278+00:00,2026-05-28T06:50:32.033881+00:00,0.36160730000119656,success,0
