@@ -8,12 +8,9 @@ import sys
 import json
 from pathlib import Path
 
-try:
-    from .analysis import TaskAnalyzer, DependencyResolver
-    from .generation import CompositeTaskGenerator, generate_workflow_executor
-except ImportError:
-    from analysis import TaskAnalyzer, DependencyResolver
-    from generation import CompositeTaskGenerator, generate_workflow_executor
+from .analysis import TaskAnalyzer, DependencyResolver
+from .generation import CompositeTaskGenerator, generate_workflow_executor
+from .val_complex import run_complex_validation
 
 
 def run_complex_task_synthesis_workflow(skip_llm_generation=False):
@@ -32,14 +29,21 @@ def run_complex_task_synthesis_workflow(skip_llm_generation=False):
         print("STEP 1: LLM-DRIVEN COMPLEX TASK GENERATION")
         print("=" * 80)
         try:
-            try:
-                from .generation import generate_complex_tasks_llm
-            except ImportError:
-                from generation import generate_complex_tasks_llm
+            # import generation module and call function only if available
+            from importlib import import_module
+            gen_mod = import_module('.generation', package='complex_task_synthesis')
+            gen_fn = getattr(gen_mod, 'generate_complex_tasks_llm', None)
+            if gen_fn is None:
+                print("[WARNING] LLM generation skipped: 'generate_complex_tasks_llm' not found in generation module")
+                return
 
-            generation_result = generate_complex_tasks_llm()
-            if not generation_result:
-                print("[INFO] No new composite tasks were generated; skipping workflow creation.")
+            try:
+                generation_result = gen_fn()
+                if not generation_result:
+                    print("[INFO] No new composite tasks were generated; skipping workflow creation.")
+                    return
+            except Exception as e:
+                print(f"[WARNING] LLM generation aborted: {e}")
                 return
         except Exception as e:
             print(f"[WARNING] LLM generation skipped: {e}")
@@ -100,6 +104,19 @@ def run_complex_task_synthesis_workflow(skip_llm_generation=False):
 
         except Exception as e:
             print(f"[ERROR] Failed to process {task_name}: {e}")
+
+    print("\n" + "=" * 80)
+    print("STEP 3: COMPLEX TASK VALIDATION")
+    print("=" * 80)
+    try:
+        validation_summary = run_complex_validation()
+        print(
+            f"[OK] Complex validation complete: "
+            f"{validation_summary.get('summary', {}).get('passed', 0)} passed, "
+            f"{validation_summary.get('summary', {}).get('failed', 0)} failed"
+        )
+    except Exception as e:
+        print(f"[ERROR] Complex validation failed: {e}")
 
     print("\n" + "=" * 80)
     print("COMPLEX TASK SYNTHESIS WORKFLOW COMPLETE")

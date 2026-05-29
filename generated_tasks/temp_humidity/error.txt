@@ -109,3 +109,21 @@ Syntax error at line 5, column 21: unterminated string literal (detected at line
 [2026-05-28T14:01:35.414462] TASK: Multi-Domain Environmental Risk Assessment | exit_code=1
 Syntax error at line 5, column 21: unterminated string literal (detected at line 5)
 ------------------------------------------------------------
+[2026-05-29T13:52:16.673922] TASK: pollution_source_movement_analysis | exit_code=1
+Syntax error at line 5, column 21: unterminated string literal (detected at line 5)
+------------------------------------------------------------
+[2026-05-29T13:52:21.750089] TASK: pollution_source_movement_analysis | exit_code=1
+Syntax error at line 5, column 21: unterminated string literal (detected at line 5)
+------------------------------------------------------------
+[2026-05-29T13:52:27.690058] TASK: soil_drought_stress_analysis_with_weather | exit_code=1
+Syntax error at line 5, column 21: unterminated string literal (detected at line 5)
+------------------------------------------------------------
+[2026-05-29T13:52:32.678682] TASK: soil_drought_stress_analysis_with_weather | exit_code=1
+Syntax error at line 5, column 21: unterminated string literal (detected at line 5)
+------------------------------------------------------------
+[2026-05-29T13:52:39.659260] TASK: wind_turbine_performance_with_air_quality | exit_code=1
+Syntax error at line 12, column 1: invalid syntax
+------------------------------------------------------------
+[2026-05-29T13:52:55.878070] TASK: wind_turbine_performance_with_air_quality | exit_code=1
+Syntax error at line 12, column 1: invalid syntax
+------------------------------------------------------------

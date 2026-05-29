@@ -1,0 +1,19 @@
+{
+    "task_name": "main_pollutant_identification",
+    "description": "Identify the main pollutant contributing to poor air quality and determine its concentration level.",
+    "result_summary": [
+        {
+            "name": "Main Pollutant",
+            "value": "co",
+            "description": "The main pollutant contributing to poor air quality.",
+            "timestamp": "2026-05-29T16:03:34.853868"
+        },
+        {
+            "name": "Main Pollutant Concentration",
+            "value": 395.23350427350425,
+            "description": "The concentration level of the main pollutant.",
+            "timestamp": "2026-05-29T16:03:34.853873"
+        }
+    ],
+    "result_generated_at": "2026-05-29T16:03:34.853874"
+}

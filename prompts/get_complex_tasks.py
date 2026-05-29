@@ -19,6 +19,7 @@ Hard requirements for your output:
 - Return ONLY a single JSON object (no surrounding text, no code fences).
 - If you cannot produce any meaningful composite tasks, return exactly: {"composite_tasks": []}
 - Ensure every returned composite task is coherent, with a valid DAG of subtasks (no cycles).
+- Each composite task must include explicit business-logic fields that explain how the final output is interpreted after subtasks run.
 
 Preference guidance (apply when helpful):
 - Prefer combining 3-5 distinct domains when those domains are meaningfully complementary; minimum 2.
@@ -28,8 +29,8 @@ Preference guidance (apply when helpful):
 
 Behavioral constraints:
 - Use existing task_id values when a reusable validated subtask is present.
-- Mark any required but missing subtask with the task_id value "needs_generation" and list it in
-  "missing_capabilities" for that composite task.
+- Mark any required but missing subtask with the task_id value "needs_generation".
+- In "missing_capabilities", list a descriptive capability name or missing subtask label, not the literal placeholder "needs_generation".
 - When target domain combinations are provided, only return composite tasks that match those combinations
   (unless none are feasible, then return an empty composite_tasks array).
 
@@ -46,6 +47,9 @@ Output schema (exact shape required):
       "description": "",
       "domains": ["domain1", "domain2"],
       "business_value": "",
+      "final_insight": "",
+      "decision_rules": [""],
+      "recommended_action": "",
       "subtasks": [
         {
           "subtask_name": "",
@@ -95,11 +99,15 @@ $COMBINATION_OBJECTIVE_BANK
 
 Guidelines (must follow):
 1. Combine at least 2 domains; prefer 3-5 when useful and available.
-2. Reuse validated subtasks when possible; annotate missing subtasks with "needs_generation".
+2. Reuse validated subtasks when possible; annotate missing subtasks with "needs_generation", but describe the missing capability in "missing_capabilities".
 3. Define a clear DAG for subtasks; use "depends_on" arrays of task_id values.
 4. Describe how outputs flow between subtasks in the "data_flow" list (simple mapping pairs are fine).
 5. Keep workflows edge-friendly: avoid heavy models or long-lookback operations unless justified in business_value.
 6. Return at most one composite task per target combination when targets are provided.
+7. Add a concrete business interpretation for the final combined output using:
+  - final_insight: one concise sentence describing what the combined result means
+  - decision_rules: short bullet-like rules that map subtask outputs to the final interpretation
+  - recommended_action: the action or recommendation produced from the combined result
 
 Output requirements (must be followed exactly):
 - Return a single JSON object that matches the SYSTEM_PROMPT schema and field names exactly.

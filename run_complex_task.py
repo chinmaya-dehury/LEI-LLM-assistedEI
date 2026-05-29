@@ -14,6 +14,29 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
 COMPLEX_TASKS_DIR = BASE_DIR / "generated_tasks" / "complex"
+COMPLEX_TASKS_LIST_PATH = COMPLEX_TASKS_DIR / "complex_tasks_list.json"
+
+
+def _normalize_task_name(value: str) -> str:
+    return (value or "").lower().replace("-", "_").replace(" ", "_")
+
+
+def _load_composite_task_spec(task_name: str) -> dict:
+    if not COMPLEX_TASKS_LIST_PATH.exists():
+        return {}
+
+    try:
+        payload = json.loads(COMPLEX_TASKS_LIST_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+    normalized = _normalize_task_name(task_name)
+    for spec in payload.get("composite_tasks", []):
+        spec_name = _normalize_task_name(spec.get("task_name", ""))
+        if spec_name == normalized:
+            return spec
+
+    return {}
 
 
 def list_available_tasks():
@@ -48,7 +71,7 @@ def run_complex_task(task_name: str):
     """Run a complex task executor and display results."""
     
     # Normalize task name
-    task_name = task_name.lower().replace("-", "_")
+    task_name = _normalize_task_name(task_name)
     executor_path = COMPLEX_TASKS_DIR / f"{task_name}_executor.py"
     
     if not executor_path.exists():
@@ -63,6 +86,21 @@ def run_complex_task(task_name: str):
     print(f"{'=' * 80}\n")
     
     try:
+        from validator import prevalidate_task_script
+
+        task_spec = _load_composite_task_spec(task_name)
+        task_info = {
+            "task_name": task_spec.get("task_name", task_name),
+            "description": task_spec.get("description", ""),
+            "data_type": task_spec.get("data_type", "complex"),
+            "metadata": task_spec,
+        }
+
+        validation = prevalidate_task_script(str(executor_path), task_info)
+        if not validation.get("valid", False):
+            print(f"[ERROR] Validation failed before execution: {validation.get('message', 'unknown error')}")
+            return False
+
         result = subprocess.run(
             [sys.executable, str(executor_path)],
             capture_output=True,

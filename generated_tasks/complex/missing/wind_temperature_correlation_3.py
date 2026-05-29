@@ -1,0 +1,49 @@
+import csv
+import json
+import sys
+from pathlib import Path
+from string import Template
+
+
+def main():
+    incoming_payload = {}
+    if not sys.stdin.isatty():
+        try:
+            raw_input = sys.stdin.read()
+            if raw_input.strip():
+                incoming_payload = json.loads(raw_input)
+        except Exception:
+            pass
+
+    root = Path(__file__).resolve()
+    for parent in [root] + list(root.parents):
+        if (parent / 'requirements.txt').exists() or (parent / 'config.py').exists():
+            root = parent
+            break
+    if not isinstance(root, Path):
+        root = Path(__file__).resolve().parent.parent
+
+    sample_path = root / 'data' / 'complex' / 'sample_data.csv'
+    row_count = -1
+    if sample_path.exists():
+        try:
+            with open(sample_path, 'r', encoding='utf-8') as f:
+                row_count = max(len(list(csv.reader(f))) - 1, 0)
+        except Exception:
+            pass
+
+    result = {{
+        'task_name': 'wind_temperature_correlation',
+        'status': 'mock_fallback_active',
+        'result_summary': [
+            {{'key': 'domain', 'value': 'complex'}},
+            {{'key': 'row_count', 'value': row_count}},
+            {{'key': 'data_integrity', 'value': 'simulated'}},
+            {{'key': 'inherited_keys', 'value': list(incoming_payload.keys())}}
+        ],
+    }}
+    sys.stdout.write(json.dumps(result) + '\n')
+
+
+if __name__ == '__main__':
+    main()

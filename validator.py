@@ -21,6 +21,7 @@ from typing import Dict, List
 import shutil
 from datetime import datetime
 import re
+from pathlib import Path
 
 from openai import OpenAI
 
@@ -62,6 +63,10 @@ DEFAULT_TASKS_FILE = os.path.join("generated_tasks", DATA_TYPE, "new_tasks.json"
 DEFAULT_SCRIPTS_DIR = os.path.join("generated_tasks", DATA_TYPE)
 ERROR_LOG_PATH = os.path.join(DEFAULT_SCRIPTS_DIR, "error.txt")
 DEFAULT_VALIDATOR_LOG = os.path.join("validator", DATA_TYPE)
+COMPLEX_TASKS_FILE = os.path.join("generated_tasks", "complex", "complex_tasks_list.json")
+COMPLEX_SCRIPTS_DIR = os.path.join("generated_tasks", "complex")
+COMPLEX_MISSING_DIR = os.path.join(COMPLEX_SCRIPTS_DIR, "missing")
+COMPLEX_VALIDATOR_LOG = os.path.join("validator", "complex")
 
 # Log resource metrics at start
 log_resource_metrics(RESOURCE_CSV, "step3_validator", "start", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
@@ -72,16 +77,16 @@ SCRIPT_START_TIME = datetime.now(IST).isoformat()
 SCRIPT_START_PERF = time.perf_counter()
 
 
-def _append_error_log(task_name: str, exit_code: int, stderr: str) -> None:
+def _append_error_log(task_name: str, exit_code: int, stderr: str, log_path: str = ERROR_LOG_PATH) -> None:
     """Append runtime failure details to error.txt."""
-    os.makedirs(DEFAULT_SCRIPTS_DIR, exist_ok=True)
+    os.makedirs(os.path.dirname(log_path), exist_ok=True)
     timestamp = datetime.now().isoformat()
     entry = (
         f"[{timestamp}] TASK: {task_name} | exit_code={exit_code}\n"
         f"{stderr.strip()}\n"
         f"{'-'*60}\n"
     )
-    with open(ERROR_LOG_PATH, "a", encoding="utf-8") as log_file:
+    with open(log_path, "a", encoding="utf-8") as log_file:
         log_file.write(entry)
 
 
@@ -121,6 +126,127 @@ def _load_context_for(datatype: str) -> Dict[str, object]:
         "metadata": metadata,
         "context": context,
     }
+
+
+def _normalize_domains(domains) -> List[str]:
+    if isinstance(domains, str):
+        domains = [d.strip() for d in domains.split(",") if d.strip()]
+    if not isinstance(domains, list):
+        return []
+    return [str(d).strip() for d in domains if str(d).strip()]
+
+
+def _load_complex_context_for(task_info: Dict[str, object]) -> Dict[str, object]:
+    """Load merged context for complex tasks from their component domains."""
+    domains = _normalize_domains(
+        task_info.get("domains")
+        or task_info.get("metadata", {}).get("domains")
+        or []
+    )
+
+    sample_parts = []
+    context_parts = []
+    metadata_parts = {}
+
+    for domain in domains:
+        assets = _load_context_for(domain)
+        if assets.get("sample_data"):
+            sample_parts.append(f"# Domain: {domain}\n{assets['sample_data']}")
+        if assets.get("context"):
+            context_parts.append(f"# Domain: {domain}\n{assets['context']}")
+        metadata_parts[domain] = assets.get("metadata", {})
+
+    return {
+        "sample_data": "\n\n".join(sample_parts),
+        "metadata": {
+            "domains": domains,
+            "domain_metadata": metadata_parts,
+            "task_name": task_info.get("task_name", ""),
+            "description": task_info.get("description", ""),
+            "business_value": task_info.get("business_value", ""),
+        },
+        "context": "\n\n".join(context_parts),
+    }
+
+
+def _safe_slug(text: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", str(text).lower()).strip("_")
+
+
+def _load_complex_task_specs(complex_tasks_file: str) -> List[Dict[str, object]]:
+    if not os.path.exists(complex_tasks_file):
+        return []
+    try:
+        with open(complex_tasks_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception:
+        return []
+    return data.get("composite_tasks", []) or []
+
+
+def _build_complex_validation_targets(complex_tasks_file: str, scripts_dir: str) -> List[Dict[str, object]]:
+    """Create validation targets for complex executors and generated missing subtasks."""
+    targets: List[Dict[str, object]] = []
+    composite_tasks = _load_complex_task_specs(complex_tasks_file)
+
+    for spec in composite_tasks:
+        if not isinstance(spec, dict):
+            continue
+        task_name = str(spec.get("task_name", "")).strip()
+        if not task_name:
+            continue
+
+        script_filename = f"{_safe_slug(task_name)}_executor.py"
+        script_path = os.path.join(scripts_dir, script_filename)
+        if not os.path.exists(script_path):
+            continue
+
+        targets.append({
+            "script_path": script_path,
+            "validation_kind": "composite_executor",
+            "task_info": {
+                "task_name": task_name,
+                "description": spec.get("description", ""),
+                "business_value": spec.get("business_value", ""),
+                "data_type": "complex",
+                "domains": spec.get("domains", []),
+                "metadata": {
+                    "domains": spec.get("domains", []),
+                    "missing_capabilities": spec.get("missing_capabilities", []),
+                },
+                "script_filename": script_filename,
+            },
+            "scripts_dir": scripts_dir,
+        })
+
+    missing_dir = os.path.join(scripts_dir, "missing")
+    if os.path.isdir(missing_dir):
+        for entry in sorted(os.listdir(missing_dir)):
+            if not entry.endswith(".py"):
+                continue
+            script_path = os.path.join(missing_dir, entry)
+            if not os.path.isfile(script_path):
+                continue
+
+            stem = Path(entry).stem
+            pretty_name = stem.replace("_", " ").strip() or stem
+            targets.append({
+                "script_path": script_path,
+                "validation_kind": "generated_missing_subtask",
+                "task_info": {
+                    "task_name": f"{pretty_name} (generated fallback)",
+                    "description": f"Auto-generated missing complex subtask: {pretty_name}",
+                    "data_type": "complex",
+                    "domains": ["complex"],
+                    "metadata": {
+                        "source": "generated_missing_complex_subtask",
+                    },
+                    "script_filename": entry,
+                },
+                "scripts_dir": missing_dir,
+            })
+
+    return targets
 
 
 def _execute_task_script(script_path: str, timeout: int = 60) -> Dict[str, object]:
@@ -296,6 +422,9 @@ Context:
 Task Name: {task.get('task_name', 'UNKNOWN')}
 Task Description: {task.get('description', 'N/A')}
 Data Type: {task.get('data_type', DATA_TYPE)}
+
+Metadata:
+{json.dumps(task.get('metadata', {}), indent=2, ensure_ascii=False)}
 
 RUNTIME ERROR (exit code {exit_code}):
 {runtime_error}
@@ -489,6 +618,42 @@ def _parse_json_from_output(output: str) -> Dict | None:
     if isinstance(parsed, list):
         return {"result_summary": parsed, "_array_output": True}
 
+
+def _complex_payload_has_failure(json_output: Dict[str, object]) -> str:
+    """Return a human-readable failure reason for complex executor payloads."""
+    if not isinstance(json_output, dict):
+        return ""
+
+    top_status = str(json_output.get("status", "")).strip().lower()
+    if top_status in {"partial_failure", "failed", "error"}:
+        return f"Top-level status reported {top_status}"
+
+    combined_analysis = json_output.get("combined_analysis")
+    if isinstance(combined_analysis, dict):
+        workflow_status = str(combined_analysis.get("workflow_status", "")).strip().lower()
+        if workflow_status in {"partial_failure", "failed", "error"}:
+            return f"Combined analysis reported {workflow_status}"
+
+        summary_metrics = combined_analysis.get("summary_metrics")
+        if isinstance(summary_metrics, dict):
+            bad_metric_keys = [str(key) for key in summary_metrics.keys() if "none" in str(key).lower()]
+            if bad_metric_keys:
+                sample = ", ".join(bad_metric_keys[:3])
+                return f"Combined analysis contains malformed metric keys: {sample}"
+
+    subtask_results = json_output.get("subtask_results")
+    if isinstance(subtask_results, dict):
+        failed_subtasks = [
+            str(task_id)
+            for task_id, payload in subtask_results.items()
+            if isinstance(payload, dict) and str(payload.get("status", "")).strip().lower() == "error"
+        ]
+        if failed_subtasks:
+            sample = ", ".join(failed_subtasks[:3])
+            return f"Subtasks failed at runtime: {sample}"
+
+    return ""
+
     return None
 
 
@@ -628,11 +793,73 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
     }
 
 
+def prevalidate_task_script(script_path: str, task_info: Dict) -> Dict[str, object]:
+    """Validate task code, metadata, and datatype before execution.
+
+    This performs syntax and semantic validation without running the script.
+    """
+    task_name = task_info.get("task_name", Path(script_path).stem)
+    datatype = task_info.get("data_type", DATA_TYPE)
+    task_description = task_info.get("description", "")
+    metadata = task_info.get("metadata", {})
+    assets = _load_context_for(datatype)
+
+    generated_code = ""
+    try:
+        with open(script_path, "r", encoding="utf-8") as f:
+            generated_code = f.read()
+    except Exception as e:
+        return {
+            "task_name": task_name,
+            "valid": False,
+            "syntax_valid": False,
+            "semantic_performed": False,
+            "semantic_passed": False,
+            "message": f"Could not read script: {e}",
+        }
+
+    syntax_valid, syntax_error = _validate_python_syntax(generated_code)
+    if not syntax_valid:
+        return {
+            "task_name": task_name,
+            "valid": False,
+            "syntax_valid": False,
+            "semantic_performed": False,
+            "semantic_passed": False,
+            "message": syntax_error,
+        }
+
+    json_for_validation = {"task_name": task_name, "result_summary": []}
+    validated_output, validation_error, semantic_details = _validate_output_structure(
+        json_for_validation,
+        task_name,
+        task_description,
+        generated_code,
+        assets.get("sample_data", ""),
+        min_results=0,
+    )
+
+    return {
+        "task_name": task_name,
+        "valid": validated_output is not None,
+        "syntax_valid": True,
+        "semantic_performed": semantic_details.get("performed", False),
+        "semantic_passed": semantic_details.get("passed", False),
+        "message": validation_error or "OK",
+        "datatype": datatype,
+        "metadata": metadata,
+    }
+
+
 def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -> Dict:
     task_name = task_info.get("task_name")
     datatype = task_info.get("data_type", DATA_TYPE)
     task_description = task_info.get("description", "")
-    assets = _load_context_for(datatype)
+    error_log_path = os.path.join(COMPLEX_SCRIPTS_DIR, "error.txt") if str(datatype).strip().lower() == "complex" else ERROR_LOG_PATH
+    if str(datatype).strip().lower() == "complex":
+        assets = _load_complex_context_for(task_info)
+    else:
+        assets = _load_context_for(datatype)
     
     # Read generated code for LLM-based validation
     generated_code = ""
@@ -646,7 +873,7 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
     syntax_valid, syntax_error = _validate_python_syntax(generated_code)
     if not syntax_valid:
         print(f"[ERROR] {task_name} failed syntax validation: {syntax_error}")
-        _append_error_log(task_name, 1, syntax_error)
+        _append_error_log(task_name, 1, syntax_error, error_log_path)
 
     print(f"\n[Validator] Testing {task_name}...")
 
@@ -680,6 +907,15 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
         
         # Check various success conditions
         if result_json:
+            if validated_output is not None:
+                if str(datatype).strip().lower() == "complex":
+                    complex_failure = _complex_payload_has_failure(result_json)
+                    if complex_failure:
+                        print(f"[ERROR] {task_name} produced a complex payload that should not pass validation: {complex_failure}")
+                        _append_error_log(task_name, 0, complex_failure, error_log_path)
+                        validated_output = None
+                        validation_error = complex_failure
+
             if validated_output is not None:
                 # Validation passed - output is properly structured
                 # Case 1: Proper object with matching task_name
@@ -749,7 +985,7 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
                 # Semantic validation failed - log and fall through to retry logic
                 print(f"[WARNING] {task_name} produced JSON but failed semantic validation:")
                 print(f"   {validation_error}")
-                _append_error_log(task_name, 0, f"Semantic validation failed:\n{validation_error}")
+                _append_error_log(task_name, 0, f"Semantic validation failed:\n{validation_error}", error_log_path)
                 # Fall through to retry logic with validation error
 
         if warnings_only and exec_result["exit_code"] == 0:
@@ -774,12 +1010,13 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
                 task_name,
                 0,
                 f"Exit 0 but invalid/missing JSON output.\nStdout:\n{exec_result['stdout']}\nStderr:\n{exec_result['stderr']}",
+                error_log_path,
             )
             print(f"[ERROR] {task_name} exit 0 but output missing valid JSON")
             # Fall through to retry logic below
         elif exec_result["exit_code"] != 0:
             # Non-zero exit code
-            _append_error_log(task_name, exec_result["exit_code"], exec_result["stderr"] or exec_result["stdout"])
+            _append_error_log(task_name, exec_result["exit_code"], exec_result["stderr"] or exec_result["stdout"], error_log_path)
             print(f"[WARNING] {task_name} failed (exit {exec_result['exit_code']})")
             # Fall through to retry logic below
 
@@ -819,6 +1056,10 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
                 )
                 if validation_error:
                     validation_error_msg = validation_error
+                if validated_output is not None and str(datatype).strip().lower() == "complex":
+                    complex_failure = _complex_payload_has_failure(result_json)
+                    if complex_failure:
+                        validation_error_msg = complex_failure
 
         correction = _call_llm_for_correction(
             task_info,
@@ -846,7 +1087,7 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
         corrected_syntax_valid, corrected_syntax_error = _validate_python_syntax(corrected_code)
         if not corrected_syntax_valid:
             print(f"[ERROR] Corrected code failed syntax validation: {corrected_syntax_error}")
-            _append_error_log(task_name, 1, corrected_syntax_error)
+            _append_error_log(task_name, 1, corrected_syntax_error, error_log_path)
             try:
                 if os.path.exists(temp_path):
                     os.remove(temp_path)
@@ -884,9 +1125,9 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
                 else:
                     # Semantic validation failed - log and continue to next retry
                     print(f"[WARNING] Corrected code has valid JSON but failed semantic validation: {validation_error}")
-                    _append_error_log(task_name, 0, f"Semantic validation failed:\n{validation_error}")
+                    _append_error_log(task_name, 0, f"Semantic validation failed:\n{validation_error}", error_log_path)
 
-        _append_error_log(task_name, exec_result["exit_code"], exec_result["stderr"] or exec_result["stdout"])
+        _append_error_log(task_name, exec_result["exit_code"], exec_result["stderr"] or exec_result["stdout"], error_log_path)
         task_info["code"] = corrected_code
         print(f"[WARNING] Corrected code still failed (exit {exec_result['exit_code']})")
 
@@ -911,6 +1152,96 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
         "status": "failed",
         "message": f"Failed after {MAX_RETRIES} correction attempts",
     }
+
+
+def validate_complex_generated_tasks(complex_tasks_file: str, scripts_dir: str) -> Dict[str, object]:
+    """Validate composite complex executors and generated missing subtasks."""
+    print("\n" + "=" * 60)
+    print("VALIDATING COMPLEX GENERATED TASKS")
+    print("=" * 60)
+
+    targets = _build_complex_validation_targets(complex_tasks_file, scripts_dir)
+    results: List[Dict] = []
+
+    composite_targets = sum(1 for target in targets if target.get("validation_kind") == "composite_executor")
+    fallback_targets = sum(1 for target in targets if target.get("validation_kind") == "generated_missing_subtask")
+
+    if not targets:
+        print("[INFO] No complex validation targets found")
+    else:
+        print(
+            f"[INFO] Validation scope: {composite_targets} composite executors + "
+            f"{fallback_targets} generated fallback subtasks"
+        )
+    for target in targets:
+        script_path = target.get("script_path")
+        task_info = target.get("task_info", {})
+        target_scripts_dir = target.get("scripts_dir", scripts_dir)
+
+        if not script_path or not os.path.exists(script_path):
+            continue
+
+        print(f"[PROCESSING] {task_info.get('task_name', Path(script_path).stem)}")
+        try:
+            result = validate_and_fix_task(script_path, task_info, target_scripts_dir)
+        except Exception as e:
+            result = {
+                "task_name": task_info.get("task_name", Path(script_path).stem),
+                "status": "failed",
+                "message": f"Complex validation error: {e}",
+            }
+        result["validation_kind"] = target.get("validation_kind", "unknown")
+        results.append(result)
+
+    passed = sum(1 for r in results if r.get("status") == "passed")
+    failed = sum(1 for r in results if r.get("status") == "failed")
+
+    composite_passed = sum(
+        1 for r in results if r.get("validation_kind") == "composite_executor" and r.get("status") == "passed"
+    )
+    composite_failed = sum(
+        1 for r in results if r.get("validation_kind") == "composite_executor" and r.get("status") == "failed"
+    )
+    fallback_passed = sum(
+        1 for r in results if r.get("validation_kind") == "generated_missing_subtask" and r.get("status") == "passed"
+    )
+    fallback_failed = sum(
+        1 for r in results if r.get("validation_kind") == "generated_missing_subtask" and r.get("status") == "failed"
+    )
+
+    summary = {
+        "run_count": RUN_COUNT,
+        "model": DEFAULT_MODEL,
+        "tasks": results,
+        "summary": {
+            "total": len(results),
+            "passed": passed,
+            "failed": failed,
+        },
+        "breakdown": {
+            "composite_executors": {
+                "total": composite_targets,
+                "passed": composite_passed,
+                "failed": composite_failed,
+            },
+            "generated_missing_subtasks": {
+                "total": fallback_targets,
+                "passed": fallback_passed,
+                "failed": fallback_failed,
+            },
+        },
+    }
+
+    os.makedirs(COMPLEX_VALIDATOR_LOG, exist_ok=True)
+    individual_summary_path = os.path.join(
+        COMPLEX_VALIDATOR_LOG,
+        f"validation_summary_{SANITIZED_MODEL}_{RUN_ID}_complex_run{RUN_COUNT}.json",
+    )
+    with open(individual_summary_path, "w", encoding="utf-8") as f:
+        json.dump(summary, f, ensure_ascii=False, indent=2)
+    print(f"[Validator] Complex summary saved to {individual_summary_path}")
+
+    return summary
 
 
 def validate_all_generated_tasks(tasks_file: str, scripts_dir: str) -> Dict[str, object]:
@@ -976,6 +1307,9 @@ def main() -> None:
     os.makedirs(DEFAULT_SCRIPTS_DIR, exist_ok=True)
 
     summary = validate_all_generated_tasks(DEFAULT_TASKS_FILE, DEFAULT_SCRIPTS_DIR)
+
+    if os.path.exists(COMPLEX_TASKS_FILE) or os.path.isdir(COMPLEX_MISSING_DIR):
+        validate_complex_generated_tasks(COMPLEX_TASKS_FILE, COMPLEX_SCRIPTS_DIR)
 
     # Ensure validator log directory exists
     os.makedirs(DEFAULT_VALIDATOR_LOG, exist_ok=True)
