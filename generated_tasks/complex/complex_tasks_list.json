@@ -1,120 +1,161 @@
 {
+  "generated_at": "2026-05-29T15:37:55.974702",
   "composite_tasks": [
     {
-      "task_name": "Multi-Domain Environmental Risk Assessment",
-      "description": "Joint analysis across air quality, soil, temperature, and humidity to assess environmental risks",
+      "task_name": "Pollution Source Movement Analysis",
+      "description": "Analyze the movement of pollution sources using air quality and wind data",
+      "business_value": "Identify the trajectory of pollution sources to inform environmental policies",
       "domains": [
         "air_quality",
-        "soil",
-        "temp_humidity"
+        "wind"
       ],
-      "business_value": "Provides a comprehensive view of environmental risks by combining data from multiple domains",
+      "data_type": "complex",
       "subtasks": [
         {
-          "subtask_name": "Air Quality Index Analysis",
-          "task_id": "air_quality_index_category_distribution",
+          "subtask_name": "air_quality_pollutant_source_apportionment",
+          "task_id": "pollutant_source_apportionment",
           "domain": "air_quality",
           "depends_on": []
         },
         {
-          "subtask_name": "Soil Health Assessment",
-          "task_id": "root_zone_health_assessment",
+          "subtask_name": "wind_wind_direction_consistency",
+          "task_id": "wind_direction_consistency",
+          "domain": "wind",
+          "depends_on": []
+        },
+        {
+          "subtask_name": "pollution_source_movement_analysis",
+          "task_id": "needs_generation",
+          "domain": "complex",
+          "depends_on": [
+            "air_quality_pollutant_source_apportionment",
+            "wind_wind_direction_consistency"
+          ]
+        }
+      ],
+      "missing_capabilities": [
+        "pollution_source_movement_analysis"
+      ],
+      "data_flow": [
+        {
+          "from_subtask_id": "pollutant_source_apportionment",
+          "from_subtask_name": "air_quality_pollutant_source_apportionment",
+          "to_subtask_id": "needs_generation",
+          "to_subtask_name": "pollution_source_movement_analysis",
+          "mapped_variable": "output"
+        },
+        {
+          "from_subtask_id": "wind_direction_consistency",
+          "from_subtask_name": "wind_wind_direction_consistency",
+          "to_subtask_id": "needs_generation",
+          "to_subtask_name": "pollution_source_movement_analysis",
+          "mapped_variable": "output"
+        }
+      ]
+    },
+    {
+      "task_name": "Soil Moisture and Air Quality Analysis",
+      "description": "Analyze the relationship between soil moisture and air quality",
+      "business_value": "Understand the impact of soil moisture on air quality to inform agricultural practices",
+      "domains": [
+        "soil",
+        "air_quality"
+      ],
+      "data_type": "complex",
+      "subtasks": [
+        {
+          "subtask_name": "soil_soil_moisture_gradient_analysis",
+          "task_id": "soil_moisture_gradient_analysis",
           "domain": "soil",
           "depends_on": []
         },
         {
-          "subtask_name": "Temperature Humidity Analysis",
+          "subtask_name": "air_quality_main_pollutant_identification",
+          "task_id": "main_pollutant_identification",
+          "domain": "air_quality",
+          "depends_on": []
+        },
+        {
+          "subtask_name": "soil_moisture_air_quality_correlation",
+          "task_id": "needs_generation",
+          "domain": "complex",
+          "depends_on": [
+            "soil_soil_moisture_gradient_analysis",
+            "air_quality_main_pollutant_identification"
+          ]
+        }
+      ],
+      "missing_capabilities": [
+        "soil_moisture_air_quality_correlation"
+      ],
+      "data_flow": [
+        {
+          "from_subtask_id": "soil_moisture_gradient_analysis",
+          "from_subtask_name": "soil_soil_moisture_gradient_analysis",
+          "to_subtask_id": "needs_generation",
+          "to_subtask_name": "soil_moisture_air_quality_correlation",
+          "mapped_variable": "output"
+        },
+        {
+          "from_subtask_id": "main_pollutant_identification",
+          "from_subtask_name": "air_quality_main_pollutant_identification",
+          "to_subtask_id": "needs_generation",
+          "to_subtask_name": "soil_moisture_air_quality_correlation",
+          "mapped_variable": "output"
+        }
+      ]
+    },
+    {
+      "task_name": "Wind and Temperature Analysis",
+      "description": "Analyze the relationship between wind and temperature",
+      "business_value": "Understand the impact of wind on temperature to inform weather forecasting",
+      "domains": [
+        "wind",
+        "temp_humidity"
+      ],
+      "data_type": "complex",
+      "subtasks": [
+        {
+          "subtask_name": "wind_wind_event_clustering",
+          "task_id": "wind_event_clustering",
+          "domain": "wind",
+          "depends_on": []
+        },
+        {
+          "subtask_name": "temp_humidity_Temperature_Humidity_Correlation",
           "task_id": "Temperature_Humidity_Correlation",
           "domain": "temp_humidity",
           "depends_on": []
         },
         {
-          "subtask_name": "Cross-Domain Anomaly Detection",
+          "subtask_name": "wind_temperature_correlation",
           "task_id": "needs_generation",
-          "domain": "",
+          "domain": "complex",
           "depends_on": [
-            "air_quality_index_category_distribution",
-            "root_zone_health_assessment",
-            "Temperature_Humidity_Correlation"
+            "wind_wind_event_clustering",
+            "temp_humidity_Temperature_Humidity_Correlation"
           ]
         }
       ],
       "missing_capabilities": [
-        "cross-domain anomaly detection"
+        "wind_temperature_correlation"
       ],
       "data_flow": [
         {
-          "source": "air_quality_index_category_distribution",
-          "target": "Cross-Domain Anomaly Detection"
+          "from_subtask_id": "wind_event_clustering",
+          "from_subtask_name": "wind_wind_event_clustering",
+          "to_subtask_id": "needs_generation",
+          "to_subtask_name": "wind_temperature_correlation",
+          "mapped_variable": "output"
         },
         {
-          "source": "root_zone_health_assessment",
-          "target": "Cross-Domain Anomaly Detection"
-        },
-        {
-          "source": "Temperature_Humidity_Correlation",
-          "target": "Cross-Domain Anomaly Detection"
-        }
-      ]
-    },
-    {
-      "task_name": "Environmental Dependency Mapping",
-      "description": "Joint analysis across air quality, soil, and wind to understand environmental dependencies",
-      "domains": [
-        "air_quality",
-        "soil",
-        "wind"
-      ],
-      "business_value": "Provides insights into how different environmental factors interact with each other",
-      "subtasks": [
-        {
-          "subtask_name": "Air Quality Trend Analysis",
-          "task_id": "aqi_level_trend_analysis",
-          "domain": "air_quality",
-          "depends_on": []
-        },
-        {
-          "subtask_name": "Soil Moisture Balance Analysis",
-          "task_id": "root_zone_moisture_balance",
-          "domain": "soil",
-          "depends_on": []
-        },
-        {
-          "subtask_name": "Wind Pattern Analysis",
-          "task_id": "diurnal_wind_patterns",
-          "domain": "wind",
-          "depends_on": []
-        },
-        {
-          "subtask_name": "Multi-Domain Dependency Mapping",
-          "task_id": "needs_generation",
-          "domain": "",
-          "depends_on": [
-            "aqi_level_trend_analysis",
-            "root_zone_moisture_balance",
-            "diurnal_wind_patterns"
-          ]
-        }
-      ],
-      "missing_capabilities": [
-        "multi-domain dependency mapping"
-      ],
-      "data_flow": [
-        {
-          "source": "aqi_level_trend_analysis",
-          "target": "Multi-Domain Dependency Mapping"
-        },
-        {
-          "source": "root_zone_moisture_balance",
-          "target": "Multi-Domain Dependency Mapping"
-        },
-        {
-          "source": "diurnal_wind_patterns",
-          "target": "Multi-Domain Dependency Mapping"
+          "from_subtask_id": "Temperature_Humidity_Correlation",
+          "from_subtask_name": "temp_humidity_Temperature_Humidity_Correlation",
+          "to_subtask_id": "needs_generation",
+          "to_subtask_name": "wind_temperature_correlation",
+          "mapped_variable": "output"
         }
       ]
     }
-  ],
-  "updated_at": "2026-05-28T14:01:21.718138+05:30",
-  "total_count": 2
+  ]
 }

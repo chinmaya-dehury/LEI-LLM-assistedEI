@@ -38,6 +38,10 @@ Composite task generation guidelines:
 - Avoid duplicate analytical pipelines
 - Prefer lightweight workflows suitable for edge execution
 - Focus on actionable and interpretable insights
+- Include explicit business-logic fields so the combined output is more than raw aggregation:
+  - final_insight: a concise interpretation of the combined result
+  - decision_rules: short rules describing how subtask outputs lead to that interpretation
+  - recommended_action: the resulting action, alert, or recommendation
 
 Examples of valuable composite reasoning:
 - Air quality + wind → pollution source movement analysis
@@ -49,6 +53,7 @@ For each composite task:
 4. Define dependency ordering between subtasks
 5. Describe how outputs from one subtask are consumed by another
 6. Ensure the workflow forms a valid DAG
+7. Explain the final combined interpretation and the business rule used to reach it
 
 Return ONLY valid JSON array using this schema:
 
@@ -57,6 +62,9 @@ Return ONLY valid JSON array using this schema:
     "task_name": "",
     "description": "",
     "business_value": "",
+    "final_insight": "",
+    "decision_rules": [],
+    "recommended_action": "",
     "domains": [],
     "subtasks": [
       {

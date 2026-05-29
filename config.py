@@ -13,6 +13,13 @@ LLM_API_KEY = os.getenv("LLM_API_KEY")
 DEFAULT_MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
 LLM_VAL_MODEL = os.getenv("LLM_VAL_MODEL", DEFAULT_MODEL)  # Validation-specific model (defaults to DEFAULT_MODEL)
 
+# Optional rate limit and provider-specific settings (safe defaults)
+MODEL_RATE_LIMITS = {}
+MIN_REQUEST_INTERVAL_SECONDS = float(os.getenv("MIN_REQUEST_INTERVAL_SECONDS", "0"))
+OPENROUTER_DATA_COLLECTION_OPT_IN = os.getenv("OPENROUTER_DATA_COLLECTION_OPT_IN", None)
+OPENROUTER_HTTP_REFERER = os.getenv("OPENROUTER_HTTP_REFERER", "")
+OPENROUTER_TITLE = os.getenv("OPENROUTER_TITLE", "")
+
 # Validation
 if not LLM_API_KEY:
 	raise RuntimeError("LLM_API_KEY not found in .env file")

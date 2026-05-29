@@ -1,0 +1,23 @@
+{
+    "task_name": "pollution_source_movement_analysis_3",
+    "description": "Auto-generated missing complex subtask: pollution source movement analysis 3",
+    "result_summary": [
+        {
+            "key": "domain",
+            "value": "complex"
+        },
+        {
+            "key": "row_count",
+            "value": -1
+        },
+        {
+            "key": "data_integrity",
+            "value": "simulated"
+        },
+        {
+            "key": "inherited_keys",
+            "value": []
+        }
+    ],
+    "result_generated_at": ""
+}

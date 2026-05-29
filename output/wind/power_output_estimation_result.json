@@ -6,14 +6,14 @@
             "name": "Average Power Output at 80m",
             "value": 3453.9108351908158,
             "description": "Average power output at 80m turbine hub height",
-            "timestamp": "2026-05-26T11:22:57.529714"
+            "timestamp": "2026-05-29T13:52:33.064465"
         },
         {
             "name": "Average Power Output at 120m",
             "value": 4783.898338362259,
             "description": "Average power output at 120m turbine hub height",
-            "timestamp": "2026-05-26T11:22:57.529827"
+            "timestamp": "2026-05-29T13:52:33.064588"
         }
     ],
-    "result_generated_at": "2026-05-26T11:22:57.529829"
+    "result_generated_at": "2026-05-29T13:52:33.064590"
 }
