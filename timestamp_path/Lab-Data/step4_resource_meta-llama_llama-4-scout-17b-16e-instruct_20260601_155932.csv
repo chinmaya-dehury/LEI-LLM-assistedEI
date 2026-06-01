@@ -1,0 +1,5 @@
+timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
+2026-06-01T15:59:49.210698+05:30,step4_scheduler,start,1,,meta-llama/llama-4-scout-17b-16e-instruct,2.7,45.1,1654675412,1193186465,1884163,1857320,
+2026-06-01T15:59:50.218096+05:30,step4_scheduler,end,1,,meta-llama/llama-4-scout-17b-16e-instruct,2.7,45.1,1654675476,1193187182,1884164,1857328,
+2026-06-01T16:00:16.627302+05:30,step4_scheduler,start,2,,meta-llama/llama-4-scout-17b-16e-instruct,10.1,45.0,1654861541,1193331865,1884497,1857967,
+2026-06-01T16:00:19.433744+05:30,step4_scheduler,end,2,,meta-llama/llama-4-scout-17b-16e-instruct,3.0,44.9,1654865694,1193333922,1884511,1857990,

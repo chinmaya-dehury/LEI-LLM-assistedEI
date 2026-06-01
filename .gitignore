@@ -1,17 +1,2 @@
-venv/*
-__pycache__/
-*.pyc
-# =========================================
-# Environment & Virtual Envs
-# =========================================
+data/Lab-Data/raw_data.txt
 .env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-pythonenv*
-env_local/
-.env.local
-*.env

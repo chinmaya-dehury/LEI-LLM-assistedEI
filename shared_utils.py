@@ -32,6 +32,7 @@ def extract_first_json_object(text: str) -> dict:
     """
     Extract first JSON object from text that may contain extra content.
     Handles code fences (```json ... ```) and surrounding text.
+    Also handles unescaped newlines and special characters in code strings.
     
     Args:
         text: Raw text from LLM that may contain JSON + other content
@@ -58,11 +59,48 @@ def extract_first_json_object(text: str) -> dict:
     if start == -1:
         raise ValueError("No JSON object start '{' found in text")
 
+    # Try standard JSON parsing first
     decoder = json.JSONDecoder()
-    obj, _end = decoder.raw_decode(s[start:])
-    if not isinstance(obj, dict):
-        raise ValueError("Top-level JSON value is not an object")
-    return obj
+    try:
+        obj, _end = decoder.raw_decode(s[start:])
+        if not isinstance(obj, dict):
+            raise ValueError("Top-level JSON value is not an object")
+        return obj
+    except json.JSONDecodeError as e:
+        # If standard parsing fails, try to fix unescaped control characters
+        # This handles cases where LLM returns JSON with literal newlines in strings
+        json_str = s[start:]
+        
+        # Find the closing brace by counting braces (more robust than fixing escapes)
+        brace_count = 0
+        in_string = False
+        escape_next = False
+        for i, char in enumerate(json_str):
+            if escape_next:
+                escape_next = False
+                continue
+            if char == '\\':
+                escape_next = True
+                continue
+            if char == '"' and not escape_next:
+                in_string = not in_string
+            elif char == '{' and not in_string:
+                brace_count += 1
+            elif char == '}' and not in_string:
+                brace_count -= 1
+                if brace_count == 0:
+                    # Found the closing brace, try to parse just this portion
+                    json_str = json_str[:i+1]
+                    try:
+                        obj = json.loads(json_str)
+                        if isinstance(obj, dict):
+                            return obj
+                    except json.JSONDecodeError:
+                        pass
+                    break
+        
+        # If all else fails, raise the original error
+        raise e
 
 
 def extract_first_json_value(text: str):
@@ -184,6 +222,73 @@ def append_timing_rows_to_csv(csv_path: str, rows: list, fieldnames: list) -> No
             writer.writeheader()
         for row in rows:
             writer.writerow(row)
+
+
+def validate_data_type_exists(data_type: str) -> bool:
+    """
+    Validate that a data type folder exists with required files.
+    
+    Args:
+        data_type: The DATA_TYPE (e.g., 'temp_humidity', 'air_quality', 'Lab-Data')
+        
+    Returns:
+        True if data folder and required files exist, otherwise exits with warning.
+    """
+    import sys
+    
+    base = os.path.join("data", data_type)
+    
+    # Check if data folder exists
+    if not os.path.exists(base):
+        print(f"\n{'='*70}")
+        print(f"[WARNING] Data type '{data_type}' does not exist.")
+        print(f"{'='*70}")
+        print(f"\nThe following data folder was not found:")
+        print(f"  {os.path.abspath(base)}\n")
+        print(f"Available data types in your workspace:")
+        data_dir = os.path.join("data")
+        if os.path.exists(data_dir):
+            available = [d for d in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, d))]
+            if available:
+                for dt in sorted(available):
+                    print(f"  - {dt}")
+            else:
+                print(f"  (No data types found)")
+        else:
+            print(f"  (Data directory does not exist)")
+        
+        print(f"\nPlease update your .env file with a valid DATA_TYPE.")
+        print(f"{'='*70}\n")
+        sys.exit(1)
+    
+    # Check if required files exist
+    sample_path = os.path.join(base, "sample_data.csv")
+    meta_path = os.path.join(base, "metadata.json")
+    context_path = os.path.join(base, "context.txt")
+    
+    missing_files = []
+    if not os.path.exists(sample_path):
+        missing_files.append("sample_data.csv")
+    if not os.path.exists(meta_path):
+        missing_files.append("metadata.json")
+    if not os.path.exists(context_path):
+        missing_files.append("context.txt")
+    
+    if missing_files:
+        print(f"\n{'='*70}")
+        print(f"[WARNING] Data type '{data_type}' is incomplete.")
+        print(f"{'='*70}")
+        print(f"\nMissing required files in {os.path.abspath(base)}:")
+        for fname in missing_files:
+            print(f"  - {fname}")
+        print(f"\nPlease ensure all required files are present:")
+        print(f"  - sample_data.csv")
+        print(f"  - metadata.json")
+        print(f"  - context.txt")
+        print(f"{'='*70}\n")
+        sys.exit(1)
+    
+    return True
 
 
 def load_context_for_data_type(data_type: str) -> Dict[str, Any]:

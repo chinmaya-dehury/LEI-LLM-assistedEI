@@ -1,0 +1,11 @@
+step,model,run_count,task_name,script_start_time_ist,script_end_time_ist,script_duration_sec,status,return_code
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,1,Epoch Sequence Analysis,2026-06-01T07:14:30.269245+00:00,2026-06-01T07:14:30.311386+00:00,0.042141899990383536,failed,0
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,1,Humidity Trend Analysis,2026-06-01T07:14:30.312067+00:00,2026-06-01T07:14:30.364374+00:00,0.0523076000099536,failed,1
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,1,Light Level Pattern Recognition,2026-06-01T07:14:30.364876+00:00,2026-06-01T07:14:30.415118+00:00,0.050244800018845126,failed,1
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,1,Sensor Battery Health Monitoring,2026-06-01T07:14:30.416870+00:00,2026-06-01T07:14:30.479256+00:00,0.06238849999499507,failed,1
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,2,Comparative Analysis Across Motes,2026-06-01T07:16:25.106318+00:00,2026-06-01T07:16:25.178119+00:00,0.07179729998460971,failed,1
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,2,Epoch Sequence Analysis,2026-06-01T07:16:25.178674+00:00,2026-06-01T07:16:25.218414+00:00,0.039743100001942366,failed,0
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,2,Humidity Trend Analysis,2026-06-01T07:16:25.218846+00:00,2026-06-01T07:16:25.267702+00:00,0.04885900000226684,failed,1
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,2,Light Level Pattern Recognition,2026-06-01T07:16:25.268123+00:00,2026-06-01T07:16:25.318838+00:00,0.05071710000629537,failed,1
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,2,Mote Data Quality Assessment,2026-06-01T07:16:25.319256+00:00,2026-06-01T07:16:25.364621+00:00,0.04536129999905825,failed,1
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,2,Sensor Battery Health Monitoring,2026-06-01T07:16:25.365050+00:00,2026-06-01T07:16:25.425207+00:00,0.06015949998982251,failed,1

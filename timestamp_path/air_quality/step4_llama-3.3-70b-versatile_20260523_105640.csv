@@ -1,9 +1,0 @@
-step,model,run_count,task_name,script_start_time_ist,script_end_time_ist,script_duration_sec,status,return_code
-task_run,llama-3.3-70b-versatile,,air_quality_alert_system,2026-05-23T10:56:40.567433+00:00,2026-05-23T10:56:41.293453+00:00,0.7260196999995969,success,0
-task_run,llama-3.3-70b-versatile,,air_quality_index_category_distribution,2026-05-23T10:56:46.296461+00:00,2026-05-23T10:56:46.929713+00:00,0.6332389999879524,success,0
-task_run,llama-3.3-70b-versatile,,air_quality_index_spatial_clustering,2026-05-23T10:56:51.931615+00:00,2026-05-23T10:56:55.431381+00:00,3.499752499978058,success,0
-task_run,llama-3.3-70b-versatile,,aqi_level_trend_analysis,2026-05-23T10:57:00.434768+00:00,2026-05-23T10:57:01.080854+00:00,0.6460882999817841,success,0
-task_run,llama-3.3-70b-versatile,,component_correlation_analysis,2026-05-23T10:57:06.084625+00:00,2026-05-23T10:57:06.684177+00:00,0.5995302000083029,success,0
-task_run,llama-3.3-70b-versatile,,diurnal_variation_analysis,2026-05-23T10:57:11.687459+00:00,2026-05-23T10:57:12.324376+00:00,0.6368790999986231,success,0
-task_run,llama-3.3-70b-versatile,,health_risk_mapping,2026-05-23T10:57:17.326000+00:00,2026-05-23T10:57:17.949078+00:00,0.6230720999883488,success,0
-task_run,llama-3.3-70b-versatile,,main_pollutant_identification,2026-05-23T10:57:22.951331+00:00,2026-05-23T10:57:23.626068+00:00,0.6746538000006694,success,0

@@ -1,0 +1,34 @@
+{
+  "tasks": [
+    {
+      "task_name": "Temperature-Humidity Correlation Analysis per Mote",
+      "description": "Analyze the correlation between temperature and humidity readings for each individual mote to identify patterns and potential issues with sensor calibration.",
+      "data_type": "Lab-Data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Light Level Distribution Analysis",
+      "description": "Analyze the distribution of light level readings across different motes and time periods to identify patterns and potential issues with sensor calibration or environmental changes.",
+      "data_type": "Lab-Data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Voltage Trend Analysis per Mote",
+      "description": "Analyze the trend of voltage readings for each individual mote to identify potential battery health issues and sensor calibration problems.",
+      "data_type": "Lab-Data",
+      "status": "failed to generate correct code"
+    },
+    {
+      "task_name": "Epoch Sequence Gap Detection per Mote",
+      "description": "Detect gaps in epoch sequences for each individual mote to identify missing readings and ensure data synchronization.",
+      "data_type": "Lab-Data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Mote Data Quality Assessment per Time Period",
+      "description": "Assess the data quality of individual sensor motes across different time periods to identify potential issues with missing or truncated data.",
+      "data_type": "Lab-Data",
+      "status": "code_generated"
+    }
+  ]
+}

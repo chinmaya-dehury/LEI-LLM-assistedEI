@@ -1,0 +1,11 @@
+step,model,run_count,task_name,script_start_time_ist,script_end_time_ist,script_duration_sec,status,return_code
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,1,Detect Concept Drift,2026-06-01T12:07:21.082093+00:00,2026-06-01T12:07:21.569739+00:00,0.487645600020187,success,0
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,1,Estimate CO Concentration,2026-06-01T12:07:21.570376+00:00,2026-06-01T12:07:21.640732+00:00,0.07035860000178218,failed,1
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,1,Identify Sensor Cross-Sensitivity,2026-06-01T12:07:21.641356+00:00,2026-06-01T12:07:22.034165+00:00,0.3928184999967925,success,0
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,1,Validate Sensor Readings,2026-06-01T12:07:22.038323+00:00,2026-06-01T12:07:22.215702+00:00,0.17739319999236614,failed,0
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,2,Analyze Temperature and Humidity Impact,2026-06-01T12:07:35.227433+00:00,2026-06-01T12:07:35.297992+00:00,0.07055050000781193,failed,1
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,2,Detect Concept Drift,2026-06-01T12:07:35.298497+00:00,2026-06-01T12:07:35.688079+00:00,0.38958660000935197,success,0
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,2,Estimate CO Concentration,2026-06-01T12:07:35.688697+00:00,2026-06-01T12:07:35.760637+00:00,0.07194369999342598,failed,1
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,2,Identify Daily Patterns in Sensor Readings,2026-06-01T12:07:35.761083+00:00,2026-06-01T12:07:35.879894+00:00,0.11881519999587908,failed,1
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,2,Identify Sensor Cross-Sensitivity,2026-06-01T12:07:35.880516+00:00,2026-06-01T12:07:36.247670+00:00,0.36715549998916686,success,0
+task_run,meta-llama/llama-4-scout-17b-16e-instruct,2,Validate Sensor Readings,2026-06-01T12:07:36.248534+00:00,2026-06-01T12:07:36.429062+00:00,0.18052809999790043,failed,0

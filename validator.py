@@ -33,6 +33,7 @@ from shared_utils import (
     extract_first_json_object,
     get_environment_vars,
     setup_timing_paths,
+    validate_data_type_exists,
     write_validator_detailed_row,
     IST,
 )
@@ -47,6 +48,9 @@ if hasattr(sys.stderr, "reconfigure"):
 
 CLIENT_TIMEOUT = 120  # seconds
 client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY, timeout=CLIENT_TIMEOUT)
+
+# Validate that the DATA_TYPE folder exists with required files
+validate_data_type_exists(DATA_TYPE)
 
 # Per-run CSV path with model name and run ID (step3 = validator)
 env_vars = get_environment_vars()

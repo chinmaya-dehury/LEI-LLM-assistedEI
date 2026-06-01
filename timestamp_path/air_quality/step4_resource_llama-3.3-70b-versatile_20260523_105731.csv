@@ -1,3 +1,0 @@
-timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
-2026-05-23T16:27:31.588938+05:30,step4_scheduler,start,,,llama-3.3-70b-versatile,62.6,88.7,504789123,2213064434,1231831,2405381,
-2026-05-23T16:27:47.841312+05:30,step4_scheduler,end,,,llama-3.3-70b-versatile,61.3,88.7,504924832,2215009075,1232307,2407350,

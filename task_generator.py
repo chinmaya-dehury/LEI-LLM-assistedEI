@@ -38,6 +38,7 @@ from shared_utils import (
     setup_timing_paths,
     append_timing_rows_to_csv,
     load_context_for_data_type,
+    validate_data_type_exists,
     load_resource_summary,
     write_task_generator_csv,
     IST,
@@ -59,6 +60,10 @@ TASK_LIST_PATH = os.path.join(OUTPUT_DIR, "tasks_list.json")
 env_vars = get_environment_vars()
 RUN_ID = env_vars["RUN_ID"]
 RUN_COUNT = env_vars["RUN_COUNT"]
+
+# Validate that the DATA_TYPE folder exists with required files
+validate_data_type_exists(DATA_TYPE)
+
 timing_paths = setup_timing_paths(DATA_TYPE, "step1", DEFAULT_MODEL)
 TIMESTAMP_PATH = timing_paths["TIMESTAMP_PATH"]
 STEP1_CSV_PATH = timing_paths["STEP_CSV"]
@@ -77,14 +82,16 @@ sample_data = context_data["sample_data"]
 metadata = context_data["metadata"]
 context = context_data["context"]
 
-# Ensure task list exists; if not create with empty tasks list
-if not os.path.exists(TASK_LIST_PATH):
+# Ensure task list exists and is not empty; if not, create/reset with empty tasks list
+if not os.path.exists(TASK_LIST_PATH) or os.path.getsize(TASK_LIST_PATH) == 0:
     os.makedirs(os.path.dirname(TASK_LIST_PATH), exist_ok=True)
     with open(TASK_LIST_PATH, "w", encoding="utf-8") as f:
         json.dump({"tasks": []}, f, indent=2)
 
 with open(TASK_LIST_PATH, "r", encoding="utf-8") as f:
-    existing_tasks = f.read()
+    existing_tasks = f.read().strip()
+    if not existing_tasks:
+        existing_tasks = '{"tasks": []}'
 
 with open(RESOURCE_SUMMARY_PATH, "r") as f:
     resource_summary = f.read()
@@ -109,8 +116,11 @@ Summary of current resource usage and its availability on the edge device:
 """
 
 #print how many tasks are in existing_tasks
-existing_tasks_json = json.loads(existing_tasks)
-print(f"{len(existing_tasks_json['tasks'])} no. of existing tasks are sent to LLM.")
+try:
+    existing_tasks_json = json.loads(existing_tasks) if existing_tasks else {"tasks": []}
+except Exception:
+    existing_tasks_json = {"tasks": []}
+print(f"{len(existing_tasks_json.get('tasks', []))} no. of existing tasks are sent to LLM.")
 
 # Call the LLM with timing
 llm_start_time = datetime.now(IST).isoformat()
@@ -266,9 +276,14 @@ with open(os.path.join(OUTPUT_DIR, "new_tasks.json"), "w", encoding="utf-8") as 
     json.dump(tasks_data, f, indent=2)
 
 # Merge with existing tasks_list.json
-if os.path.exists(TASK_LIST_PATH):
-    with open(TASK_LIST_PATH, "r", encoding="utf-8") as f:
-        existing_tasks_data = json.load(f)
+if os.path.exists(TASK_LIST_PATH) and os.path.getsize(TASK_LIST_PATH) > 0:
+    try:
+        with open(TASK_LIST_PATH, "r", encoding="utf-8") as f:
+            existing_tasks_data = json.load(f)
+    except Exception:
+        existing_tasks_data = {"tasks": []}
+    if not isinstance(existing_tasks_data, dict) or "tasks" not in existing_tasks_data:
+        existing_tasks_data = {"tasks": []}
     existing_tasks_data["tasks"].extend(tasks_data["tasks"])
     tasks_data = existing_tasks_data
 
@@ -277,15 +292,8 @@ with open(TASK_LIST_PATH, "w", encoding="utf-8") as f:
     json.dump(tasks_data, f, indent=2)
 print("The list of all tasks with their description are successfully saved in "+TASK_LIST_PATH)
 
-# Clear the per-run new_tasks.json so it is empty after tasks are consumed
-try:
-    new_tasks_path = os.path.join(OUTPUT_DIR, "new_tasks.json")
-    if os.path.exists(new_tasks_path):
-        with open(new_tasks_path, 'w', encoding='utf-8') as nf:
-            json.dump({"tasks": []}, nf, indent=2)
-        print(f"[OK] Cleared new tasks file: {new_tasks_path}")
-except Exception as e:
-    print(f"[WARNING] Could not clear new_tasks.json: {e}")
+# Keep new_tasks.json with the newly generated tasks so that code_generator.py can consume it.
+print(f"[OK] Preserved newly generated tasks in new_tasks.json for downstream code generation.")
 
 # Final script end timing and CSV logging
 script_end_time = datetime.now(IST).isoformat()

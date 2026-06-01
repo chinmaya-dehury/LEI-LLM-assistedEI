@@ -19,8 +19,11 @@ from pathlib import Path
 from typing import Optional
 
 from config import DATA_TYPE, DEFAULT_MODEL
-from shared_utils import sanitize_model_name, IST
+from shared_utils import sanitize_model_name, validate_data_type_exists, IST
 
+
+# Validate that the DATA_TYPE folder exists with required files
+validate_data_type_exists(DATA_TYPE)
 
 BASE_DIR = Path(__file__).parent.resolve()
 STEP_1_SCRIPT = BASE_DIR / "task_generator.py"
