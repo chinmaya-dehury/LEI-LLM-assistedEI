@@ -1,2 +1,27 @@
-data/Lab-Data/raw_data.txt
+# Large data files (too large for GitHub, store separately)
+data/*/raw_data.txt
+data/*/raw_data.csv
+data/Lab-Data/*.csv
+data/Lab-Data/*.txt
+data/air_quality/*.csv
+data/air_quality/*.txt
+data/agri-data/*.csv
+data/agri-data/*.txt
+data/meteo-data/*.csv
+data/meteo-data/*.txt
+
+# Environment and logs
 .env
+logs/
+*.log
+
+# Generated outputs and cache
+output/
+generated_tasks/*/failed/
+validator/*/
+__pycache__/
+*.pyc
+.pytest_cache/
+.lei/
+.venv/
+venv/
