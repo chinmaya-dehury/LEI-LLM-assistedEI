@@ -1,3 +1,0 @@
-step,model,run_count,task_name,status,attempt,script_start_time_ist,script_end_time_ist,script_duration_sec,llm_start_time_ist,llm_end_time_ist,llm_duration_sec,prompt_tokens,completion_tokens,total_tokens,prompt_tokens_per_sec,completion_tokens_per_sec,semantic_performed,semantic_passed,semantic_reasoning
-validator_run,meta-llama/llama-4-scout-17b-16e-instruct,1,,execution_complete,,2026-06-01T12:44:29.101339+05:30,2026-06-01T12:44:29.623444+05:30,0.522105099982582,,,,,,,,,no,,
-validator_run,meta-llama/llama-4-scout-17b-16e-instruct,2,,execution_complete,,2026-06-01T12:46:23.911717+05:30,2026-06-01T12:46:24.432024+05:30,0.5202929000079166,,,,,,,,,no,,

@@ -1,0 +1,18 @@
+This dataset represents high-altitude alpine meteorological telemetry monitoring and sensing parameters.
+
+The IoT edge device continuously collects sensor readings for real-time weather observation, microclimate analysis, and environmental parameter tracking.
+
+The objective is to support atmospheric temperature profiling, solar radiation estimations, relative humidity trends, soil moisture hydrology monitoring, and wind vector analytics.
+
+The deployment environment includes a remote high-altitude alpine weather station recording continuously over time.
+
+Useful analytical insights may include:
+- Ambient and surface temperature correlation studies to monitor diurnal heating and cooling.
+- Solar radiation modeling to calculate daily exposure cycles and estimate cloud cover impact.
+- Relative humidity and soil moisture tracking for microclimatic hydrology and watermark tension analysis.
+- Wind vector calculation combining wind speed and wind direction for wind pattern profiling and draft detection.
+- Rain meter profiling to track precipitation events and evaluate correlation with atmospheric variables.
+
+The LLM should generate small, efficient, and modular Python programs suitable for execution on resource-constrained edge devices.
+
+Each generated task should focus on a single analytical insight while avoiding duplicate or computationally expensive operations.

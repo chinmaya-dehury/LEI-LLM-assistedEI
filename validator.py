@@ -63,7 +63,9 @@ RESOURCE_CSV = timing_paths["RESOURCE_CSV"]
 SANITIZED_MODEL = sanitize_model_name(DEFAULT_MODEL)
 
 MAX_RETRIES = 2
-DEFAULT_TASKS_FILE = os.path.join("generated_tasks", DATA_TYPE, "new_tasks.json")
+# Try tasks_list.json first (contains correct generated task names), fallback to new_tasks.json
+DEFAULT_TASKS_FILE = os.path.join("generated_tasks", DATA_TYPE, "tasks_list.json")
+FALLBACK_TASKS_FILE = os.path.join("generated_tasks", DATA_TYPE, "new_tasks.json")
 DEFAULT_SCRIPTS_DIR = os.path.join("generated_tasks", DATA_TYPE)
 ERROR_LOG_PATH = os.path.join(DEFAULT_SCRIPTS_DIR, "error.txt")
 DEFAULT_VALIDATOR_LOG = os.path.join("validator", DATA_TYPE)
@@ -312,18 +314,19 @@ def _validate_python_syntax(code: str) -> tuple[bool, str]:
         return False, f"Syntax error at {line_info}: {message}"
 
 
-def _stderr_is_only_warning(stderr: str) -> bool:
+def _output_is_only_warning(text: str) -> bool:
     """
-    Returns True if stderr contains only warning messages (FutureWarning,
-    DeprecationWarning, UserWarning, etc.) and no actual errors.
+    Returns True if the provided text (stdout or stderr) contains only
+    warning-like messages (FutureWarning, DeprecationWarning, UserWarning, etc.)
+    and no actual error patterns. Empty or missing text is considered warning-only.
     """
-    if not stderr or not isinstance(stderr, str):
-        return True  # No stderr means no warnings/errors
-    
-    lines = stderr.strip().split("\n")
+    if not text or not isinstance(text, str):
+        return True  # No output means no warnings/errors
+
+    lines = text.strip().split("\n")
     if not lines or all(not line.strip() for line in lines):
         return True  # Empty or whitespace-only
-    
+
     # Patterns that indicate warnings (not errors)
     warning_patterns = [
         r"Warning:",
@@ -343,7 +346,7 @@ def _stderr_is_only_warning(stderr: str) -> bool:
         r"site-packages.*Warning",
         r"lib.*Warning",
     ]
-    
+
     # Patterns that indicate actual errors (not just warnings)
     error_patterns = [
         r"Error:",
@@ -366,39 +369,36 @@ def _stderr_is_only_warning(stderr: str) -> bool:
         r"ZeroDivisionError:",
         r"AssertionError:",
     ]
-    
-    full_text = stderr.strip()
-    
+
+    full_text = text.strip()
+
     # If any error pattern matches, it's not warning-only
     for pattern in error_patterns:
         if re.search(pattern, full_text, re.IGNORECASE | re.MULTILINE):
             return False
-    
+
     # If we get here, check if there's any content that doesn't look like a warning
-    # For each non-empty line, check if it matches a warning pattern or is part of warning context
     for line in lines:
         line = line.strip()
         if not line:
             continue
-        
+
         # Check if line matches any warning pattern
         is_warning_line = any(re.search(p, line, re.IGNORECASE) for p in warning_patterns)
-        
+
         # Also accept lines that are part of warning stack traces (indented or file refs)
         is_context_line = (
-            line.startswith(" ") or 
+            line.startswith(" ") or
             line.startswith("\t") or
-            re.match(r"^\s*\^+\s*$", line) or  # Caret lines pointing to issues
-            re.match(r"^\s*~+\s*$", line) or   # Tilde lines
+            re.match(r"^\s*\^+\s*$", line) or
+            re.match(r"^\s*~+\s*$", line) or
             "site-packages" in line or
             ".py:" in line
         )
-        
+
         if not is_warning_line and not is_context_line:
-            # This line doesn't look like a warning or its context
-            # But don't immediately fail - could be warning message text
-            pass
-    
+            return False
+
     # If no error patterns matched, treat as warning-only
     return True
 
@@ -882,7 +882,8 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
     print(f"\n[Validator] Testing {task_name}...")
 
     exec_result = {"exit_code": 1, "stdout": "", "stderr": syntax_error} if not syntax_valid else _execute_task_script(script_path)
-    warnings_only = _stderr_is_only_warning(exec_result["stderr"])
+    # Consider both stderr and stdout for warning-only detection; if either contains errors, it's not warning-only
+    warnings_only = _output_is_only_warning(exec_result.get("stderr", "")) and _output_is_only_warning(exec_result.get("stdout", ""))
     stderr_for_logging = "" if warnings_only else (exec_result["stderr"] or "")
     
     # Initialize semantic_details early (will be updated later)
@@ -1253,12 +1254,32 @@ def validate_all_generated_tasks(tasks_file: str, scripts_dir: str) -> Dict[str,
     print("VALIDATING GENERATED TASK SCRIPTS")
     print("=" * 60)
 
+    # Try primary tasks file, fallback if needed
+    tasks_data = None
+    actual_tasks_file = tasks_file
     try:
         with open(tasks_file, "r", encoding="utf-8") as f:
             tasks_data = json.load(f)
     except Exception as e:
-        print(f"[ERROR] Failed to load tasks file: {e}")
+        print(f"[WARNING] Failed to load {tasks_file}: {e}")
+        # Try fallback file if primary fails
+        if tasks_file != FALLBACK_TASKS_FILE and os.path.exists(FALLBACK_TASKS_FILE):
+            try:
+                print(f"[INFO] Attempting fallback: {FALLBACK_TASKS_FILE}")
+                with open(FALLBACK_TASKS_FILE, "r", encoding="utf-8") as f:
+                    tasks_data = json.load(f)
+                    actual_tasks_file = FALLBACK_TASKS_FILE
+            except Exception as e2:
+                print(f"[ERROR] Failed to load fallback tasks file: {e2}")
+                return {"tasks": [], "run_count": RUN_COUNT, "model": DEFAULT_MODEL}
+        else:
+            return {"tasks": [], "run_count": RUN_COUNT, "model": DEFAULT_MODEL}
+    
+    if tasks_data is None:
+        print(f"[ERROR] No tasks data loaded")
         return {"tasks": [], "run_count": RUN_COUNT, "model": DEFAULT_MODEL}
+    
+    print(f"[INFO] Using tasks file: {actual_tasks_file}")
 
     results: List[Dict] = []
     for task in tasks_data.get("tasks", []):
@@ -1274,7 +1295,13 @@ def validate_all_generated_tasks(tasks_file: str, scripts_dir: str) -> Dict[str,
             script_path = os.path.join(scripts_dir, f"{safe_name}.py")
 
             if not os.path.exists(script_path):
+                script_path = os.path.join(scripts_dir, f"{task_name}.py")
+
+            if not os.path.exists(script_path):
                 script_path = os.path.join(scripts_dir, f"{safe_name}_executor.py")
+
+            if not os.path.exists(script_path):
+                script_path = os.path.join(scripts_dir, f"{task_name}_executor.py")
 
         if not os.path.exists(script_path):
             print(f"[WARNING] Script not found: {script_path}")

@@ -1,0 +1,17 @@
+This dataset represents a smart farming parameter monitoring dataset across critical soil conditions, ambient atmospheric parameters, and crop-related metrics.
+
+The IoT edge device continuously collects sensor readings for precision agriculture, crop monitoring, and environmental stress analysis.
+
+The objective is to support precision crop prediction, environmental stress analysis, crop health classification, and agricultural resource management optimization.
+
+The deployment environment includes smart farms with varying soil types (Sandy, Loamy, Clay) and different growth stages (Seedling, Vegetative, Flowering).
+
+Useful analytical insights may include:
+- Precision crop prediction and classification (e.g., matching NPK, temperature, and soil moisture to labels).
+- Composite environmental stress analysis using derived features like Temperature-Humidity Index (THI) and Photosynthesis Potential (PP).
+- Resource management optimization by analyzing Fertilizer Usage, Irrigation Frequency, and Water Usage Efficiency (L/kg).
+- Composite soil health and fertility assessment using Soil Fertility Index (SFI) and Nutrient Balance Ratio (NBR).
+
+The LLM should generate small, efficient, and modular Python programs suitable for execution on resource-constrained edge devices.
+
+Each generated task should focus on a single analytical insight while avoiding duplicate or computationally expensive operations.

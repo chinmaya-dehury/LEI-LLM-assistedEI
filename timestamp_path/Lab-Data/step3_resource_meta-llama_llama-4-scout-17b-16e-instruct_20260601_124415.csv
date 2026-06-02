@@ -1,5 +1,0 @@
-timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
-2026-06-01T12:44:28.582001+05:30,step3_validator,start,1,,meta-llama/llama-4-scout-17b-16e-instruct,1.6,44.8,1616746167,1107942543,1771261,1558510,
-2026-06-01T12:44:29.101391+05:30,step3_validator,end,1,,meta-llama/llama-4-scout-17b-16e-instruct,1.4,44.8,1616747850,1107944364,1771277,1558527,
-2026-06-01T12:46:23.388023+05:30,step3_validator,start,2,,meta-llama/llama-4-scout-17b-16e-instruct,1.4,45.5,1617590632,1112591149,1775226,1564613,
-2026-06-01T12:46:23.911863+05:30,step3_validator,end,2,,meta-llama/llama-4-scout-17b-16e-instruct,2.6,45.5,1617590632,1112591291,1775226,1564615,
