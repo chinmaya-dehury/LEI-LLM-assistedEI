@@ -1,3 +1,0 @@
-step,model,run_count,task_name,script_start_time_ist,script_end_time_ist,script_duration_sec,status,return_code
-task_run,meta-llama/llama-4-scout-17b-16e-instruct,1,Crop Growth Stage Classification,2026-06-03T09:46:47.088932+00:00,2026-06-03T09:46:47.160908+00:00,0.07197379996068776,success,0
-task_run,meta-llama/llama-4-scout-17b-16e-instruct,1,Soil Fertility Index (SFI) Calculation,2026-06-03T09:46:47.165105+00:00,2026-06-03T09:46:47.205570+00:00,0.040468100050929934,success,0

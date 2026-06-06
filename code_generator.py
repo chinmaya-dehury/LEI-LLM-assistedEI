@@ -23,7 +23,6 @@ import time
 import csv
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-from openai import OpenAI
 from config import LLM_BASE_URL, LLM_API_KEY, DATA_TYPE, DEFAULT_MODEL
 from string import Template
 from prompts.get_code import SYSTEM_PROMPT
@@ -42,44 +41,25 @@ from shared_utils import (
     IST,
 )
 
-# Ensure Unicode-safe stdout/stderr on Windows
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")
-if hasattr(sys.stderr, "reconfigure"):
-    sys.stderr.reconfigure(encoding="utf-8")
+import threading
+file_lock = threading.Lock()
 
-# Initialize the LLM client
-client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY)
-
-# Validate that the DATA_TYPE folder exists with required files
-validate_data_type_exists(DATA_TYPE)
-
-# Paths
-BASE_PATH = f"data/{DATA_TYPE}/"
-DATA_PATH = os.path.join(BASE_PATH, "sample_data.csv")
-META_PATH = os.path.join(BASE_PATH, "metadata.json")
-CONTEXT_PATH = os.path.join(BASE_PATH, "context.txt")
-OUTPUT_DIR = os.path.join("generated_tasks", DATA_TYPE)
-TASK_LIST_PATH = os.path.join(OUTPUT_DIR, "tasks_list.json")  # Read from persistent task list
-NEW_TASKS_PATH = os.path.join(OUTPUT_DIR, "new_tasks.json")    # For status updates
-RESOURCE_SUMMARY_PATH = "resource_stat/resource_usage_summary.json"
-
-# Per-run CSV path with model name and run ID
-env_vars = get_environment_vars()
-RUN_ID = env_vars["RUN_ID"]
-RUN_COUNT = env_vars["RUN_COUNT"]
-timing_paths = setup_timing_paths(DATA_TYPE, "step2", DEFAULT_MODEL)
-TIMESTAMP_PATH = timing_paths["TIMESTAMP_PATH"]
-STEP2_CSV = timing_paths["STEP_CSV"]
-RESOURCE_CSV = timing_paths["RESOURCE_CSV"]
-
-
-# Step-level timing (for entire script)
-SCRIPT_START_TIME = datetime.now(IST).isoformat()
-SCRIPT_START_PERF = time.perf_counter()
-
-# Log resource metrics at start
-log_resource_metrics(RESOURCE_CSV, "step2_code_generator", "start", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
+# Placeholders for global variables populated in main()
+client = None
+DATA_PATH = None
+META_PATH = None
+CONTEXT_PATH = None
+OUTPUT_DIR = None
+TASK_LIST_PATH = None
+NEW_TASKS_PATH = None
+RESOURCE_SUMMARY_PATH = None
+RUN_ID = None
+RUN_COUNT = None
+TIMESTAMP_PATH = None
+STEP2_CSV = None
+RESOURCE_CSV = None
+SCRIPT_START_TIME = None
+SCRIPT_START_PERF = None
 
 def _truncate(text: str, max_chars: int) -> str:
     if not isinstance(text, str):
@@ -191,21 +171,22 @@ Tasks (<=2):
         script_duration = time.perf_counter() - SCRIPT_START_PERF
 
         # Log failed call timing
-        write_code_generator_csv(
-            STEP2_CSV,
-            SCRIPT_START_TIME,
-            script_end_time,
-            script_duration,
-            "",
-            "",
-            0,
-            0,
-            0,
-            0,
-            DEFAULT_MODEL,
-            RUN_COUNT,
-            "",
-        )
+        with file_lock:
+            write_code_generator_csv(
+                STEP2_CSV,
+                SCRIPT_START_TIME,
+                script_end_time,
+                script_duration,
+                "",
+                "",
+                0,
+                0,
+                0,
+                0,
+                DEFAULT_MODEL,
+                RUN_COUNT,
+                "",
+            )
         return None
 
     # Capture finish reason for diagnostics
@@ -253,21 +234,22 @@ Tasks (<=2):
 
     # Log successful call timing
     task_names = ",".join([t.get("task_name", "") for t in task_payload.get("tasks", [])]) if isinstance(task_payload, dict) else ""
-    write_code_generator_csv(
-        STEP2_CSV,
-        SCRIPT_START_TIME,
-        script_end_time,
-        script_duration,
-        llm_start_time,
-        llm_end_time,
-        llm_duration,
-        prompt_tokens,
-        completion_tokens,
-        total_tokens,
-        used_model,
-        RUN_COUNT,
-        task_names,
-    )
+    with file_lock:
+        write_code_generator_csv(
+            STEP2_CSV,
+            SCRIPT_START_TIME,
+            script_end_time,
+            script_duration,
+            llm_start_time,
+            llm_end_time,
+            llm_duration,
+            prompt_tokens,
+            completion_tokens,
+            total_tokens,
+            used_model,
+            RUN_COUNT,
+            task_names,
+        )
 
     print(f"[Generator] Model '{used_model}' success in {llm_duration:.2f}s. Raw length={len(raw_output)}")
 
@@ -352,32 +334,33 @@ Tasks (<=2):
 
 
 def update_task_status_in_file(all_tasks_payload, task_name, status_message):
-    for task_entry in all_tasks_payload.get("tasks", []):
-        if task_entry.get("task_name") == task_name:
-            task_entry["status"] = status_message
-            break
-    # Update tasks_list.json persistent archive
-    with open(TASK_LIST_PATH, "w", encoding="utf-8") as out_file:
-        json.dump(all_tasks_payload, out_file, ensure_ascii=False, indent=2)
-
-    # Update only the matching task in new_tasks.json (if it exists) to keep it decoupled from tasks_list.json history
-    if os.path.exists(NEW_TASKS_PATH) and os.path.getsize(NEW_TASKS_PATH) > 0:
-        try:
-            with open(NEW_TASKS_PATH, "r", encoding="utf-8") as f:
-                new_tasks_payload = json.load(f)
-        except Exception:
-            new_tasks_payload = {"tasks": []}
-        
-        updated_new = False
-        for task_entry in new_tasks_payload.get("tasks", []):
+    with file_lock:
+        for task_entry in all_tasks_payload.get("tasks", []):
             if task_entry.get("task_name") == task_name:
                 task_entry["status"] = status_message
-                updated_new = True
                 break
-        
-        if updated_new:
-            with open(NEW_TASKS_PATH, "w", encoding="utf-8") as out_file:
-                json.dump(new_tasks_payload, out_file, ensure_ascii=False, indent=2)
+        # Update tasks_list.json persistent archive
+        with open(TASK_LIST_PATH, "w", encoding="utf-8") as out_file:
+            json.dump(all_tasks_payload, out_file, ensure_ascii=False, indent=2)
+
+        # Update only the matching task in new_tasks.json (if it exists) to keep it decoupled from tasks_list.json history
+        if os.path.exists(NEW_TASKS_PATH) and os.path.getsize(NEW_TASKS_PATH) > 0:
+            try:
+                with open(NEW_TASKS_PATH, "r", encoding="utf-8") as f:
+                    new_tasks_payload = json.load(f)
+            except Exception:
+                new_tasks_payload = {"tasks": []}
+            
+            updated_new = False
+            for task_entry in new_tasks_payload.get("tasks", []):
+                if task_entry.get("task_name") == task_name:
+                    task_entry["status"] = status_message
+                    updated_new = True
+                    break
+            
+            if updated_new:
+                with open(NEW_TASKS_PATH, "w", encoding="utf-8") as out_file:
+                    json.dump(new_tasks_payload, out_file, ensure_ascii=False, indent=2)
 
 
 def normalize_code_string(code: str) -> str:
@@ -480,8 +463,48 @@ def _debug_dump_response(response, out_dir: Path, prefix: str = "llm_response") 
     except Exception:
         # don't crash the pipeline due to debug logging
         pass
+def main() -> int:
+    global client, DATA_PATH, META_PATH, CONTEXT_PATH, OUTPUT_DIR, TASK_LIST_PATH, NEW_TASKS_PATH, RESOURCE_SUMMARY_PATH, RUN_ID, RUN_COUNT, TIMESTAMP_PATH, STEP2_CSV, RESOURCE_CSV, SCRIPT_START_TIME, SCRIPT_START_PERF
 
-def main() -> None:
+    # Ensure Unicode-safe stdout/stderr on Windows
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8")
+
+    from openai import OpenAI
+    # Initialize the LLM client
+    client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY)
+
+    # Validate that the DATA_TYPE folder exists with required files
+    validate_data_type_exists(DATA_TYPE)
+
+    # Paths
+    BASE_PATH = f"data/{DATA_TYPE}/"
+    DATA_PATH = os.path.join(BASE_PATH, "sample_data.csv")
+    META_PATH = os.path.join(BASE_PATH, "metadata.json")
+    CONTEXT_PATH = os.path.join(BASE_PATH, "context.txt")
+    OUTPUT_DIR = os.path.join("generated_tasks", DATA_TYPE)
+    TASK_LIST_PATH = os.path.join(OUTPUT_DIR, "tasks_list.json")  # Read from persistent task list
+    NEW_TASKS_PATH = os.path.join(OUTPUT_DIR, "new_tasks.json")    # For status updates
+    RESOURCE_SUMMARY_PATH = "resource_stat/resource_usage_summary.json"
+
+    # Per-run CSV path with model name and run ID
+    env_vars = get_environment_vars()
+    RUN_ID = env_vars["RUN_ID"]
+    RUN_COUNT = env_vars["RUN_COUNT"]
+    timing_paths = setup_timing_paths(DATA_TYPE, "step2", DEFAULT_MODEL)
+    TIMESTAMP_PATH = timing_paths["TIMESTAMP_PATH"]
+    STEP2_CSV = timing_paths["STEP_CSV"]
+    RESOURCE_CSV = timing_paths["RESOURCE_CSV"]
+
+    # Step-level timing (for entire script)
+    SCRIPT_START_TIME = datetime.now(IST).isoformat()
+    SCRIPT_START_PERF = time.perf_counter()
+
+    # Log resource metrics at start
+    log_resource_metrics(RESOURCE_CSV, "step2_code_generator", "start", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
+
     # ensure output dir exists
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -489,7 +512,7 @@ def main() -> None:
     if not os.path.exists(TASK_LIST_PATH):
         print(f"[ERROR] Task list not found: {TASK_LIST_PATH}")
         print("Ensure task_generator.py has run and created tasks_list.json before running code_generator.py")
-        sys.exit(1)
+        return 1
 
     with open(TASK_LIST_PATH, "r", encoding="utf-8") as f:
         tasks_payload = json.load(f)
@@ -499,7 +522,7 @@ def main() -> None:
     if not pending_tasks:
         print(f"[WARNING] No tasks found in {TASK_LIST_PATH}")
         print("Please run task_generator.py first to generate tasks.")
-        sys.exit(1)
+        return 1
     
     print(f"[INFO] Found {len(pending_tasks)} total tasks in {TASK_LIST_PATH}")
     print(f"[INFO] LLM Model: {DEFAULT_MODEL}\n")
@@ -524,8 +547,11 @@ def main() -> None:
     
     print(f"\n[INFO] {len(tasks_to_generate)} tasks need code generation\n")
 
-    # Process one task per LLM call (prevents truncation on long code responses)
-    for t in tasks_to_generate:
+    # Group tasks into batches of up to 2 tasks
+    batch_size = 2
+    task_batches = [tasks_to_generate[i:i + batch_size] for i in range(0, len(tasks_to_generate), batch_size)]
+
+    def process_batch(batch) -> None:
         payload = {
             "tasks": [
                 {
@@ -533,51 +559,76 @@ def main() -> None:
                     "description": t.get("description", ""),
                     "data_type": t.get("data_type", DATA_TYPE),
                 }
+                for t in batch
             ]
         }
 
-        tn = t.get("task_name")
-        print(f"\n[PROCESSING] Task: {tn}")
-        print(f"  Description: {t.get('description', '(no description)')}")
+        batch_names = [t.get("task_name") for t in batch]
+        print(f"\n[PROCESSING] Batch tasks: {', '.join(batch_names)}")
         generated = call_llm_for_task_code(payload)
 
         if not generated or not generated.get("tasks"):
-            update_task_status_in_file(tasks_payload, tn, "failed to generate correct code")
-            print(f" [FAIL] LLM did not return valid code. Marked as failed.")
-            continue
-
-        ret = (generated.get("tasks") or [{}])[0]
-        if ret and ret.get("code"):
-            code_text = ret.get("code", "").strip()
-            code_lines = len(code_text.split('\n'))
-            print(f" [OK] LLM returned code ({code_lines} lines)")
-            
-            filepath = os.path.join(OUTPUT_DIR, f"{tn}.py")
-            try:
-                # Prepend task description as docstring for clarity and validation
-                description = t.get('description', '')
-                if description:
-                    code_with_docstring = f'"""\nTask: {tn}\nDescription: {description}\n"""\n\n{code_text}'
-                else:
-                    code_with_docstring = code_text
-                
-                with open(filepath, "w", encoding="utf-8") as wf:
-                    wf.write(code_with_docstring)
-                print(f" [SAVED] {tn}.py")
-                update_task_status_in_file(tasks_payload, tn, "code_generated")
-            except Exception as e:
-                print(f" [ERROR] Failed to save {tn}.py: {e}")
+            for t in batch:
+                tn = t.get("task_name")
                 update_task_status_in_file(tasks_payload, tn, "failed to generate correct code")
-        else:
-            print(f" [FAIL] LLM response missing 'code' field")
-            print(f"  Response keys: {list(ret.keys()) if ret else 'None'}")
-            update_task_status_in_file(tasks_payload, tn, "failed to generate correct code")
+                print(f" [FAIL] LLM did not return valid code for {tn}. Marked as failed.")
+            return
+
+        generated_tasks = generated.get("tasks", [])
+        generated_map = {gt.get("task_name"): gt for gt in generated_tasks if gt.get("task_name")}
+
+        for t in batch:
+            tn = t.get("task_name")
+            ret = generated_map.get(tn)
+            
+            # Fallback by index if name matching failed
+            if not ret:
+                try:
+                    idx = batch.index(t)
+                    if idx < len(generated_tasks):
+                        ret = generated_tasks[idx]
+                except Exception:
+                    pass
+
+            if ret and ret.get("code"):
+                code_text = ret.get("code", "").strip()
+                code_lines = len(code_text.split('\n'))
+                print(f" [OK] LLM returned code for {tn} ({code_lines} lines)")
+                
+                filepath = os.path.join(OUTPUT_DIR, f"{tn}.py")
+                try:
+                    # Prepend task description as docstring for clarity and validation
+                    description = t.get('description', '')
+                    if description:
+                        code_with_docstring = f'"""\nTask: {tn}\nDescription: {description}\n"""\n\n{code_text}'
+                    else:
+                        code_with_docstring = code_text
+                    
+                    with open(filepath, "w", encoding="utf-8") as wf:
+                        wf.write(code_with_docstring)
+                    print(f" [SAVED] {tn}.py")
+                    update_task_status_in_file(tasks_payload, tn, "code_generated")
+                except Exception as e:
+                    print(f" [ERROR] Failed to save {tn}.py: {e}")
+                    update_task_status_in_file(tasks_payload, tn, "failed to generate correct code")
+            else:
+                print(f" [FAIL] LLM response missing 'code' field for {tn}")
+                update_task_status_in_file(tasks_payload, tn, "failed to generate correct code")
+
+    # Use ThreadPoolExecutor for parallel batch code generation
+    max_workers = min(len(task_batches), 4)  # run up to 4 batches in parallel
+    if max_workers > 0:
+        print(f"[INFO] Launching parallel code generation for {len(task_batches)} batches with {max_workers} threads...")
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            executor.map(process_batch, task_batches)
 
     print(f"\nAll requested batches processed. Check generated_tasks/{DATA_TYPE} for outputs.")
 
     # Log resource metrics at end
     log_resource_metrics(RESOURCE_CSV, "step2_code_generator", "end", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

@@ -1,9 +1,0 @@
-timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
-2026-06-03T15:25:59.208660+05:30,step3_validator,start,1,,meta-llama/llama-4-scout-17b-16e-instruct,15.8,52.6,2453874029,2699924446,2483485,2952545,
-2026-06-03T15:25:59.715714+05:30,step3_validator,end,1,,meta-llama/llama-4-scout-17b-16e-instruct,9.6,52.7,2453882242,2700046435,2483511,2952659,
-2026-06-03T15:27:37.793204+05:30,step3_validator,start,2,,meta-llama/llama-4-scout-17b-16e-instruct,3.4,54.2,2460705553,2708783976,2491619,2965226,
-2026-06-03T15:27:38.317371+05:30,step3_validator,end,2,,meta-llama/llama-4-scout-17b-16e-instruct,6.1,54.2,2460709733,2708787681,2491656,2965262,
-2026-06-03T15:29:02.526217+05:30,step3_validator,start,3,,meta-llama/llama-4-scout-17b-16e-instruct,11.2,53.2,2461296646,2709964416,2493249,2968684,
-2026-06-03T15:29:03.036939+05:30,step3_validator,end,3,,meta-llama/llama-4-scout-17b-16e-instruct,6.1,53.2,2461296995,2709966802,2493254,2968713,
-2026-06-03T15:31:10.614067+05:30,step3_validator,start,4,,meta-llama/llama-4-scout-17b-16e-instruct,1.5,53.0,2464839153,2733571699,2508904,2991321,
-2026-06-03T15:31:11.133171+05:30,step3_validator,end,4,,meta-llama/llama-4-scout-17b-16e-instruct,6.4,52.9,2464868507,2734179009,2509214,2991799,

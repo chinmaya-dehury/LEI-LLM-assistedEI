@@ -1,9 +1,0 @@
-timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
-2026-06-03T15:25:26.711093+05:30,step2_code_generator,start,1,,meta-llama/llama-4-scout-17b-16e-instruct,6.5,52.1,2450950572,2698057679,2480498,2949195,
-2026-06-03T15:25:57.612487+05:30,step2_code_generator,end,1,,meta-llama/llama-4-scout-17b-16e-instruct,9.3,52.6,2453727692,2699874920,2483324,2952385,
-2026-06-03T15:27:02.584783+05:30,step2_code_generator,start,2,,meta-llama/llama-4-scout-17b-16e-instruct,9.1,53.5,2458614160,2705682454,2488985,2960988,
-2026-06-03T15:27:36.176623+05:30,step2_code_generator,end,2,,meta-llama/llama-4-scout-17b-16e-instruct,8.4,54.2,2460696612,2708617969,2491580,2965050,
-2026-06-03T15:28:26.415026+05:30,step2_code_generator,start,3,,meta-llama/llama-4-scout-17b-16e-instruct,4.5,53.7,2461040413,2709268864,2492504,2967083,
-2026-06-03T15:29:00.909693+05:30,step2_code_generator,end,3,,meta-llama/llama-4-scout-17b-16e-instruct,6.6,53.0,2461271774,2709516541,2493101,2968274,
-2026-06-03T15:30:34.788872+05:30,step2_code_generator,start,4,,meta-llama/llama-4-scout-17b-16e-instruct,5.2,53.2,2464028122,2724403677,2503499,2983134,
-2026-06-03T15:31:08.879785+05:30,step2_code_generator,end,4,,meta-llama/llama-4-scout-17b-16e-instruct,2.6,53.0,2464838875,2733569499,2508900,2991287,
