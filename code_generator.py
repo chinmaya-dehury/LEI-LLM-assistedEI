@@ -69,8 +69,13 @@ def _truncate(text: str, max_chars: int) -> str:
 
 def get_previous_errors_for_task(task_dt: str, task_name: str) -> str:
     """Read previous errors for the task from error.csv (or fallback error.txt)."""
-    error_csv_path = os.path.join("generated_tasks", task_dt, "error.csv")
-    error_txt_path = os.path.join("generated_tasks", task_dt, "error.txt")
+    custom_tasks_dir = os.environ.get("LEI_TASKS_DIR")
+    if custom_tasks_dir:
+        error_csv_path = os.path.join(custom_tasks_dir, "error.csv")
+        error_txt_path = os.path.join(custom_tasks_dir, "error.txt")
+    else:
+        error_csv_path = os.path.join("generated_tasks", task_dt, "error.csv")
+        error_txt_path = os.path.join("generated_tasks", task_dt, "error.txt")
     
     if os.path.exists(error_csv_path):
         try:
@@ -147,7 +152,8 @@ Analyze the error(s) below carefully (paying attention to exit code, traceback, 
 {previous_errors}
 """
 
-    system_prompt = Template(SYSTEM_PROMPT).substitute(DATA_TYPE=task_dt)
+    output_dir_str = os.environ.get("LEI_OUTPUT_DIR", os.path.join("output", task_dt)).replace("\\", "/")
+    system_prompt = Template(SYSTEM_PROMPT).substitute(DATA_TYPE=task_dt, OUTPUT_DIR=output_dir_str)
 
     task_list_payload = json.dumps(task_payload, ensure_ascii=False, indent=2) \
         if isinstance(task_payload, dict) else str(task_payload)
@@ -555,7 +561,7 @@ def main() -> int:
     DATA_PATH = os.path.join(BASE_PATH, "sample_data.csv")
     META_PATH = os.path.join(BASE_PATH, "metadata.json")
     CONTEXT_PATH = os.path.join(BASE_PATH, "context.txt")
-    OUTPUT_DIR = os.path.join("generated_tasks", DATA_TYPE)
+    OUTPUT_DIR = os.environ.get("LEI_TASKS_DIR", os.path.join("generated_tasks", DATA_TYPE))
     TASK_LIST_PATH = os.path.join(OUTPUT_DIR, "tasks_list.json")  # Read from persistent task list
     NEW_TASKS_PATH = os.path.join(OUTPUT_DIR, "new_tasks.json")    # For status updates
     RESOURCE_SUMMARY_PATH = "resource_stat/resource_usage_summary.json"

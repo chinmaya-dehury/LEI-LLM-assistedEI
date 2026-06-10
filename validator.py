@@ -53,7 +53,7 @@ SCRIPT_START_PERF = None
 
 MAX_RETRIES = 2
 CLIENT_TIMEOUT = 120
-ENABLE_LLM_CORRECTION = False  # Set to True to enable LLM self-correction, False to fail immediately
+ENABLE_LLM_CORRECTION = True  # Set to True to enable LLM self-correction, False to fail immediately
 csv_lock = threading.Lock()
 
 DEFAULT_TASKS_FILE = None
@@ -71,6 +71,11 @@ def _append_error_log(task_name: str, exit_code: int, stderr: str, log_path: str
     """Append or update runtime failure details in error.csv."""
     if log_path is None:
         log_path = ERROR_LOG_PATH
+        
+    try:
+        _append_central_error_log(RUN_COUNT, LLM_VAL_MODEL, DATA_TYPE, stderr)
+    except Exception as e:
+        print(f"[WARNING] Failed to append error to central CSV: {e}")
     
     # Change extension from .txt to .csv if it still has .txt
     if log_path.endswith(".txt"):

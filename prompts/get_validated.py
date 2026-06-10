@@ -63,7 +63,7 @@ Execution requirements:
   data/{DATA_TYPE}/raw_data.csv
 
 - Save results to:
-  output/{DATA_TYPE}/{TASK_NAME}_result.json
+  {OUTPUT_DIR}/{TASK_NAME}_result.json
 
 Required output JSON schema:
 {

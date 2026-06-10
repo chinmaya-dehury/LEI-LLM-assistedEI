@@ -331,7 +331,7 @@ def run_lei_benchmark(dataset_name: str, run_id: str, run_num: int, results_dir:
         val_model = getattr(config, "LLM_VAL_MODEL", "gemma3:4b")
         sanitized_model = sanitize_model_name(val_model)
         
-        summary_file = LEI_DIR / "validator" / dataset_name / f"validation_summary_{sanitized_model}_{run_id}_run{run_num}.json"
+        summary_file = LEI_DIR / "validator" / dataset_name / f"val_sum_{sanitized_model}_{run_id}_run{run_num}.json"
         if summary_file.exists():
             with open(summary_file, "r", encoding="utf-8") as sf:
                 summary_data = json.load(sf)

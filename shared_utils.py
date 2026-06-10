@@ -18,11 +18,14 @@ IST = timezone(timedelta(hours=5, minutes=30))
 
 
 def sanitize_model_name(model: str) -> str:
-    """Sanitize model name for use in filenames."""
+    """Sanitize model name for use in filenames using a shorter version."""
+    if not model:
+        return "model"
+    # Take only the model prefix before ':' to keep filenames clean and short
+    short_model = model.split(":")[0]
     return (
-        (model or "model")
+        short_model
         .replace(" ", "_")
-        .replace(":", "_")
         .replace("/", "_")
         .replace("\\", "_")
     )

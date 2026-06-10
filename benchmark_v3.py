@@ -45,7 +45,7 @@ MODELS = [
 
 #DATASETS = ["agri-data", "air-quality", "lab-data", "meteo-data"]
 DATASETS = ["lab-data", "meteo-data"]
-NUM_RUNS = 1
+NUM_RUNS = 10
 
 # 1. Resource Profiler (0.1s interval)
 class ResourceProfiler:
@@ -131,18 +131,15 @@ class ResourceProfiler:
         }
 
 # 2. Directory Cleaner
-def clean_lei_directories(dataset_name: str, keep_tasks_list: bool = True, keep_error_log: bool = False):
-    generated_dir = LEI_DIR / "generated_tasks" / dataset_name
-    output_dir = LEI_DIR / "output" / dataset_name
-    
+def clean_lei_directories(tasks_dir: Path, output_dir: Path, keep_tasks_list: bool = True, keep_error_log: bool = False):
     if output_dir.exists():
         try:
             shutil.rmtree(output_dir)
         except Exception:
             pass
             
-    if generated_dir.exists():
-        for file_path in generated_dir.glob("*"):
+    if tasks_dir.exists():
+        for file_path in tasks_dir.glob("*"):
             if file_path.is_file():
                 if keep_tasks_list and file_path.name == "tasks_list.json":
                     continue
@@ -351,7 +348,13 @@ def main():
                 
                 # Keep error.csv for run > 1 (self-correction feedback)
                 keep_err = (r > 1)
-                clean_lei_directories(dataset, keep_tasks_list=False, keep_error_log=keep_err)
+                
+                from shared_utils import sanitize_model_name
+                sanitized_model = sanitize_model_name(model)
+                run_tasks_dir = LEI_DIR / "generated_tasks" / f"{dataset}_{sanitized_model}_run{r}"
+                run_output_dir = LEI_DIR / "output" / f"{dataset}_{sanitized_model}_run{r}"
+                
+                clean_lei_directories(run_tasks_dir, run_output_dir, keep_tasks_list=False, keep_error_log=keep_err)
                 
                 # Environment override for this run
                 env_override = {
@@ -361,6 +364,8 @@ def main():
                     "LLM_VAL_MODEL": model,
                     "RUN_ID": run_id,
                     "RUN_COUNT": str(r),
+                    "LEI_TASKS_DIR": str(run_tasks_dir),
+                    "LEI_OUTPUT_DIR": str(run_output_dir),
                 }
                 
                 # Step 1: Task Generator
@@ -448,11 +453,17 @@ def run_step_with_profiling(step_name: str, script_path: Path, env_override: dic
     status = "success"
     
     try:
+        print(f"    [STEP] Running {step_name}...")
+        sys.stdout.flush()
         ret = _run_lei_script_in_process(script_path, env_override)
         if ret != 0:
             status = "failed"
-    except Exception:
+            print(f"    [ERROR] {step_name} failed with non-zero exit code: {ret}")
+    except Exception as e:
         status = "failed"
+        import traceback
+        print(f"    [ERROR] {step_name} raised exception: {e}")
+        traceback.print_exc()
         
     duration = time.time() - t_start
     stats = profiler.stop(label=f"LEI_{step_name}_run{run_num}", results_dir=results_dir)

@@ -67,7 +67,7 @@ Data access (REQUIRED):
 
 Execution output:
 - Save task results to:
-  `output/{DATA_TYPE}/{task_name}_result.json`
+  `{OUTPUT_DIR}/{task_name}_result.json`
 
 Result schema (must be valid JSON):
 {

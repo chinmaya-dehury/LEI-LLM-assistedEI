@@ -54,7 +54,7 @@ def main() -> int:
     META_PATH = os.path.join(BASE_PATH, "metadata.json")
     CONTEXT_PATH = os.path.join(BASE_PATH, "context.txt")
     RESOURCE_SUMMARY_PATH = os.path.join("resource_stat", "resource_usage_summary.json")
-    OUTPUT_DIR = os.path.join("generated_tasks", DATA_TYPE)
+    OUTPUT_DIR = os.environ.get("LEI_TASKS_DIR", os.path.join("generated_tasks", DATA_TYPE))
     TASK_LIST_PATH = os.path.join(OUTPUT_DIR, "tasks_list.json")
 
     # Setup timing paths and environment variables

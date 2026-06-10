@@ -1,5 +1,0 @@
-timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
-2026-06-10T15:37:21.356512+05:30,step2_code_generator,start,1,,qwen2.5-coder:7b-instruct-q8_0,3.2,33.2,30252854,140903274,94084,148487,
-2026-06-10T15:45:46.556284+05:30,step2_code_generator,end,1,,qwen2.5-coder:7b-instruct-q8_0,5.9,35.3,75256500,181839152,150295,208261,
-2026-06-10T15:54:09.527951+05:30,step2_code_generator,start,2,,qwen2.5-coder:7b-instruct-q8_0,5.3,35.3,98218135,224902339,194435,266261,
-2026-06-10T16:06:10.716019+05:30,step2_code_generator,end,2,,qwen2.5-coder:7b-instruct-q8_0,5.7,35.5,119486993,256525189,233389,321760,

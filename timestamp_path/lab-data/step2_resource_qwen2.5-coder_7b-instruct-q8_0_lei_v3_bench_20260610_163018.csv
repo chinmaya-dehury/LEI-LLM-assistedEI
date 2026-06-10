@@ -1,3 +1,0 @@
-timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
-2026-06-10T16:31:24.011496+05:30,step2_code_generator,start,1,,qwen2.5-coder:7b-instruct-q8_0,3.4,38.5,308729069,501947820,514870,599221,
-2026-06-10T17:00:36.868805+05:30,step2_code_generator,end,1,,qwen2.5-coder:7b-instruct-q8_0,4.2,37.4,311618042,525050298,533826,627013,

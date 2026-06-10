@@ -28,11 +28,14 @@ import json
 
 
 def _sanitize_model_name(model: str) -> str:
-    """Sanitize model name for use in filenames."""
+    """Sanitize model name for use in filenames using a shorter version."""
+    if not model:
+        return "model"
+    # Take only the model prefix before ':' to keep filenames clean and short
+    short_model = model.split(":")[0]
     return (
-        (model or "model")
+        short_model
         .replace(" ", "_")
-        .replace(":", "_")
         .replace("/", "_")
         .replace("\\", "_")
     )
@@ -253,7 +256,7 @@ def main() -> int:
 
     from resource_monitor import log_resource_metrics
 
-    TASKS_DIR = "generated_tasks/"+DATA_TYPE
+    TASKS_DIR = os.environ.get("LEI_TASKS_DIR", "generated_tasks/"+DATA_TYPE)
     LOG_DIR = "logs"
     os.makedirs(LOG_DIR, exist_ok=True)
 
