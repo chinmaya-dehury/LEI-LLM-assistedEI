@@ -40,11 +40,30 @@ Robustness and minor fixes (RECOMMENDED):
 - For string-to-float errors, include the column name and offending value in the log.
 - If result generation depends on specific columns, validate presence early and return a helpful error message if missing.
 
-Data access:
-- Preferred input files (try in order):
-  1. `data/{DATA_TYPE}/raw_data.csv`
-  2. `data/{DATA_TYPE}/raw_data.txt`
-  3. If neither exists, print a clear message and exit gracefully.
+Data access (REQUIRED):
+- The python script must resolve the input file path dynamically relative to its own file location (`__file__`) to avoid relative path issues when run from different directories (e.g. from failed/ folders).
+- To find the project root (which contains the 'data' directory), traverse upwards from the script's folder until a parent directory contains the 'data' folder.
+- Example code snippet to resolve path:
+  ```python
+  import os
+  from pathlib import Path
+  
+  curr_dir = Path(__file__).resolve().parent
+  root_dir = curr_dir
+  # Traverse upwards to find the project root containing the 'data' directory
+  while root_dir.name and not (root_dir / "data").exists():
+      parent = root_dir.parent
+      if parent == root_dir:
+          break
+      root_dir = parent
+      
+  # Construct paths using root_dir
+  data_file = root_dir / "data" / "{DATA_TYPE}" / "raw_data.csv"
+  if not data_file.exists():
+      data_file = root_dir / "data" / "{DATA_TYPE}" / "raw_data.txt"
+  ```
+- Use `data_file` as the input path. If neither file exists under `data/{DATA_TYPE}/`, print a clear message and exit gracefully.
+- WARNING: The dataset file is ALWAYS named `raw_data.csv` or `raw_data.txt`. It is NEVER named `{DATA_TYPE}.csv` (e.g. never `agri-data.csv`). Do not use dynamic file names based on dataset name.
 
 Execution output:
 - Save task results to:

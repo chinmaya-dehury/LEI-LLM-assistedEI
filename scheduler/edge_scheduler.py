@@ -168,7 +168,7 @@ class TaskQueue:
 class TaskExecutor:
     """Executes individual tasks in isolated subprocess."""
     
-    TIMEOUT = 120  # seconds
+    TIMEOUT = int(os.environ.get("EDGE_TASK_TIMEOUT_SECONDS", "10"))  # seconds
     
     @staticmethod
     def execute(task_path: Path) -> Dict:

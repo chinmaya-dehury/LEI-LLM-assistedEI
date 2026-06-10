@@ -1,0 +1,5 @@
+timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
+2026-06-10T15:35:46.321994+05:30,step1_task_generator,start,1,,qwen2.5-coder:7b-instruct-q8_0,6.1,32.9,30128609,140277659,93272,145249,
+2026-06-10T15:37:20.580144+05:30,step1_task_generator,end,1,,qwen2.5-coder:7b-instruct-q8_0,2.2,33.2,30252444,140901402,94079,148467,
+2026-06-10T15:52:53.456002+05:30,step1_task_generator,start,2,,qwen2.5-coder:7b-instruct-q8_0,4.6,35.9,83880837,220128366,181780,256434,
+2026-06-10T15:54:08.801410+05:30,step1_task_generator,end,2,,qwen2.5-coder:7b-instruct-q8_0,1.6,35.2,98217937,224900698,194432,266241,

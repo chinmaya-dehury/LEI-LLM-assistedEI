@@ -3,7 +3,8 @@ import time
 import signal
 import psutil
 
-PID_FILE = os.environ.get("MONITOR_PID_FILE", "monitor.pid")
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PID_FILE = os.environ.get("MONITOR_PID_FILE", os.path.join(SCRIPT_DIR, "monitor.pid"))
 
 
 def read_pid():

@@ -129,7 +129,7 @@ def execute_task(task_path):
                 [sys.executable, task_path],
                 capture_output=True,
                 text=True,
-                timeout=120,  # seconds
+                timeout=int(os.environ.get("EDGE_TASK_TIMEOUT_SECONDS", "10")),  # seconds
                 env=os.environ
             )
             duration = time.perf_counter() - start_perf
@@ -220,7 +220,7 @@ def execute_task(task_path):
             break  # Break retry loop if execution finishes (with success or real failure)
 
         except subprocess.TimeoutExpired:
-            log("    Status: TIMEOUT (script exceeded 120s)")
+            log(f"    Status: TIMEOUT (script exceeded {int(os.environ.get('EDGE_TASK_TIMEOUT_SECONDS', '10'))}s)")
             status = "timeout"
             return_code = -1
             break

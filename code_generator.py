@@ -67,6 +67,57 @@ def _truncate(text: str, max_chars: int) -> str:
     return text if len(text) <= max_chars else (text[:max_chars] + "\n... [truncated] ...")
 
 
+def get_previous_errors_for_task(task_dt: str, task_name: str) -> str:
+    """Read previous errors for the task from error.csv (or fallback error.txt)."""
+    error_csv_path = os.path.join("generated_tasks", task_dt, "error.csv")
+    error_txt_path = os.path.join("generated_tasks", task_dt, "error.txt")
+    
+    if os.path.exists(error_csv_path):
+        try:
+            import csv
+            errors = []
+            with open(error_csv_path, "r", newline="", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    if row.get("task_name") == task_name:
+                        errors.append(row)
+            
+            if errors:
+                # Sort errors by count descending (most common errors first)
+                errors.sort(key=lambda x: int(x.get("count", "1")), reverse=True)
+                
+                formatted = []
+                for idx, err in enumerate(errors):
+                    count = err.get("count", "1")
+                    exit_code = err.get("exit_code", "unknown")
+                    msg = err.get("error_message", "").strip()
+                    formatted.append(
+                        f"Error #{idx+1} (Occurred {count} time(s), Exit Code {exit_code}):\n{msg}"
+                    )
+                return "\n\n".join(formatted)
+        except Exception as e:
+            print(f"[WARNING] Could not parse error.csv: {e}")
+            
+    if os.path.exists(error_txt_path):
+        try:
+            with open(error_txt_path, "r", encoding="utf-8", errors="replace") as f:
+                content = f.read()
+            raw_entries = content.split("-" * 60)
+            entries = []
+            for entry in raw_entries:
+                entry_stripped = entry.strip()
+                if not entry_stripped:
+                    continue
+                if f"TASK: {task_name} |" in entry_stripped or f"TASK: {task_name}\n" in entry_stripped:
+                    entries.append(entry_stripped)
+            if entries:
+                return "\n\n".join(entries[-2:])
+        except Exception as e:
+            print(f"[WARNING] Could not parse error.txt: {e}")
+            
+    return ""
+
+
 def call_llm_for_task_code(task_payload: dict) -> dict:
     """
     Send a task (payload={"tasks":[...]}) to the LLM and return parsed JSON.
@@ -77,6 +128,24 @@ def call_llm_for_task_code(task_payload: dict) -> dict:
         task_dt = task_payload["tasks"][0].get("data_type", DATA_TYPE)
     else:
         task_dt = task_payload.get("data_type", DATA_TYPE)
+
+    # Retrieve task name (since batch size is 1, take the first task)
+    task_name = ""
+    if isinstance(task_payload, dict) and task_payload.get("tasks") and len(task_payload["tasks"]) > 0:
+        task_name = task_payload["tasks"][0].get("task_name", "")
+
+    previous_errors = ""
+    if task_dt and task_name:
+        previous_errors = get_previous_errors_for_task(task_dt, task_name)
+
+    previous_errors_section = ""
+    if previous_errors:
+        previous_errors_section = f"""
+### CRITICAL: FIX PREVIOUS EXECUTION ERROR(S)
+The previous attempt to generate code for this task failed validation.
+Analyze the error(s) below carefully (paying attention to exit code, traceback, missing imports/variables, or capitalization of keys e.g., 'Label' vs 'label'), and write corrected code that specifically resolves these issues and avoids repeating them:
+{previous_errors}
+"""
 
     system_prompt = Template(SYSTEM_PROMPT).substitute(DATA_TYPE=task_dt)
 
@@ -129,6 +198,8 @@ Metadata:
 
 Context:
 {context}
+
+{previous_errors_section}
 
 Tasks (<=2):
 {task_list_payload}
@@ -474,7 +545,7 @@ def main() -> int:
 
     from openai import OpenAI
     # Initialize the LLM client
-    client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY)
+    client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY, timeout=120)
 
     # Validate that the DATA_TYPE folder exists with required files
     validate_data_type_exists(DATA_TYPE)
@@ -517,14 +588,24 @@ def main() -> int:
     with open(TASK_LIST_PATH, "r", encoding="utf-8") as f:
         tasks_payload = json.load(f)
 
-    pending_tasks = tasks_payload.get("tasks", [])
+    # Load tasks to generate code for from new_tasks.json to only generate code for the current run's tasks
+    if os.path.exists(NEW_TASKS_PATH) and os.path.getsize(NEW_TASKS_PATH) > 0:
+        try:
+            with open(NEW_TASKS_PATH, "r", encoding="utf-8") as f:
+                new_tasks_data = json.load(f)
+            pending_tasks = new_tasks_data.get("tasks", [])
+            print(f"[INFO] Loaded {len(pending_tasks)} tasks from new_tasks.json for code generation.")
+        except Exception as e:
+            print(f"[WARNING] Failed to load new_tasks.json: {e}. Falling back to tasks_list.json")
+            pending_tasks = tasks_payload.get("tasks", [])
+    else:
+        pending_tasks = tasks_payload.get("tasks", [])
     
     if not pending_tasks:
-        print(f"[WARNING] No tasks found in {TASK_LIST_PATH}")
-        print("Please run task_generator.py first to generate tasks.")
-        return 1
-    
-    print(f"[INFO] Found {len(pending_tasks)} total tasks in {TASK_LIST_PATH}")
+        print(f"[WARNING] No tasks found to generate code.")
+        return 0
+
+    print(f"[INFO] Found {len(pending_tasks)} pending tasks for code generation.")
     print(f"[INFO] LLM Model: {DEFAULT_MODEL}\n")
 
     # Build list of tasks that need generation, skip existing files
@@ -547,8 +628,8 @@ def main() -> int:
     
     print(f"\n[INFO] {len(tasks_to_generate)} tasks need code generation\n")
 
-    # Group tasks into batches of up to 2 tasks
-    batch_size = 2
+    # Group tasks into batches of up to 1 tasks
+    batch_size = 1
     task_batches = [tasks_to_generate[i:i + batch_size] for i in range(0, len(tasks_to_generate), batch_size)]
 
     def process_batch(batch) -> None:

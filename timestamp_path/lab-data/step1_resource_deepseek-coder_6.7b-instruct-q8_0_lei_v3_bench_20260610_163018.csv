@@ -1,0 +1,2 @@
+timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
+2026-06-10T17:06:48.115726+05:30,step1_task_generator,start,1,,deepseek-coder:6.7b-instruct-q8_0,4.7,37.3,312275106,527079848,536953,634957,

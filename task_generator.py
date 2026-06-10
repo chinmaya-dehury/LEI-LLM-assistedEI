@@ -46,7 +46,7 @@ from shared_utils import (
 
 def main() -> int:
     from openai import OpenAI
-    client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY)
+    client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY, timeout=120)
 
     # Paths
     BASE_PATH = os.path.join("data", DATA_TYPE)
@@ -131,7 +131,9 @@ Summary of current resource usage and its availability on the edge device:
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
-        ]
+        ],
+        temperature=0.0,
+        timeout=300
     )
     llm_end_perf = time.perf_counter()
     llm_end_time = datetime.now(IST).isoformat()

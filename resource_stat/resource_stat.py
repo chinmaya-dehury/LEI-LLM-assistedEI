@@ -1,33 +1,38 @@
-import psutil
-import time
-from datetime import datetime, timedelta
-import json
 import os
-import signal
 import sys
+import time
+import json
+from datetime import datetime, timedelta
+
+# Import resource metrics helpers from resource_monitor to reduce redundancy
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(SCRIPT_DIR)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+try:
+    from resource_monitor import get_cpu_percent, get_memory_percent
+except ImportError:
+    import psutil
+    def get_cpu_percent(interval=0.1): return psutil.cpu_percent(interval=interval)
+    def get_memory_percent(): return psutil.virtual_memory().percent
 
 # Configuration
-MONITORING_INTERVAL_SECONDS = int(os.environ.get("MONITORING_INTERVAL_SECONDS", 5))
-# Keep samples for last 2 hours
+MONITORING_INTERVAL_SECONDS = float(os.environ.get("MONITORING_INTERVAL_SECONDS", 0.1))
 MAX_RETENTION = timedelta(hours=2)
-# Summary windows to compute
 SUMMARY_WINDOWS = {
     "1m": timedelta(minutes=1),
     "5m": timedelta(minutes=5),
     "10m": timedelta(minutes=10),
     "30m": timedelta(minutes=30),
 }
-# Updated correct path Output files
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_JSON = os.environ.get("OUTPUT_JSON", os.path.join(SCRIPT_DIR, "resource_usage_summary.json"))
 PID_FILE = os.environ.get("MONITOR_PID_FILE", os.path.join(SCRIPT_DIR, "monitor.pid"))
-
-# Optional run duration (seconds) for testing; if not set, run forever
-RUN_DURATION_SECONDS = int(os.environ.get("RUN_DURATION_SECONDS", "0")) 
+RUN_DURATION_SECONDS = int(os.environ.get("RUN_DURATION_SECONDS", "0"))
 
 
 def summarize(samples, window_td):
-    """Return summary dict (avg_cpu, avg_mem, samples_count) for samples within window_td."""
+    """Return summary dict (avg_cpu, avg_mem) for samples within window_td."""
     cutoff = datetime.now() - window_td
     recent = [s for s in samples if s[0] >= cutoff]
     if not recent:
@@ -45,14 +50,6 @@ def write_pid_file(pid_file):
         f.write(str(os.getpid()))
 
 
-def read_pid_file(pid_file):
-    try:
-        with open(pid_file, "r") as f:
-            return int(f.read().strip())
-    except Exception:
-        return None
-
-
 def save_summary(out_file, payload):
     tmp = out_file + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
@@ -66,29 +63,37 @@ def monitor_loop():
     start = datetime.now()
     last_save = datetime.min
 
+    import psutil
+    cores = psutil.cpu_count(logical=True)
+    memory_gb = round(psutil.virtual_memory().total / (1024 ** 3), 2)
+
     print(f"Monitor started (pid={os.getpid()}). Interval {MONITORING_INTERVAL_SECONDS}s")
     write_pid_file(PID_FILE)
 
     try:
         while True:
             now = datetime.now()
-            cpu = psutil.cpu_percent(interval=MONITORING_INTERVAL_SECONDS)
-            mem = psutil.virtual_memory().percent
+            # Retrieve cpu and mem using imported helper functions
+            cpu = get_cpu_percent(interval=MONITORING_INTERVAL_SECONDS)
+            mem = get_memory_percent()
             samples.append((now, cpu, mem))
-            print(f"Checked at {now.strftime('%Y-%m-%d %H:%M:%S')}: CPU {cpu}%, Mem {mem}%")
+            
+            # Print sample to stdout
+            print(f"Checked at {now.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]}: CPU {cpu}%, Mem {mem}%")
 
             # discard samples older than MAX_RETENTION
             cutoff = datetime.now() - MAX_RETENTION
             samples = [s for s in samples if s[0] >= cutoff]
 
-            # Save summaries every MONITORING_INTERVAL_SECONDS * 2 or if RUN_DURATION_SECONDS set and nearing end
-            if (datetime.now() - last_save).total_seconds() >= (MONITORING_INTERVAL_SECONDS * 2):
+            # Save summaries every 2 seconds or if RUN_DURATION_SECONDS set and nearing end
+            save_interval = max(2.0, MONITORING_INTERVAL_SECONDS * 2)
+            if (datetime.now() - last_save).total_seconds() >= save_interval:
                 payload = {
                     "generated_at": datetime.now().isoformat(),
                     "last_checked": datetime.now().isoformat(),
                     "summary_windows": {},
-                    "total_cpu_capacity_cores": psutil.cpu_count(logical=True),
-                    "total_memory_capacity_gb": round(psutil.virtual_memory().total / (1024 ** 3), 2),
+                    "total_cpu_capacity_cores": cores,
+                    "total_memory_capacity_gb": memory_gb,
                 }
                 for name, td in SUMMARY_WINDOWS.items():
                     payload["summary_windows"][name] = summarize(samples, td)

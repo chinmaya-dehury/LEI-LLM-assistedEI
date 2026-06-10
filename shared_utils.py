@@ -28,6 +28,42 @@ def sanitize_model_name(model: str) -> str:
     )
 
 
+def _repair_truncated_json(s: str) -> str:
+    """Attempt to repair a truncated JSON string by closing strings, arrays, and objects."""
+    stack = []
+    in_string = False
+    escape_next = False
+    for char in s:
+        if escape_next:
+            escape_next = False
+            continue
+        if char == '\\':
+            escape_next = True
+            continue
+        if char == '"':
+            in_string = not in_string
+            continue
+        if not in_string:
+            if char in ('{', '['):
+                stack.append(char)
+            elif char == '}':
+                if stack and stack[-1] == '{':
+                    stack.pop()
+            elif char == ']':
+                if stack and stack[-1] == '[':
+                    stack.pop()
+                    
+    suffix = ""
+    if in_string:
+        suffix += '"'
+    for open_char in reversed(stack):
+        if open_char == '{':
+            suffix += '}'
+        elif open_char == '[':
+            suffix += ']'
+    return s + suffix
+
+
 def extract_first_json_object(text: str) -> dict:
     """
     Extract first JSON object from text that may contain extra content.
@@ -99,6 +135,15 @@ def extract_first_json_object(text: str) -> dict:
                         pass
                     break
         
+        # Try to repair truncated JSON
+        try:
+            repaired_str = _repair_truncated_json(json_str)
+            obj = json.loads(repaired_str)
+            if isinstance(obj, dict):
+                return obj
+        except Exception:
+            pass
+
         # If all else fails, raise the original error
         raise e
 

@@ -1,0 +1,5 @@
+timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
+2026-06-10T15:45:47.704872+05:30,step3_validator,start,1,,qwen2.5-coder:7b-instruct-q8_0,7.7,35.3,75259225,181852068,150320,208336,
+2026-06-10T15:48:49.850054+05:30,step3_validator,end,1,,qwen2.5-coder:7b-instruct-q8_0,5.9,35.5,78550340,191613149,160248,225049,
+2026-06-10T16:06:11.470409+05:30,step3_validator,start,2,,qwen2.5-coder:7b-instruct-q8_0,6.8,35.7,119489174,256529252,233417,321802,
+2026-06-10T16:09:13.677055+05:30,step3_validator,end,2,,qwen2.5-coder:7b-instruct-q8_0,8.1,37.3,125389460,305394111,267758,367537,

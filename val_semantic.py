@@ -25,7 +25,7 @@ import json
 
 
 # Initialize LLM client for code-description validation
-client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY)
+client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY, timeout=120)
 
 # IST Timezone
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -35,12 +35,7 @@ IST = timezone(timedelta(hours=5, minutes=30))
 # PYDANTIC MODELS FOR SEMANTIC VALIDATION (STRICT MODE)
 # ============================================================================
 
-class ResultValue(BaseModel):
-    """
-    Represents a result value (can be string, number, bool, nested object, etc.).
-    Strict mode enforces no type coercion: "123" stays string, not int.
-    """
-    model_config = ConfigDict(strict=True, extra="forbid")
+
 
 
 class ResultItem(BaseModel):
@@ -208,6 +203,7 @@ def _validate_business_rules(
     expected_task_name: str,
     sample_data: str = "",
     min_results: int = 0,
+    skip_code_matching: bool = False,
 ) -> List[str]:
     """
     Apply business-rule validation separate from schema validation.
@@ -221,6 +217,7 @@ def _validate_business_rules(
         expected_task_name: Expected task name to match against
         sample_data: Optional sample data used for code-description matching
         min_results: Minimum number of results required (default 0, allow blank)
+        skip_code_matching: If True, bypass LLM code correctness matching
     
     Returns:
         List of error messages (empty list if all rules pass)
@@ -248,8 +245,8 @@ def _validate_business_rules(
             f"got {len(validated_output.result_summary)}"
         )
     
-    # Rule 3: LLM-based code-description matching (if both provided)
-    if validated_output.generated_code and validated_output.task_description:
+    # Rule 3: LLM-based code-description matching (if both provided and not skipped)
+    if not skip_code_matching and validated_output.generated_code and validated_output.task_description:
         matches, match_error = _check_code_matches_description(
             validated_output.generated_code,
             validated_output.task_description,
@@ -269,6 +266,7 @@ def _validate_output_semantically(
     generated_code: str = "",
     sample_data: str = "",
     min_results: int = 0,
+    skip_code_matching: bool = False,
 ) -> tuple[Optional[TaskOutput], Optional[str], Dict[str, Any]]:
     """
     Combined semantic validation: schema validation + business rules + LLM code matching.
@@ -285,6 +283,7 @@ def _validate_output_semantically(
         generated_code: Generated code for LLM matching (optional)
         sample_data: Sample CSV text or example input used to judge code behavior
         min_results: Minimum required results in result_summary (default 0 - allow blank output)
+        skip_code_matching: If True, bypass LLM code correctness matching
     
     Returns:
         (validated_object: Optional[TaskOutput], error_message: Optional[str], semantic_details: Dict)
@@ -306,8 +305,8 @@ def _validate_output_semantically(
         "reasoning": "Semantic validation skipped: missing task description or generated code.",
     }
 
-    has_semantic_inputs = bool((task_description or "").strip() and (generated_code or "").strip())
-    if sample_data:
+    has_semantic_inputs = not skip_code_matching and bool((task_description or "").strip() and (generated_code or "").strip())
+    if sample_data and not skip_code_matching:
         has_semantic_inputs = has_semantic_inputs or bool(sample_data.strip())
 
     if has_semantic_inputs:
@@ -329,7 +328,7 @@ def _validate_output_semantically(
         validated.task_description = task_description
     
     # Stage 2: Business-rule validation (includes LLM code-description matching)
-    business_errors = _validate_business_rules(validated, task_name, sample_data, min_results)
+    business_errors = _validate_business_rules(validated, task_name, sample_data, min_results, skip_code_matching)
     if business_errors:
         error_msg = "Semantic validation failed (business rules):\n" + "\n".join(
             f"  • {e}" for e in business_errors
@@ -354,6 +353,7 @@ def _validate_output_structure(
     generated_code: str = "",
     sample_data: str = "",
     min_results: int = 0,
+    skip_code_matching: bool = False,
 ) -> tuple[Optional[TaskOutput], Optional[str], Dict[str, Any]]:
     """
     Multi-stage validation with early type checks.
@@ -368,6 +368,7 @@ def _validate_output_structure(
         generated_code: Generated code for LLM matching (optional)
         sample_data: Sample CSV text or example input used to judge code behavior
         min_results: Minimum required results (default 0 - allow blank output)
+        skip_code_matching: If True, bypass LLM code correctness matching
     
     Returns:
         (validated_object: Optional[TaskOutput], error_message: Optional[str], semantic_details: Dict)
@@ -381,22 +382,22 @@ def _validate_output_structure(
         ...     print("All validations passed!")
         ...     print(f"Semantic check performed: {sem_details['performed']}, passed: {sem_details['passed']}")
     """
-    # Initialize semantic details
-    semantic_details = {"performed": False, "passed": False, "reasoning": ""}
-    
     # Stage 1: Type check - must be dict
     if not isinstance(json_output, dict):
-        semantic_details["reasoning"] = f"Output must be a JSON object (dict), got {type(json_output).__name__}"
+        semantic_details = {
+            "performed": False,
+            "passed": False,
+            "reasoning": f"Output must be a JSON object (dict), got {type(json_output).__name__}",
+        }
         return None, semantic_details["reasoning"], semantic_details
     
     # Stage 2: Semantic validation (schema + business rules + LLM matching)
-    validated, error_msg, semantic_details = _validate_output_semantically(
+    return _validate_output_semantically(
         json_output,
         task_name,
         task_description,
         generated_code,
         sample_data,
         min_results,
+        skip_code_matching,
     )
-    
-    return validated, error_msg, semantic_details
