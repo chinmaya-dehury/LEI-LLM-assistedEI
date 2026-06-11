@@ -65,9 +65,11 @@ Data access (REQUIRED):
 - Use `data_file` as the input path. If neither file exists under `data/{DATA_TYPE}/`, print a clear message and exit gracefully.
 - WARNING: The dataset file is ALWAYS named `raw_data.csv` or `raw_data.txt`. It is NEVER named `{DATA_TYPE}.csv` (e.g. never `agri-data.csv`). Do not use dynamic file names based on dataset name.
 
-Execution output:
-- Save task results to:
-  `{OUTPUT_DIR}/{task_name}_result.json`
+Execution output (CRITICAL):
+- Save task results exactly inside the directory specified by: `{OUTPUT_DIR}`.
+- Construct the output path as: `os.path.join("{OUTPUT_DIR}", f"{task_name}_result.json")` or `Path("{OUTPUT_DIR}") / f"{task_name}_result.json"`.
+- Do NOT save the output inside the `data` directory, the script directory, or any other directory. Saving the output inside the `data` directory is STRICTLY FORBIDDEN.
+- Do NOT hardcode `./output` or `./data` for output results. Always use the specified `{OUTPUT_DIR}` path.
 
 Result schema (must be valid JSON):
 {

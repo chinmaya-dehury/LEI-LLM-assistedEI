@@ -11,6 +11,7 @@ Modified on: 25-05-2026
 """
 
 import json
+import csv
 import ast
 import os
 import sys
@@ -67,6 +68,57 @@ COMPLEX_MISSING_DIR = None
 COMPLEX_VALIDATOR_LOG = None
 
 
+def _append_central_error_log(run_number: str, model: str, use_case: str, error_details: str) -> None:
+    """Log validation and execution errors to a unified central CSV at results/all_errors.csv."""
+    central_log_path = os.path.join("results", "all_errors.csv")
+    os.makedirs(os.path.dirname(central_log_path), exist_ok=True)
+    
+    from shared_utils import sanitize_model_name
+    short_model = sanitize_model_name(model)
+    
+    fieldnames = ["run_number", "model", "use_case", "error_details", "count"]
+    err_clean = error_details.strip()
+    
+    with csv_lock:
+        rows = []
+        found = False
+        if os.path.exists(central_log_path) and os.path.getsize(central_log_path) > 0:
+            try:
+                with open(central_log_path, "r", newline="", encoding="utf-8") as f:
+                    reader = csv.DictReader(f)
+                    if reader.fieldnames and all(field in reader.fieldnames for field in fieldnames):
+                        for row in reader:
+                            rows.append(row)
+            except Exception as e:
+                print(f"[WARNING] Could not read existing central error CSV: {e}")
+                
+        for row in rows:
+            if (row["run_number"] == str(run_number) and 
+                row["model"] == short_model and 
+                row["use_case"] == use_case and 
+                row["error_details"].strip() == err_clean):
+                row["count"] = str(int(row["count"]) + 1)
+                found = True
+                break
+                
+        if not found:
+            rows.append({
+                "run_number": str(run_number),
+                "model": short_model,
+                "use_case": use_case,
+                "error_details": err_clean,
+                "count": "1"
+            })
+            
+        try:
+            with open(central_log_path, "w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(rows)
+        except Exception as e:
+            print(f"[WARNING] Could not write central error CSV: {e}")
+
+
 def _append_error_log(task_name: str, exit_code: int, stderr: str, log_path: str = None) -> None:
     """Append or update runtime failure details in error.csv."""
     if log_path is None:
@@ -83,48 +135,47 @@ def _append_error_log(task_name: str, exit_code: int, stderr: str, log_path: str
         
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
     timestamp = datetime.now().isoformat()
-    
-    rows = []
-    found = False
-    fieldnames = ["task_name", "exit_code", "error_message", "count", "last_timestamp"]
-    
-    if os.path.exists(log_path) and os.path.getsize(log_path) > 0:
-        try:
-            with open(log_path, "r", newline="", encoding="utf-8") as f:
-                reader = csv.DictReader(f)
-                if reader.fieldnames and all(field in reader.fieldnames for field in fieldnames):
-                    for row in reader:
-                        rows.append(row)
-        except Exception as e:
-            print(f"[WARNING] Could not read existing error CSV: {e}")
-            
     stderr_clean = stderr.strip()
     
-    for row in rows:
-        if row["task_name"] == task_name and row["error_message"].strip() == stderr_clean:
-            row["count"] = str(int(row["count"]) + 1)
-            row["last_timestamp"] = timestamp
-            row["exit_code"] = str(exit_code)
-            found = True
-            break
-            
-    if not found:
-        rows.append({
-            "task_name": task_name,
-            "exit_code": str(exit_code),
-            "error_message": stderr_clean,
-            "count": "1",
-            "last_timestamp": timestamp
-        })
+    with csv_lock:
+        rows = []
+        found = False
+        fieldnames = ["task_name", "exit_code", "error_message", "count", "last_timestamp"]
         
-    try:
-        with csv_lock:
+        if os.path.exists(log_path) and os.path.getsize(log_path) > 0:
+            try:
+                with open(log_path, "r", newline="", encoding="utf-8") as f:
+                    reader = csv.DictReader(f)
+                    if reader.fieldnames and all(field in reader.fieldnames for field in fieldnames):
+                        for row in reader:
+                            rows.append(row)
+            except Exception as e:
+                print(f"[WARNING] Could not read existing error CSV: {e}")
+                
+        for row in rows:
+            if row["task_name"] == task_name and row["error_message"].strip() == stderr_clean:
+                row["count"] = str(int(row["count"]) + 1)
+                row["last_timestamp"] = timestamp
+                row["exit_code"] = str(exit_code)
+                found = True
+                break
+                
+        if not found:
+            rows.append({
+                "task_name": task_name,
+                "exit_code": str(exit_code),
+                "error_message": stderr_clean,
+                "count": "1",
+                "last_timestamp": timestamp
+            })
+            
+        try:
             with open(log_path, "w", newline="", encoding="utf-8") as f:
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writeheader()
                 writer.writerows(rows)
-    except Exception as e:
-        print(f"[WARNING] Could not write error CSV: {e}")
+        except Exception as e:
+            print(f"[WARNING] Could not write error CSV: {e}")
 
 
 def _load_context_for(datatype: str) -> Dict[str, object]:
@@ -823,7 +874,8 @@ def _extract_code_from_llm_response(raw: str) -> str:
 
 def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, assets: Dict, attempt: int, validation_error: str = "", task_start_time = None, task_start_perf = None) -> Dict:
     datatype = task.get("data_type", DATA_TYPE)
-    system_prompt = Template(SYSTEM_PROMPT).substitute(DATA_TYPE=datatype)
+    output_dir_str = os.environ.get("LEI_OUTPUT_DIR", os.path.join("output", datatype)).replace("\\", "/")
+    system_prompt = Template(SYSTEM_PROMPT).substitute(DATA_TYPE=datatype, OUTPUT_DIR=output_dir_str)
     user_prompt = _build_correction_prompt(task, runtime_error, exit_code, assets, validation_error)
 
     llm_start_time = datetime.now(IST).isoformat()
@@ -1125,8 +1177,7 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
             task_start_time, datetime.now(IST).isoformat(), time.perf_counter() - task_start_perf
         )
 
-    # Commented out LLM-assisted repair loop for AutoGen & LangGraph comparison
-    """
+    # LLM-assisted repair loop
     for attempt in range(1, MAX_RETRIES + 1):
         print(f"[Validator] Retry {attempt}/{MAX_RETRIES} for {task_name}...")
 
@@ -1135,12 +1186,18 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
         if exec_result["exit_code"] == 0:
             result_json = _parse_json_from_output(exec_result["stdout"])
             if result_json:
-                validated_output = result_json
-                validation_error = None
-                semantic_details = {"performed": False, "passed": True, "reasoning": "Semantic validation bypassed."}
-                if validation_error:
-                    validation_error_msg = validation_error
-                if validated_output is not None and str(datatype).strip().lower() == "complex":
+                # Perform semantic validation check to find exact errors
+                val_out, val_err, _ = _validate_output_structure(
+                    result_json,
+                    task_name,
+                    task_info.get("task_description", ""),
+                    task_info.get("code", ""),
+                    assets.get("sample_data", ""),
+                    min_results=0,
+                )
+                if val_err:
+                    validation_error_msg = val_err
+                if val_out is not None and str(datatype).strip().lower() == "complex":
                     complex_failure = _complex_payload_has_failure(result_json)
                     if complex_failure:
                         validation_error_msg = complex_failure
@@ -1187,9 +1244,14 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
             result_json = _parse_json_from_output(exec_result["stdout"])
             # Accept valid JSON output that also passes semantic validation
             if result_json:
-                validated_output = result_json
-                validation_error = None
-                semantic_details = {"performed": False, "passed": True, "reasoning": "Semantic validation bypassed."}
+                validated_output, validation_error, semantic_details = _validate_output_structure(
+                    result_json,
+                    task_name,
+                    task_info.get("task_description", ""),
+                    corrected_code,
+                    assets.get("sample_data", ""),
+                    min_results=0,
+                )
                 if validated_output is not None:
                     # Both JSON and semantic validation passed
                     shutil.move(temp_path, script_path)
@@ -1200,7 +1262,7 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
                             task_start_time, datetime.now(IST).isoformat(), time.perf_counter() - task_start_perf,
                             semantic_performed=semantic_details.get("performed", False),
                             semantic_passed=semantic_details.get("passed", False),
-                            semantic_reasoning=semantic_details.get("reasoning", "Semantic validation bypassed.")
+                            semantic_reasoning=semantic_details.get("reasoning", "")
                         )
                     print(f"[OK] {task_name} corrected and validated successfully")
                     return {"task_name": task_name, "status": "passed", "message": f"Fixed after {attempt} attempt(s)"}
@@ -1218,7 +1280,6 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
                 os.remove(temp_path)
         except Exception:
             pass
-    """
 
     failed_dir = os.path.join(scripts_dir, "failed")
     os.makedirs(failed_dir, exist_ok=True)
@@ -1335,9 +1396,10 @@ def validate_complex_generated_tasks(complex_tasks_file: str, scripts_dir: str) 
     }
 
     os.makedirs(COMPLEX_VALIDATOR_LOG, exist_ok=True)
+    timestamp_str = RUN_ID.replace("lei_v3_bench_", "") if RUN_ID else ""
     individual_summary_path = os.path.join(
         COMPLEX_VALIDATOR_LOG,
-        f"validation_summary_{SANITIZED_MODEL}_{RUN_ID}_complex_run{RUN_COUNT}.json",
+        f"val_sum_{SANITIZED_MODEL}_{timestamp_str}_complex_run{RUN_COUNT}.json",
     )
     with open(individual_summary_path, "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=2)
@@ -1487,9 +1549,9 @@ def main() -> int:
     RESOURCE_CSV = timing_paths["RESOURCE_CSV"]
     SANITIZED_MODEL = sanitize_model_name(LLM_VAL_MODEL)
 
-    DEFAULT_TASKS_FILE = os.path.join("generated_tasks", DATA_TYPE, "tasks_list.json")
-    FALLBACK_TASKS_FILE = os.path.join("generated_tasks", DATA_TYPE, "new_tasks.json")
-    DEFAULT_SCRIPTS_DIR = os.path.join("generated_tasks", DATA_TYPE)
+    DEFAULT_SCRIPTS_DIR = os.environ.get("LEI_TASKS_DIR", os.path.join("generated_tasks", DATA_TYPE))
+    DEFAULT_TASKS_FILE = os.path.join(DEFAULT_SCRIPTS_DIR, "tasks_list.json")
+    FALLBACK_TASKS_FILE = os.path.join(DEFAULT_SCRIPTS_DIR, "new_tasks.json")
     ERROR_LOG_PATH = os.path.join(DEFAULT_SCRIPTS_DIR, "error.csv")
     DEFAULT_VALIDATOR_LOG = os.path.join("validator", DATA_TYPE)
     COMPLEX_TASKS_FILE = os.path.join("generated_tasks", "complex", "complex_tasks_list.json")
@@ -1515,13 +1577,14 @@ def main() -> int:
     os.makedirs(DEFAULT_VALIDATOR_LOG, exist_ok=True)
     
     # Save individual run summary with model name and RUN_COUNT in filename
-    individual_summary_path = os.path.join(DEFAULT_VALIDATOR_LOG, f"validation_summary_{SANITIZED_MODEL}_{RUN_ID}_run{RUN_COUNT}.json")
+    timestamp_str = RUN_ID.replace("lei_v3_bench_", "") if RUN_ID else ""
+    individual_summary_path = os.path.join(DEFAULT_VALIDATOR_LOG, f"val_sum_{SANITIZED_MODEL}_{timestamp_str}_run{RUN_COUNT}.json")
     with open(individual_summary_path, "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=2)
     print(f"[Validator] Individual run summary saved to {individual_summary_path}")
     
     # Accumulate results in master summary file (appends across all runs)
-    master_summary_path = os.path.join(DEFAULT_VALIDATOR_LOG, f"validation_summary_{SANITIZED_MODEL}_{RUN_ID}_all_runs.json")
+    master_summary_path = os.path.join(DEFAULT_VALIDATOR_LOG, f"val_sum_{SANITIZED_MODEL}_{timestamp_str}_all_runs.json")
     all_runs_data = {}
     
     # Load existing master summary if it exists

@@ -43,9 +43,9 @@ MODELS = [
     "codellama:7b-instruct-q8_0"
 ]
 
-#DATASETS = ["agri-data", "air-quality", "lab-data", "meteo-data"]
-DATASETS = ["lab-data", "meteo-data"]
-NUM_RUNS = 10
+DATASETS = ["agri-data", "air-quality", "lab-data", "meteo-data"]
+#DATASETS = ["lab-data", "meteo-data"]
+NUM_RUNS = 5
 
 # 1. Resource Profiler (0.1s interval)
 class ResourceProfiler:
@@ -351,8 +351,8 @@ def main():
                 
                 from shared_utils import sanitize_model_name
                 sanitized_model = sanitize_model_name(model)
-                run_tasks_dir = LEI_DIR / "generated_tasks" / f"{dataset}_{sanitized_model}_run{r}"
-                run_output_dir = LEI_DIR / "output" / f"{dataset}_{sanitized_model}_run{r}"
+                run_tasks_dir = LEI_DIR / "generated_tasks" / dataset / f"{dataset}_{sanitized_model}_run{r}"
+                run_output_dir = LEI_DIR / "output" / dataset / f"{dataset}_{sanitized_model}_run{r}"
                 
                 clean_lei_directories(run_tasks_dir, run_output_dir, keep_tasks_list=False, keep_error_log=keep_err)
                 
