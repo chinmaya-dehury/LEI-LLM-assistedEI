@@ -145,12 +145,17 @@ def main():
     results = execute_subtasks()
     analysis = analyze_and_combine_results(results)
 
+    dynamic_insight = analysis.get('final_insight') or FINAL_INSIGHT
+    dynamic_action = analysis.get('recommended_action') or RECOMMENDED_ACTION
+
     final_payload = {
         'task_name': '{TASK_NAME}',
         'status': 'success' if analysis['workflow_status'] == 'completed' else ('partial_success' if analysis['workflow_status'] == 'hybrid_integrity' else analysis['workflow_status']),
         'timestamp': datetime.now().isoformat(),
         'subtask_results': results,
-        'combined_analysis': analysis
+        'combined_analysis': analysis,
+        'final_insight': dynamic_insight,
+        'recommended_action': dynamic_action
     }
 
     result_dir = BASE_DIR / 'output' / 'complex'
@@ -170,14 +175,14 @@ def main():
             print(f"  - {metric_name}: {metric_value}")
     else:
         print("  - No summary metrics were produced.")
-    if FINAL_INSIGHT:
-        print(f"Final insight: {FINAL_INSIGHT}")
+    if dynamic_insight:
+        print(f"Final insight: {dynamic_insight}")
     if DECISION_RULES:
         print("Decision rules:")
         for rule in DECISION_RULES:
             print(f"  - {rule}")
-    if RECOMMENDED_ACTION:
-        print(f"Recommended action: {RECOMMENDED_ACTION}")
+    if dynamic_action:
+        print(f"Recommended action: {dynamic_action}")
     print(f"Conclusion: {final_payload['combined_analysis']['interpreted_conclusion']}")
     print(f"Result written to: {result_path}")
     print('=' * 80)

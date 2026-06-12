@@ -71,6 +71,7 @@ Return ONLY valid JSON array using this schema:
         "subtask_name": "",
         "task_id": "",
         "domain": "",
+        "description": "",
         "depends_on": []
       }
     ],

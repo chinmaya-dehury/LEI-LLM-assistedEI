@@ -1,0 +1,57 @@
+{
+  "generated_at": "2026-06-12T12:28:22.100622",
+  "composite_tasks": [
+    {
+      "task_name": "Predictive Irrigation",
+      "description": "Predict optimal irrigation schedules based on weather forecasts and soil moisture data.",
+      "business_value": "Reduce water waste and improve crop yields.",
+      "final_insight": "Recommend irrigation volume based on predicted rainfall and current soil moisture levels.",
+      "decision_rules": [
+        "If meteo_data_analyze_temperature predicts rain within 24 hours, reduce irrigation volume.",
+        "If soil moisture levels are above a threshold, reduce or suspend irrigation.",
+        "If soil moisture levels are below a threshold, increase irrigation volume."
+      ],
+      "recommended_action": "Adjust irrigation system settings.",
+      "domains": [
+        "meteo-data",
+        "lab-data"
+      ],
+      "data_type": "complex",
+      "subtasks": [
+        {
+          "subtask_name": "Analyze Weather Forecast",
+          "task_id": "meteo_data_analyze_temperature",
+          "domain": "meteo-data",
+          "description": "Analyze weather data to predict rainfall probability and intensity.",
+          "depends_on": []
+        },
+        {
+          "subtask_name": "Read Soil Moisture",
+          "task_id": "needs_generation",
+          "domain": "lab-data",
+          "description": "Read soil moisture sensor data.",
+          "depends_on": []
+        }
+      ],
+      "missing_capabilities": [
+        "Soil Moisture Sensor Integration"
+      ],
+      "data_flow": [
+        {
+          "from_subtask_id": "",
+          "from_subtask_name": "meteo_data_analyze_temperature",
+          "to_subtask_id": "",
+          "to_subtask_name": "Predict Rainfall",
+          "mapped_variable": "output"
+        },
+        {
+          "from_subtask_id": "needs_generation",
+          "from_subtask_name": "Read Soil Moisture",
+          "to_subtask_id": "",
+          "to_subtask_name": "Soil Moisture Level",
+          "mapped_variable": "output"
+        }
+      ]
+    }
+  ]
+}

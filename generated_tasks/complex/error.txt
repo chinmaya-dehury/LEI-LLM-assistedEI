@@ -1,0 +1,22 @@
+[2026-06-12T14:05:35.296936] SCRIPT: predictive_irrigation
+Executor validation exhausted all attempts:
+Semantic validation failed (schema):
+  • result_summary: Field required (got: {'task_name': 'Predictive Irrigation', 'status': 'success', 'timestamp': '2026-06-12T14:05:35.289704', 'subtask_results': {'meteo_data_analyze_temperature': {'status': 'success', 'result_summary': [{'key': 'average_rainfall', 'value': 18.4755727881565}, {'key': 'rain_predicted', 'value': True}]}, 'read_soil_moisture_2': {'status': 'success', 'result_summary': [{'key': 'average_moisture', 'value': 33.90814229486752}]}}, 'combined_analysis': {'workflow_status': 'completed', 'subtasks_executed': 2, 'summary_metrics': {}, 'interpreted_conclusion': 'Soil moisture levels are below the threshold.', 'final_insight': 'Low soil moisture, increase irrigation volume.', 'recommended_action': 'Increase irrigation volume.'}, 'final_insight': 'Low soil moisture, increase irrigation volume.', 'recommended_action': 'Increase irrigation volume.'})
+  • status: Extra inputs are not permitted (got: 'success')
+  • timestamp: Extra inputs are not permitted (got: '2026-06-12T14:05:35.289704')
+  • subtask_results: Extra inputs are not permitted (got: {'meteo_data_analyze_temperature': {'status': 'success', 'result_summary': [{'key': 'average_rainfall', 'value': 18.4755727881565}, {'key': 'rain_predicted', 'value': True}]}, 'read_soil_moisture_2': {'status': 'success', 'result_summary': [{'key': 'average_moisture', 'value': 33.90814229486752}]}})
+  • combined_analysis: Extra inputs are not permitted (got: {'workflow_status': 'completed', 'subtasks_executed': 2, 'summary_metrics': {}, 'interpreted_conclusion': 'Soil moisture levels are below the threshold.', 'final_insight': 'Low soil moisture, increase irrigation volume.', 'recommended_action': 'Increase irrigation volume.'})
+  • final_insight: Extra inputs are not permitted (got: 'Low soil moisture, increase irrigation volume.')
+  • recommended_action: Extra inputs are not permitted (got: 'Increase irrigation volume.')
+------------------------------------------------------------
+[2026-06-12T14:15:16.846592] SCRIPT: predictive_irrigation
+Executor validation exhausted all attempts:
+Semantic validation failed (schema):
+  • result_summary: Field required (got: {'task_name': 'Predictive Irrigation', 'status': 'success', 'timestamp': '2026-06-12T14:15:16.836109', 'subtask_results': {'meteo_data_analyze_temperature': {'status': 'success', 'result_summary': [{'key': 'average_rainfall', 'value': 18.4755727881565}, {'key': 'rain_predicted', 'value': True}]}, 'read_soil_moisture_2': {'status': 'success', 'result_summary': [{'key': 'average_moisture', 'value': 33.90814229486752}]}}, 'combined_analysis': {'workflow_status': 'completed', 'subtasks_executed': 2, 'summary_metrics': {}, 'interpreted_conclusion': 'Soil moisture levels are below the threshold.', 'final_insight': 'Low soil moisture, increase irrigation volume.', 'recommended_action': 'Increase irrigation volume.'}, 'final_insight': 'Low soil moisture, increase irrigation volume.', 'recommended_action': 'Increase irrigation volume.'})
+  • status: Extra inputs are not permitted (got: 'success')
+  • timestamp: Extra inputs are not permitted (got: '2026-06-12T14:15:16.836109')
+  • subtask_results: Extra inputs are not permitted (got: {'meteo_data_analyze_temperature': {'status': 'success', 'result_summary': [{'key': 'average_rainfall', 'value': 18.4755727881565}, {'key': 'rain_predicted', 'value': True}]}, 'read_soil_moisture_2': {'status': 'success', 'result_summary': [{'key': 'average_moisture', 'value': 33.90814229486752}]}})
+  • combined_analysis: Extra inputs are not permitted (got: {'workflow_status': 'completed', 'subtasks_executed': 2, 'summary_metrics': {}, 'interpreted_conclusion': 'Soil moisture levels are below the threshold.', 'final_insight': 'Low soil moisture, increase irrigation volume.', 'recommended_action': 'Increase irrigation volume.'})
+  • final_insight: Extra inputs are not permitted (got: 'Low soil moisture, increase irrigation volume.')
+  • recommended_action: Extra inputs are not permitted (got: 'Increase irrigation volume.')
+------------------------------------------------------------

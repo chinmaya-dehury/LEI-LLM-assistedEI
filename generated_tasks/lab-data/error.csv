@@ -1,0 +1,9 @@
+task_name,exit_code,error_message,count,last_timestamp
+Read Soil Moisture,1,"Syntax error at line 63, column 7: unterminated string literal (detected at line 63)",2,2026-06-12T14:00:14.279969
+Read Soil Moisture,1,"Validation failed (exit 1).
+Stdout:
+
+Stderr:
+Syntax error at line 63, column 7: unterminated string literal (detected at line 63)
+Semantic Error:
+None",1,2026-06-12T12:55:50.610822

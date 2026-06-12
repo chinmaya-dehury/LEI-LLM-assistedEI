@@ -43,29 +43,30 @@ from val_semantic import _validate_output_structure
 
 # Placeholders for global variables populated in main()
 client = None
-RUN_ID = None
-RUN_COUNT = None
+_env = get_environment_vars()
+RUN_ID = _env.get("RUN_ID", "complex_run")
+RUN_COUNT = _env.get("RUN_COUNT", "1")
 TIMESTAMP_PATH = None
 STEP3_CSV = None
 RESOURCE_CSV = None
-SANITIZED_MODEL = None
+SANITIZED_MODEL = sanitize_model_name(LLM_VAL_MODEL)
 SCRIPT_START_TIME = None
 SCRIPT_START_PERF = None
 
 MAX_RETRIES = 2
-CLIENT_TIMEOUT = 120
+CLIENT_TIMEOUT = 300
 ENABLE_LLM_CORRECTION = True  # Set to True to enable LLM self-correction, False to fail immediately
 csv_lock = threading.Lock()
 
-DEFAULT_TASKS_FILE = None
-FALLBACK_TASKS_FILE = None
-DEFAULT_SCRIPTS_DIR = None
-ERROR_LOG_PATH = None
-DEFAULT_VALIDATOR_LOG = None
-COMPLEX_TASKS_FILE = None
-COMPLEX_SCRIPTS_DIR = None
-COMPLEX_MISSING_DIR = None
-COMPLEX_VALIDATOR_LOG = None
+DEFAULT_SCRIPTS_DIR = os.environ.get("LEI_TASKS_DIR", os.path.join("generated_tasks", DATA_TYPE))
+DEFAULT_TASKS_FILE = os.path.join(DEFAULT_SCRIPTS_DIR, "tasks_list.json")
+FALLBACK_TASKS_FILE = os.path.join(DEFAULT_SCRIPTS_DIR, "new_tasks.json")
+ERROR_LOG_PATH = os.path.join(DEFAULT_SCRIPTS_DIR, "error.csv")
+DEFAULT_VALIDATOR_LOG = os.path.join("validator", DATA_TYPE)
+COMPLEX_TASKS_FILE = os.path.join("generated_tasks", "complex", "complex_tasks_list.json")
+COMPLEX_SCRIPTS_DIR = os.path.join("generated_tasks", "complex")
+COMPLEX_MISSING_DIR = os.path.join(COMPLEX_SCRIPTS_DIR, "missing")
+COMPLEX_VALIDATOR_LOG = os.path.join("validator", "complex")
 
 
 def _append_central_error_log(run_number: str, model: str, use_case: str, error_details: str) -> None:
