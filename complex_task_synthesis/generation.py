@@ -50,7 +50,7 @@ def generate_subtask_code(task_name: str, description: str, domain: str, inbound
     """Call the LLM to generate the Python code for a subtask using prompts/get_code.py."""
     from openai import OpenAI
     import config as cfg
-    from string import Template
+
     from prompts.get_code import SYSTEM_PROMPT
     from shared_utils import extract_first_json_object
     import re
@@ -87,7 +87,7 @@ def generate_subtask_code(task_name: str, description: str, domain: str, inbound
 
     # Format output directory. For individual subtask, it's output/{domain}
     output_dir_str = f"output/{domain}"
-    system_prompt = Template(SYSTEM_PROMPT).substitute(DATA_TYPE=domain, OUTPUT_DIR=output_dir_str)
+    system_prompt = SYSTEM_PROMPT.replace("{DATA_TYPE}", domain).replace("{OUTPUT_DIR}", output_dir_str)
 
     task_payload = {
         "tasks": [

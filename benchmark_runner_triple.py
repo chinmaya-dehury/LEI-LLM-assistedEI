@@ -154,6 +154,51 @@ def get_langgraph_workflow():
         return None
 
 # 4. Helper Functions for Dataset & Cleanups
+def get_lei_tokens(dataset_name: str, run_id: str) -> tuple[int, int, int]:
+    try:
+        sys.path.insert(0, str(LEI_DIR))
+        import config
+        from shared_utils import sanitize_model_name
+        
+        default_model = getattr(config, "DEFAULT_MODEL", "gemma3:4b")
+        val_model = getattr(config, "LLM_VAL_MODEL", "codegemma:7b")
+        
+        san_default = sanitize_model_name(default_model)
+        san_val = sanitize_model_name(val_model)
+        
+        timestamp_dir = LEI_DIR / "timestamp_path" / dataset_name
+        
+        total_prompt = 0
+        total_completion = 0
+        total_tok = 0
+        
+        files_to_check = [
+            timestamp_dir / f"step1_{san_default}_{run_id}.csv",
+            timestamp_dir / f"step2_{san_default}_{run_id}.csv",
+            timestamp_dir / f"step3_{san_val}_{run_id}.csv"
+        ]
+        
+        for csv_file in files_to_check:
+            if csv_file.exists():
+                try:
+                    with open(csv_file, "r", encoding="utf-8") as f:
+                        reader = csv.DictReader(f)
+                        for row in reader:
+                            p = int(row.get("prompt_tokens") or 0) if row.get("prompt_tokens") else 0
+                            c = int(row.get("completion_tokens") or 0) if row.get("completion_tokens") else 0
+                            t = int(row.get("total_tokens") or 0) if row.get("total_tokens") else 0
+                            
+                            total_prompt += p
+                            total_completion += c
+                            total_tok += t
+                except Exception as e:
+                    print(f"  [WARNING] Error reading token log {csv_file.name}: {e}")
+                    
+        return total_prompt, total_completion, total_tok
+    except Exception as e:
+        print(f"  [WARNING] Error calculating LEI tokens: {e}")
+        return 0, 0, 0
+
 def setup_dataset_for_framework(dest_benchmarks_dir: Path, dataset_name: str) -> Path:
     src_dir = DATA_DIR / dataset_name
     dest_dir = dest_benchmarks_dir / "datasets" / dataset_name
@@ -342,6 +387,8 @@ def run_lei_benchmark(dataset_name: str, run_id: str, run_num: int, results_dir:
     except Exception as e:
         print(f"  [WARNING] Could not parse LEI validation summary: {e}")
     
+    prompt_tokens, completion_tokens, total_tokens = get_lei_tokens(dataset_name, run_id)
+    
     stats.update({
         "framework": "LEI",
         "tasks_generated": tasks_generated,
@@ -349,7 +396,10 @@ def run_lei_benchmark(dataset_name: str, run_id: str, run_num: int, results_dir:
         "code_passed": code_passed,
         "validator_passed": validator_passed,
         "lei_time_up_to_codegen": lei_time_up_to_codegen,
-        "lei_time_val": lei_time_val
+        "lei_time_val": lei_time_val,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "total_tokens": total_tokens
     })
     return stats
 
@@ -393,7 +443,10 @@ def run_autogen_benchmark(dataset_name: str, dataset_dir: Path, output_dir: Path
         "code_passed": metrics.get("code_passed", 0),
         "validator_passed": metrics.get("validator_passed", 0),
         "lei_time_up_to_codegen": round(up_to_codegen, 3),
-        "lei_time_val": round(val_time, 3)
+        "lei_time_val": round(val_time, 3),
+        "prompt_tokens": metrics.get("prompt_tokens", 0),
+        "completion_tokens": metrics.get("completion_tokens", 0),
+        "total_tokens": metrics.get("total_tokens", 0)
     })
     return stats
 
@@ -436,7 +489,10 @@ def run_langgraph_benchmark(dataset_name: str, dataset_dir: Path, output_dir: Pa
         "code_passed": metrics.get("code_passed", 0),
         "validator_passed": metrics.get("validator_passed", 0),
         "lei_time_up_to_codegen": round(up_to_codegen, 3),
-        "lei_time_val": round(val_time, 3)
+        "lei_time_val": round(val_time, 3),
+        "prompt_tokens": metrics.get("prompt_tokens", 0),
+        "completion_tokens": metrics.get("completion_tokens", 0),
+        "total_tokens": metrics.get("total_tokens", 0)
     })
     return stats
 
@@ -458,7 +514,10 @@ def save_benchmark_row(results_csv_path: Path, dataset_name: str, stats: dict):
             "lei_time_up_to_codegen",
             "lei_time_val",
             "avg_cpu_percent",
-            "avg_memory_mb"
+            "avg_memory_mb",
+            "prompt_tokens",
+            "completion_tokens",
+            "total_tokens"
         ]
         
         with open(results_csv_path, "a", newline="", encoding="utf-8") as f:
@@ -478,7 +537,10 @@ def save_benchmark_row(results_csv_path: Path, dataset_name: str, stats: dict):
                 "lei_time_up_to_codegen": stats.get("lei_time_up_to_codegen", 0.0),
                 "lei_time_val": stats.get("lei_time_val", 0.0),
                 "avg_cpu_percent": stats["avg_cpu_percent"],
-                "avg_memory_mb": stats["avg_memory_mb"]
+                "avg_memory_mb": stats["avg_memory_mb"],
+                "prompt_tokens": stats.get("prompt_tokens", 0),
+                "completion_tokens": stats.get("completion_tokens", 0),
+                "total_tokens": stats.get("total_tokens", 0)
             })
     except Exception as e:
         print(f"[WARNING] Could not save benchmark row: {e}")
@@ -503,6 +565,9 @@ def process_and_save_summary(lei_results: list, ag_results: list, lg_results: li
     lei_val_time = [r.get("lei_time_val", 0.0) for r in lei_results]
     lei_cpu = [r["avg_cpu_percent"] for r in lei_results]
     lei_mem = [r["avg_memory_mb"] for r in lei_results]
+    lei_prompt = [r.get("prompt_tokens", 0) for r in lei_results]
+    lei_comp = [r.get("completion_tokens", 0) for r in lei_results]
+    lei_total = [r.get("total_tokens", 0) for r in lei_results]
 
     # Extract values for AutoGen
     ag_tasks = [r["tasks_generated"] for r in ag_results] if ag_results else []
@@ -514,6 +579,9 @@ def process_and_save_summary(lei_results: list, ag_results: list, lg_results: li
     ag_val_time = [r.get("lei_time_val", 0.0) for r in ag_results] if ag_results else []
     ag_cpu = [r["avg_cpu_percent"] for r in ag_results] if ag_results else []
     ag_mem = [r["avg_memory_mb"] for r in ag_results] if ag_results else []
+    ag_prompt = [r.get("prompt_tokens", 0) for r in ag_results] if ag_results else []
+    ag_comp = [r.get("completion_tokens", 0) for r in ag_results] if ag_results else []
+    ag_total = [r.get("total_tokens", 0) for r in ag_results] if ag_results else []
 
     # Extract values for LangGraph
     lg_tasks = [r["tasks_generated"] for r in lg_results] if lg_results else []
@@ -525,6 +593,9 @@ def process_and_save_summary(lei_results: list, ag_results: list, lg_results: li
     lg_val_time = [r.get("lei_time_val", 0.0) for r in lg_results] if lg_results else []
     lg_cpu = [r["avg_cpu_percent"] for r in lg_results] if lg_results else []
     lg_mem = [r["avg_memory_mb"] for r in lg_results] if lg_results else []
+    lg_prompt = [r.get("prompt_tokens", 0) for r in lg_results] if lg_results else []
+    lg_comp = [r.get("completion_tokens", 0) for r in lg_results] if lg_results else []
+    lg_total = [r.get("total_tokens", 0) for r in lg_results] if lg_results else []
 
     # Calculate stats
     tasks_lei_m, tasks_lei_s = calculate_mean_std(lei_tasks)
@@ -536,6 +607,9 @@ def process_and_save_summary(lei_results: list, ag_results: list, lg_results: li
     lei_val_m, lei_val_s = calculate_mean_std(lei_val_time)
     cpu_lei_m, cpu_lei_s = calculate_mean_std(lei_cpu)
     mem_lei_m, mem_lei_s = calculate_mean_std(lei_mem)
+    prompt_lei_m, prompt_lei_s = calculate_mean_std(lei_prompt)
+    comp_lei_m, comp_lei_s = calculate_mean_std(lei_comp)
+    total_lei_m, total_lei_s = calculate_mean_std(lei_total)
 
     tasks_ag_m, tasks_ag_s = calculate_mean_std(ag_tasks)
     gen_ag_m, gen_ag_s = calculate_mean_std(ag_gen)
@@ -546,6 +620,9 @@ def process_and_save_summary(lei_results: list, ag_results: list, lg_results: li
     ag_val_m, ag_val_s = calculate_mean_std(ag_val_time)
     cpu_ag_m, cpu_ag_s = calculate_mean_std(ag_cpu)
     mem_ag_m, mem_ag_s = calculate_mean_std(ag_mem)
+    prompt_ag_m, prompt_ag_s = calculate_mean_std(ag_prompt)
+    comp_ag_m, comp_ag_s = calculate_mean_std(ag_comp)
+    total_ag_m, total_ag_s = calculate_mean_std(ag_total)
 
     tasks_lg_m, tasks_lg_s = calculate_mean_std(lg_tasks)
     gen_lg_m, gen_lg_s = calculate_mean_std(lg_gen)
@@ -556,6 +633,9 @@ def process_and_save_summary(lei_results: list, ag_results: list, lg_results: li
     lg_val_m, lg_val_s = calculate_mean_std(lg_val_time)
     cpu_lg_m, cpu_lg_s = calculate_mean_std(lg_cpu)
     mem_lg_m, mem_lg_s = calculate_mean_std(lg_mem)
+    prompt_lg_m, prompt_lg_s = calculate_mean_std(lg_prompt)
+    comp_lg_m, comp_lg_s = calculate_mean_std(lg_comp)
+    total_lg_m, total_lg_s = calculate_mean_std(lg_total)
 
     # Print comparative console table
     print("\n" + "=" * 80)
@@ -572,6 +652,9 @@ def process_and_save_summary(lei_results: list, ag_results: list, lg_results: li
     print(f"{'  - Validation':<30} | {lei_val_m:<4} ± {lei_val_s:<6} | {ag_val_m:<4} ± {ag_val_s:<6} | {lg_val_m:<4} ± {lg_val_s:<6}")
     print(f"{'Average CPU Usage (%)':<30} | {cpu_lei_m:<4} ± {cpu_lei_s:<6} | {cpu_ag_m:<4} ± {cpu_ag_s:<6} | {cpu_lg_m:<4} ± {cpu_lg_s:<6}")
     print(f"{'Average Memory (RSS) (MB)':<30} | {mem_lei_m:<4} ± {mem_lei_s:<6} | {mem_ag_m:<4} ± {mem_ag_s:<6} | {mem_lg_m:<4} ± {mem_lg_s:<6}")
+    print(f"{'LLM Prompt Tokens':<30} | {prompt_lei_m:<4} ± {prompt_lei_s:<6} | {prompt_ag_m:<4} ± {prompt_ag_s:<6} | {prompt_lg_m:<4} ± {prompt_lg_s:<6}")
+    print(f"{'LLM Completion Tokens':<30} | {comp_lei_m:<4} ± {comp_lei_s:<6} | {comp_ag_m:<4} ± {comp_ag_s:<6} | {comp_lg_m:<4} ± {comp_lg_s:<6}")
+    print(f"{'LLM Total Tokens':<30} | {total_lei_m:<4} ± {total_lei_s:<6} | {total_ag_m:<4} ± {total_ag_s:<6} | {total_lg_m:<4} ± {total_lg_s:<6}")
     print("=" * 80 + "\n")
 
     # Save summary CSV
@@ -590,7 +673,10 @@ def process_and_save_summary(lei_results: list, ag_results: list, lg_results: li
                 ("lei_time_up_to_codegen", lei_codegen_m, lei_codegen_s, ag_codegen_m, ag_codegen_s, lg_codegen_m, lg_codegen_s),
                 ("lei_time_val", lei_val_m, lei_val_s, ag_val_m, ag_val_s, lg_val_m, lg_val_s),
                 ("avg_cpu_percent", cpu_lei_m, cpu_lei_s, cpu_ag_m, cpu_ag_s, cpu_lg_m, cpu_lg_s),
-                ("avg_memory_mb", mem_lei_m, mem_lei_s, mem_ag_m, mem_ag_s, mem_lg_m, mem_lg_s)
+                ("avg_memory_mb", mem_lei_m, mem_lei_s, mem_ag_m, mem_ag_s, mem_lg_m, mem_lg_s),
+                ("prompt_tokens", prompt_lei_m, prompt_lei_s, prompt_ag_m, prompt_ag_s, prompt_lg_m, prompt_lg_s),
+                ("completion_tokens", comp_lei_m, comp_lei_s, comp_ag_m, comp_ag_s, comp_lg_m, comp_lg_s),
+                ("total_tokens", total_lei_m, total_lei_s, total_ag_m, total_ag_s, total_lg_m, total_lg_s)
             ]
             for row in metrics_data:
                 writer.writerow({

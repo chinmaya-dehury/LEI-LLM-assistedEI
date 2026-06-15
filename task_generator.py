@@ -26,7 +26,6 @@ import json
 import time
 import csv
 from datetime import datetime, timezone, timedelta
-from string import Template
 from config import DATA_TYPE, LLM_BASE_URL, LLM_API_KEY, DEFAULT_MODEL
 from prompts.get_tasks import SYSTEM_PROMPT
 from resource_monitor import log_resource_metrics
@@ -97,7 +96,7 @@ def main() -> int:
     with open(RESOURCE_SUMMARY_PATH, "r") as f:
         resource_summary = f.read()
 
-    system_prompt = Template(SYSTEM_PROMPT).substitute(DATA_TYPE=DATA_TYPE)
+    system_prompt = SYSTEM_PROMPT
     # User prompt with data, metadata, and context
     user_prompt = f"""
 Sample Data:

@@ -1,9 +1,0 @@
-run_number,model,use_case,error_details,count
-,codegemma,lab-data,"Syntax error at line 63, column 7: unterminated string literal (detected at line 63)",2
-,codegemma,lab-data,"Validation failed (exit 1).
-Stdout:
-
-Stderr:
-Syntax error at line 63, column 7: unterminated string literal (detected at line 63)
-Semantic Error:
-None",1

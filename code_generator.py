@@ -24,7 +24,7 @@ import csv
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from config import LLM_BASE_URL, LLM_API_KEY, DATA_TYPE, DEFAULT_MODEL
-from string import Template
+
 from prompts.get_code import SYSTEM_PROMPT
 from typing import List
 import re
@@ -153,7 +153,7 @@ Analyze the error(s) below carefully (paying attention to exit code, traceback, 
 """
 
     output_dir_str = os.environ.get("LEI_OUTPUT_DIR", os.path.join("output", task_dt)).replace("\\", "/")
-    system_prompt = Template(SYSTEM_PROMPT).substitute(DATA_TYPE=task_dt, OUTPUT_DIR=output_dir_str)
+    system_prompt = SYSTEM_PROMPT.replace("{DATA_TYPE}", task_dt).replace("{OUTPUT_DIR}", output_dir_str)
 
     task_list_payload = json.dumps(task_payload, ensure_ascii=False, indent=2) \
         if isinstance(task_payload, dict) else str(task_payload)
@@ -291,7 +291,6 @@ Tasks (<=2):
         print(f"[DEBUG] Successfully extracted JSON from LLM response")
     except Exception as e:
         print(f"[DEBUG] Failed to extract JSON: {e}")
-        raw_output = str(response)
 
     usage = getattr(response, "usage", None) or {}
     if isinstance(usage, dict):
@@ -445,13 +444,25 @@ def normalize_code_string(code: str) -> str:
     if not isinstance(code, str):
         return ""
     s = code.strip()
-    # strip fenced blocks if present
+    
+    # Strip markdown code blocks robustly
     if s.startswith("```"):
         s = re.sub(r"^```(?:python)?\s*", "", s, flags=re.IGNORECASE)
         s = re.sub(r"\s*```$", "", s)
-    # unescape common sequences if they appear literally
-    if "\\r\\n" in s or "\\n" in s or "\\t" in s:
-        s = s.replace("\\r\\n", "\n").replace("\\n", "\n").replace("\\t", "\t")
+    elif "```python" in s:
+        match = re.search(r"```python\s*(.+?)\s*```", s, flags=re.DOTALL | re.IGNORECASE)
+        if match:
+            s = match.group(1)
+            
+    # Remove literal backslash sequences that should be normal escapes
+    s = s.replace("\\r\\n", "\n").replace("\\n", "\n").replace("\\t", "\t")
+    s = s.replace("\\'", "'").replace('\\"', '"')
+    
+    # Auto-repair common boolean/null typos
+    s = re.sub(r'\bfalse\b', 'False', s)
+    s = re.sub(r'\btrue\b', 'True', s)
+    s = re.sub(r'\bnull\b', 'None', s)
+    
     return s
 
 def _extract_json_blob(text: str) -> str:
@@ -678,7 +689,7 @@ def main() -> int:
                     pass
 
             if ret and ret.get("code"):
-                code_text = ret.get("code", "").strip()
+                code_text = normalize_code_string(ret.get("code", "").strip())
                 code_lines = len(code_text.split('\n'))
                 print(f" [OK] LLM returned code for {tn} ({code_lines} lines)")
                 

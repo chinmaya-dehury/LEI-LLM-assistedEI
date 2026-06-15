@@ -17,7 +17,7 @@ import os
 import sys
 import subprocess
 import time
-from string import Template
+
 from typing import Dict, List
 import shutil
 from datetime import datetime
@@ -876,7 +876,7 @@ def _extract_code_from_llm_response(raw: str) -> str:
 def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, assets: Dict, attempt: int, validation_error: str = "", task_start_time = None, task_start_perf = None) -> Dict:
     datatype = task.get("data_type", DATA_TYPE)
     output_dir_str = os.environ.get("LEI_OUTPUT_DIR", os.path.join("output", datatype)).replace("\\", "/")
-    system_prompt = Template(SYSTEM_PROMPT).substitute(DATA_TYPE=datatype, OUTPUT_DIR=output_dir_str)
+    system_prompt = SYSTEM_PROMPT.replace("{DATA_TYPE}", datatype).replace("{OUTPUT_DIR}", output_dir_str)
     user_prompt = _build_correction_prompt(task, runtime_error, exit_code, assets, validation_error)
 
     llm_start_time = datetime.now(IST).isoformat()
