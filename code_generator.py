@@ -330,17 +330,45 @@ Tasks (<=2):
     print(f"[Generator] Model '{used_model}' success in {llm_duration:.2f}s. Raw length={len(raw_output)}")
 
     # Attempt strict JSON parse
+    def repair_invalid_triple_quotes(text: str) -> str:
+        # Match :" followed by optional spaces then triple quotes, then the content, then triple quotes and a delimiter
+        pattern = r'(:\s*)"""(.*?)"""(\s*(?=[,}\]]))'
+        def replacer(match):
+            prefix = match.group(1)
+            code_content = match.group(2)
+            suffix = match.group(3)
+            escaped_code = json.dumps(code_content)
+            return prefix + escaped_code + suffix
+        return re.sub(pattern, replacer, text, flags=re.DOTALL)
+
     def parse_json(text: str):
         try:
             return json.loads(text)
         except Exception:
-            return None
+            try:
+                repaired = repair_invalid_triple_quotes(text)
+                return json.loads(repaired)
+            except Exception:
+                return None
+
+    # Try to extract JSON first, applying the repair if needed
+    if not tasks_json:
+        try:
+            repaired_raw = repair_invalid_triple_quotes(raw_output)
+            tasks_json = extract_first_json_object(repaired_raw)
+            print(f"[DEBUG] Successfully extracted JSON after repairing triple quotes")
+        except Exception:
+            pass
 
     tasks_data = parse_json(raw_output)
     if not tasks_data:
         blob = _extract_json_blob(raw_output)
         if blob:
             tasks_data = parse_json(blob)
+
+    if not tasks_json and tasks_data:
+        tasks_json = tasks_data
+        print("[DEBUG] Using parsed tasks_data as fallback tasks_json")
 
     # Fallback: synthesize JSON if model returned code blocks instead of JSON
     if not tasks_json:
@@ -440,7 +468,7 @@ def update_task_status_in_file(all_tasks_payload, task_name, status_message):
 
 
 def normalize_code_string(code: str) -> str:
-    """Convert JSON-escaped/code-fenced text into plain Python source."""
+    """Convert JSON-escaped/code-fenced text into plain Python source and auto-repair paths/typos."""
     if not isinstance(code, str):
         return ""
     s = code.strip()
@@ -463,7 +491,60 @@ def normalize_code_string(code: str) -> str:
     s = re.sub(r'\btrue\b', 'True', s)
     s = re.sub(r'\bnull\b', 'None', s)
     
-    return s
+    # Resolve DATA_TYPE dynamically
+    try:
+        from config import DATA_TYPE as config_dt
+        data_type = os.environ.get("DATA_TYPE", config_dt)
+    except Exception:
+        data_type = "lab-data"  # fallback default
+        
+    # Inject robust path preamble
+    path_preamble = f"""# Programmatic path resolution pre-injected for reliability
+import os
+from pathlib import Path
+
+_curr_dir = Path(__file__).resolve().parent
+_root_dir = _curr_dir
+while _root_dir.name and not (_root_dir / "data").exists():
+    _parent = _root_dir.parent
+    if _parent == _root_dir:
+        break
+    _root_dir = _parent
+
+DATA_FILE_PATH = os.path.join(_root_dir, "data", "{data_type}", "raw_data.csv")
+if not os.path.exists(DATA_FILE_PATH):
+    DATA_FILE_PATH = os.path.join(_root_dir, "data", "{data_type}", "raw_data.txt")
+
+METADATA_FILE_PATH = os.path.join(_root_dir, "data", "{data_type}", "metadata.json")
+OUTPUT_DIR = os.path.join(_root_dir, "output", "{data_type}")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+"""
+    
+    # Apply regex path correction
+    # Replace any read_csv, open, etc. loading csv or txt files with DATA_FILE_PATH
+    s = re.sub(
+        r'(read_csv|open)\(\s*r?["\'][^"\']+\.(csv|txt)["\']',
+        r'\1(DATA_FILE_PATH',
+        s
+    )
+    
+    # Replace open for json metadata files with METADATA_FILE_PATH
+    s = re.sub(
+        r'open\(\s*r?["\'][^"\']+\.json["\']',
+        r'open(METADATA_FILE_PATH',
+        s
+    )
+    
+    # Replace literal output path variables or placeholders
+    s = s.replace("{OUTPUT_DIR}", "OUTPUT_DIR").replace("{OUTPUT}", "OUTPUT_DIR")
+    s = re.sub(
+        r'["\']output/[^"\']+["\']',
+        r'OUTPUT_DIR',
+        s
+    )
+    
+    # Combine preamble and corrected code
+    return path_preamble + "\n" + s
 
 def _extract_json_blob(text: str) -> str:
     """Extract a JSON object string from text that may contain extra content."""
@@ -627,12 +708,53 @@ def main() -> int:
 
     # Build list of tasks that need generation, skip existing files
     tasks_to_generate = []
-    for task_info in pending_tasks:
+    for idx, task_info in enumerate(pending_tasks):
         name = task_info.get("task_name")
         if not name:
-            print(f" [SKIP] Skipping task with missing name: {task_info}")
-            task_info["status"] = "failed to generate correct code"
-            continue
+            task_id = task_info.get("task_id")
+            desc = task_info.get("description", "")
+            if desc:
+                import re
+                clean_desc = re.sub(r'[^a-zA-Z0-9\s_-]', '', desc)
+                clean_desc = clean_desc.strip().replace(' ', '_').replace('-', '_')
+                clean_desc = re.sub(r'_+', '_', clean_desc)
+                if len(clean_desc) > 50:
+                    clean_desc = clean_desc[:50].rstrip('_')
+                if task_id is not None:
+                    name = f"task_{task_id}_{clean_desc}"
+                else:
+                    name = f"task_{clean_desc}"
+            else:
+                if task_id is not None:
+                    name = f"task_{task_id}"
+                else:
+                    name = f"task_{idx + 1}"
+            
+            task_info["task_name"] = name
+            
+            # Sync back to tasks_payload (tasks_list.json)
+            matched = False
+            for t_entry in tasks_payload.get("tasks", []):
+                if task_id is not None and t_entry.get("task_id") == task_id:
+                    t_entry["task_name"] = name
+                    matched = True
+                    break
+                elif desc and t_entry.get("description") == desc:
+                    t_entry["task_name"] = name
+                    matched = True
+                    break
+            if not matched and idx < len(tasks_payload.get("tasks", [])):
+                tasks_payload["tasks"][idx]["task_name"] = name
+
+            # Save updated JSON lists
+            try:
+                with open(TASK_LIST_PATH, "w", encoding="utf-8") as out_file:
+                    json.dump(tasks_payload, out_file, ensure_ascii=False, indent=2)
+                if os.path.exists(NEW_TASKS_PATH):
+                    with open(NEW_TASKS_PATH, "w", encoding="utf-8") as out_file:
+                        json.dump({"tasks": pending_tasks}, out_file, ensure_ascii=False, indent=2)
+            except Exception as e:
+                print(f"[WARNING] Failed to write updated tasks with fallback names: {e}")
 
         existing_task_path = os.path.join(OUTPUT_DIR, f"{name}.py")
         if os.path.exists(existing_task_path):

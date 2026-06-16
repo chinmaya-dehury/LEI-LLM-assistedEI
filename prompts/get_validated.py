@@ -28,7 +28,7 @@ Validation focus:
 - Output schema compliance
 
 Common failure patterns:
-- Incorrect column names
+- Incorrect column names or column casing mismatch: Raw CSV files may have inconsistent column casing across different environments (e.g., 'Temperature' vs 'temperature'). To prevent KeyError exceptions, standardizing all CSV keys to lowercase (e.g. `row = {k.lower(): v for k, v in row.items()}`) and accessing columns using lowercase keys is required for generalized execution.
 - Invalid dataset path construction
 - Missing pd.to_datetime(..., errors="coerce")
 - Missing pd.to_numeric(..., errors="coerce")

@@ -369,10 +369,26 @@ def _execute_task_script(script_path: str, timeout: int = 60) -> Dict[str, objec
                         missing_module = match_alt.group(1).split('.')[0]
                 
                 if missing_module:
-                    print(f"[Dynamic Dependency - LEI] Installing missing package: {missing_module}...")
+                    # Map import names to pip package names if they differ
+                    package_map = {
+                        "sklearn": "scikit-learn",
+                        "cv2": "opencv-python",
+                        "yaml": "pyyaml",
+                        "PIL": "pillow",
+                        "bs4": "beautifulsoup4",
+                        "skimage": "scikit-image",
+                        "fitz": "pymupdf",
+                        "docx": "python-docx",
+                        "pptx": "python-pptx",
+                        "dateutil": "python-dateutil",
+                        "jwt": "pyjwt",
+                        "dotenv": "python-dotenv",
+                    }
+                    pip_package = package_map.get(missing_module, missing_module)
+                    print(f"[Dynamic Dependency - LEI] Installing missing package: {pip_package} (imported as {missing_module})...")
                     try:
                         subprocess.run(
-                            [sys.executable, "-m", "pip", "install", missing_module],
+                            [sys.executable, "-m", "pip", "install", pip_package],
                             check=True,
                             stdout=subprocess.DEVNULL,
                             stderr=subprocess.DEVNULL
@@ -382,16 +398,16 @@ def _execute_task_script(script_path: str, timeout: int = 60) -> Dict[str, objec
                         if os.path.exists(req_path):
                             with open(req_path, "r", encoding="utf-8") as f:
                                 content = f.read()
-                            if missing_module not in content:
+                            if pip_package not in content:
                                 if content and not content.endswith('\n'):
                                     with open(req_path, "a", encoding="utf-8") as f:
                                         f.write("\n")
                                 with open(req_path, "a", encoding="utf-8") as f:
-                                    f.write(f"{missing_module}\n")
-                                print(f"[Dynamic Dependency - LEI] Added {missing_module} to requirements.txt")
+                                    f.write(f"{pip_package}\n")
+                                print(f"[Dynamic Dependency - LEI] Added {pip_package} to requirements.txt")
                         continue
                     except Exception as e:
-                        print(f"[WARNING - LEI] Failed to install package {missing_module}: {e}")
+                        print(f"[WARNING - LEI] Failed to install package {pip_package}: {e}")
             
             return {
                 "exit_code": result.returncode,
@@ -419,15 +435,83 @@ def _execute_task_script(script_path: str, timeout: int = 60) -> Dict[str, objec
 
 
 def _normalize_code_string(code: str) -> str:
+    """Convert JSON-escaped/code-fenced text into plain Python source and auto-repair paths/typos."""
     if not isinstance(code, str):
         return ""
     s = code.strip()
-    if "\\r\\n" in s or "\\n" in s or "\\t" in s:
-        s = s.replace("\\r\\n", "\n").replace("\\n", "\n").replace("\\t", "\t")
-    lines = s.split("\n")
-    if lines and lines[0].startswith("#!"):
-        lines = lines[1:]
-    return "\n".join(lines)
+    
+    # Strip markdown code blocks robustly
+    if s.startswith("```"):
+        s = re.sub(r"^```(?:python)?\s*", "", s, flags=re.IGNORECASE)
+        s = re.sub(r"\s*```$", "", s)
+    elif "```python" in s:
+        match = re.search(r"```python\s*(.+?)\s*```", s, flags=re.DOTALL | re.IGNORECASE)
+        if match:
+            s = match.group(1)
+            
+    # Remove literal backslash sequences that should be normal escapes
+    s = s.replace("\\r\\n", "\n").replace("\\n", "\n").replace("\\t", "\t")
+    s = s.replace("\\'", "'").replace('\\"', '"')
+    
+    # Auto-repair common boolean/null typos
+    s = re.sub(r'\bfalse\b', 'False', s)
+    s = re.sub(r'\btrue\b', 'True', s)
+    s = re.sub(r'\bnull\b', 'None', s)
+    
+    # Resolve DATA_TYPE dynamically
+    try:
+        from config import DATA_TYPE as config_dt
+        data_type = os.environ.get("DATA_TYPE", config_dt)
+    except Exception:
+        data_type = "lab-data"  # fallback default
+        
+    # Inject robust path preamble
+    path_preamble = f"""# Programmatic path resolution pre-injected for reliability
+import os
+from pathlib import Path
+
+_curr_dir = Path(__file__).resolve().parent
+_root_dir = _curr_dir
+while _root_dir.name and not (_root_dir / "data").exists():
+    _parent = _root_dir.parent
+    if _parent == _root_dir:
+        break
+    _root_dir = _parent
+
+DATA_FILE_PATH = os.path.join(_root_dir, "data", "{data_type}", "raw_data.csv")
+if not os.path.exists(DATA_FILE_PATH):
+    DATA_FILE_PATH = os.path.join(_root_dir, "data", "{data_type}", "raw_data.txt")
+
+METADATA_FILE_PATH = os.path.join(_root_dir, "data", "{data_type}", "metadata.json")
+OUTPUT_DIR = os.path.join(_root_dir, "output", "{data_type}")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+"""
+    
+    # Apply regex path correction
+    # Replace any read_csv, open, etc. loading csv or txt files with DATA_FILE_PATH
+    s = re.sub(
+        r'(read_csv|open)\(\s*r?["\'][^"\']+\.(csv|txt)["\']',
+        r'\1(DATA_FILE_PATH',
+        s
+    )
+    
+    # Replace open for json metadata files with METADATA_FILE_PATH
+    s = re.sub(
+        r'open\(\s*r?["\'][^"\']+\.json["\']',
+        r'open(METADATA_FILE_PATH',
+        s
+    )
+    
+    # Replace literal output path variables or placeholders
+    s = s.replace("{OUTPUT_DIR}", "OUTPUT_DIR").replace("{OUTPUT}", "OUTPUT_DIR")
+    s = re.sub(
+        r'["\']output/[^"\']+["\']',
+        r'OUTPUT_DIR',
+        s
+    )
+    
+    # Combine preamble and corrected code
+    return path_preamble + "\n" + s
 
 
 def _validate_python_syntax(code: str) -> tuple[bool, str]:
@@ -858,8 +942,10 @@ def _extract_code_from_llm_response(raw: str) -> str:
             if i % 2 == 1:  # Odd indices are inside fences
                 # Skip language identifier
                 lines = part.split("\n")
-                if lines and lines[0].strip().lower() in ("python", "py", "json", ""):
+                if lines and lines[0].strip().lower() in ("python", "py", ""):
                     code_blocks.append("\n".join(lines[1:]).strip())
+                elif lines and lines[0].strip().lower() in ("json", "yaml", "yml", "xml", "markdown", "md", "bash", "sh", "text", "txt", "javascript", "js", "html", "css"):
+                    continue
                 else:
                     code_blocks.append(part.strip())
         if code_blocks:
@@ -933,7 +1019,7 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
     if isinstance(parsed, dict):
         # Got a proper JSON response
         corrected_code = parsed.get("corrected_code", "")
-        if not corrected_code:
+        if (corrected_code is None) or ("corrected_code" not in parsed):
             # Maybe the code is in a different field or needs extraction
             corrected_code = _extract_code_from_llm_response(raw)
         
