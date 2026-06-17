@@ -259,93 +259,6 @@ def _validate_business_rules(
     return errors
 
 
-def _validate_output_semantically(
-    json_output: Dict[str, Any],
-    task_name: str,
-    task_description: str = "",
-    generated_code: str = "",
-    sample_data: str = "",
-    min_results: int = 0,
-    skip_code_matching: bool = False,
-) -> tuple[Optional[TaskOutput], Optional[str], Dict[str, Any]]:
-    """
-    Combined semantic validation: schema validation + business rules + LLM code matching.
-    
-    This is the primary validation function that should be used.
-    
-    IMPORTANT: Blank output is acceptable if code is correct.
-    Pass task_description and generated_code for LLM-based code-description matching.
-    
-    Args:
-        json_output: JSON dict to validate
-        task_name: Expected task name
-        task_description: Task description for LLM code matching (optional)
-        generated_code: Generated code for LLM matching (optional)
-        sample_data: Sample CSV text or example input used to judge code behavior
-        min_results: Minimum required results in result_summary (default 0 - allow blank output)
-        skip_code_matching: If True, bypass LLM code correctness matching
-    
-    Returns:
-        (validated_object: Optional[TaskOutput], error_message: Optional[str], semantic_details: Dict)
-        - If valid: (TaskOutput instance, None, details_dict)
-        - If invalid: (None, formatted_error_message, details_dict)
-        - semantic_details dict contains: {'performed': bool, 'passed': bool, 'reasoning': str}
-    
-    Examples:
-        >>> output, error, sem_details = _validate_output_semantically(json_data, "my_task", task_description=desc, generated_code=code, sample_data=data, min_results=0)
-        >>> if output:
-        ...     print(f"Valid: {output.task_name}, semantic check: {sem_details['passed']}")
-        ... else:
-        ...     print(f"Invalid: {error}")
-    """
-    # Initialize semantic details tracking
-    semantic_details = {
-        "performed": False,
-        "passed": False,
-        "reasoning": "Semantic validation skipped: missing task description or generated code.",
-    }
-
-    has_semantic_inputs = not skip_code_matching and bool((task_description or "").strip() and (generated_code or "").strip())
-    if sample_data and not skip_code_matching:
-        has_semantic_inputs = has_semantic_inputs or bool(sample_data.strip())
-
-    if has_semantic_inputs:
-        semantic_details["performed"] = True
-        semantic_details["reasoning"] = "Semantic validation executed."
-    
-    # Stage 1: Schema validation (strict Pydantic mode)
-    validated, schema_errors = _validate_output_schema(json_output)
-    if validated is None:
-        error_msg = "Semantic validation failed (schema):\n" + "\n".join(schema_errors)
-        if semantic_details["performed"]:
-            semantic_details["reasoning"] = error_msg[:300]
-        return None, error_msg, semantic_details
-    
-    # Inject code and description into validated object for LLM matching
-    if generated_code:
-        validated.generated_code = generated_code
-    if task_description:
-        validated.task_description = task_description
-    
-    # Stage 2: Business-rule validation (includes LLM code-description matching)
-    business_errors = _validate_business_rules(validated, task_name, sample_data, min_results, skip_code_matching)
-    if business_errors:
-        error_msg = "Semantic validation failed (business rules):\n" + "\n".join(
-            f"  • {e}" for e in business_errors
-        )
-        if semantic_details["performed"]:
-            semantic_details["passed"] = False
-            semantic_details["reasoning"] = "; ".join(business_errors[:2])[:200]  # First 200 chars
-        return None, error_msg, semantic_details
-    
-    # All validations passed
-    if semantic_details["performed"]:
-        semantic_details["passed"] = True
-        semantic_details["reasoning"] = "Code matches description, sample data, and output schema valid"
-    
-    return validated, None, semantic_details
-
-
 def _validate_output_structure(
     json_output: Dict[str, Any],
     task_name: str,
@@ -356,8 +269,8 @@ def _validate_output_structure(
     skip_code_matching: bool = False,
 ) -> tuple[Optional[TaskOutput], Optional[str], Dict[str, Any]]:
     """
-    Multi-stage validation with early type checks.
-    Includes LLM-based code-description matching with semantic validation tracking.
+    Multi-stage semantic validation with early type checks.
+    Includes strict schema validation, business rules, and LLM-based code-description matching.
     
     IMPORTANT: Blank output is acceptable if code is correct and matches description.
     
@@ -375,12 +288,6 @@ def _validate_output_structure(
         - If valid: (TaskOutput instance, None, details_dict)
         - If invalid: (None, error_message, details_dict)
         - semantic_details dict contains: {'performed': bool, 'passed': bool, 'reasoning': str}
-    
-    Examples:
-        >>> output, error, sem_details = _validate_output_structure(json_data, "task_x", task_description=desc, generated_code=code, sample_data=data, min_results=0)
-        >>> if output is not None:
-        ...     print("All validations passed!")
-        ...     print(f"Semantic check performed: {sem_details['performed']}, passed: {sem_details['passed']}")
     """
     # Stage 1: Type check - must be dict
     if not isinstance(json_output, dict):
@@ -390,14 +297,50 @@ def _validate_output_structure(
             "reasoning": f"Output must be a JSON object (dict), got {type(json_output).__name__}",
         }
         return None, semantic_details["reasoning"], semantic_details
+
+    # Stage 2: Initialize semantic details tracking
+    semantic_details = {
+        "performed": False,
+        "passed": False,
+        "reasoning": "Semantic validation skipped: missing task description or generated code.",
+    }
+
+    has_semantic_inputs = not skip_code_matching and bool((task_description or "").strip() and (generated_code or "").strip())
+    if sample_data and not skip_code_matching:
+        has_semantic_inputs = has_semantic_inputs or bool(sample_data.strip())
+
+    if has_semantic_inputs:
+        semantic_details["performed"] = True
+        semantic_details["reasoning"] = "Semantic validation executed."
     
-    # Stage 2: Semantic validation (schema + business rules + LLM matching)
-    return _validate_output_semantically(
-        json_output,
-        task_name,
-        task_description,
-        generated_code,
-        sample_data,
-        min_results,
-        skip_code_matching,
-    )
+    # Stage 3: Schema validation (strict Pydantic mode)
+    validated, schema_errors = _validate_output_schema(json_output)
+    if validated is None:
+        error_msg = "Semantic validation failed (schema):\n" + "\n".join(schema_errors)
+        if semantic_details["performed"]:
+            semantic_details["reasoning"] = error_msg[:300]
+        return None, error_msg, semantic_details
+    
+    # Inject code and description into validated object for LLM matching
+    if generated_code:
+        validated.generated_code = generated_code
+    if task_description:
+        validated.task_description = task_description
+    
+    # Stage 4: Business-rule validation (includes LLM code-description matching)
+    business_errors = _validate_business_rules(validated, task_name, sample_data, min_results, skip_code_matching)
+    if business_errors:
+        error_msg = "Semantic validation failed (business rules):\n" + "\n".join(
+            f"  • {e}" for e in business_errors
+        )
+        if semantic_details["performed"]:
+            semantic_details["passed"] = False
+            semantic_details["reasoning"] = "; ".join(business_errors[:2])[:200]  # First 200 chars
+        return None, error_msg, semantic_details
+    
+    # All validations passed
+    if semantic_details["performed"]:
+        semantic_details["passed"] = True
+        semantic_details["reasoning"] = "Code matches description, sample data, and output schema valid"
+    
+    return validated, None, semantic_details

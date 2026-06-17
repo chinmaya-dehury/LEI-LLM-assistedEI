@@ -434,7 +434,7 @@ def _execute_task_script(script_path: str, timeout: int = 60) -> Dict[str, objec
     }
 
 
-def _normalize_code_string(code: str) -> str:
+def _normalize_code_string(code: str, data_type: str = None) -> str:
     """Convert JSON-escaped/code-fenced text into plain Python source and auto-repair paths/typos."""
     if not isinstance(code, str):
         return ""
@@ -453,17 +453,49 @@ def _normalize_code_string(code: str) -> str:
     s = s.replace("\\r\\n", "\n").replace("\\n", "\n").replace("\\t", "\t")
     s = s.replace("\\'", "'").replace('\\"', '"')
     
-    # Auto-repair common boolean/null typos
-    s = re.sub(r'\bfalse\b', 'False', s)
-    s = re.sub(r'\btrue\b', 'True', s)
-    s = re.sub(r'\bnull\b', 'None', s)
-    
-    # Resolve DATA_TYPE dynamically
+    # Auto-repair common boolean/null typos outside string literals/comments using token offsets
+    import tokenize
+    import io
     try:
-        from config import DATA_TYPE as config_dt
-        data_type = os.environ.get("DATA_TYPE", config_dt)
+        tokens = list(tokenize.tokenize(io.BytesIO(s.encode('utf-8')).readline))
+        replacements = {}
+        for tok in tokens:
+            if tok.type == tokenize.NAME and tok.string in {"true", "false", "null"}:
+                line_num = tok.start[0]
+                start_col = tok.start[1]
+                end_col = tok.end[1]
+                val = tok.string
+                
+                if line_num not in replacements:
+                    replacements[line_num] = []
+                replacements[line_num].append((start_col, end_col, val))
+                
+        lines = s.splitlines(keepends=True)
+        for line_num, reps in replacements.items():
+            line_idx = line_num - 1
+            if line_idx >= len(lines):
+                continue
+            # Sort in reverse order of start_col so offsets remain valid during replacements
+            reps.sort(key=lambda x: x[0], reverse=True)
+            line_str = lines[line_idx]
+            for start, end, val in reps:
+                rep_val = "True" if val == "true" else ("False" if val == "false" else "None")
+                line_str = line_str[:start] + rep_val + line_str[end:]
+            lines[line_idx] = line_str
+        s = "".join(lines)
     except Exception:
-        data_type = "lab-data"  # fallback default
+        # Fallback to simple regex if tokenization fails (e.g. invalid syntax)
+        s = re.sub(r'\bfalse\b', 'False', s)
+        s = re.sub(r'\btrue\b', 'True', s)
+        s = re.sub(r'\bnull\b', 'None', s)
+
+    # Resolve data_type dynamically if not provided
+    if not data_type:
+        try:
+            from config import DATA_TYPE as config_dt
+            data_type = os.environ.get("DATA_TYPE", config_dt)
+        except Exception:
+            data_type = "lab-data"  # fallback default
         
     # Inject robust path preamble
     path_preamble = f"""# Programmatic path resolution pre-injected for reliability
@@ -488,10 +520,14 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 """
     
     # Apply regex path correction
-    # Replace any read_csv, open, etc. loading csv or txt files with DATA_FILE_PATH
     s = re.sub(
-        r'(read_csv|open)\(\s*r?["\'][^"\']+\.(csv|txt)["\']',
-        r'\1(DATA_FILE_PATH',
+        r'read_csv\(\s*r?["\'][^"\']+["\']',
+        r'read_csv(DATA_FILE_PATH',
+        s
+    )
+    s = re.sub(
+        r'open\(\s*r?["\'](?:[^"\']+\.(csv|txt)|path_to_your_file|your_file)["\']',
+        r'open(DATA_FILE_PATH',
         s
     )
     
@@ -505,13 +541,51 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
     # Replace literal output path variables or placeholders
     s = s.replace("{OUTPUT_DIR}", "OUTPUT_DIR").replace("{OUTPUT}", "OUTPUT_DIR")
     s = re.sub(
-        r'["\']output/[^"\']+["\']',
-        r'OUTPUT_DIR',
+        r'["\']output/([^"\']+)["\']',
+        r'os.path.join(OUTPUT_DIR, "\1")',
         s
     )
     
-    # Combine preamble and corrected code
-    return path_preamble + "\n" + s
+    # Handle missing imports
+    imports_to_check = [
+        ("pd.", "import pandas as pd"),
+        ("pandas", "import pandas as pd"),
+        ("np.", "import numpy as np"),
+        ("numpy", "import numpy as np"),
+        ("plt.", "import matplotlib.pyplot as plt"),
+        ("pyplot", "import matplotlib.pyplot as plt"),
+        ("sns.", "import seaborn as sns"),
+        ("seaborn", "import seaborn as sns"),
+        ("json.", "import json"),
+        ("os.", "import os"),
+        ("sys.", "import sys"),
+        ("re.", "import re"),
+        ("Path", "from pathlib import Path"),
+        ("datetime", "from datetime import datetime"),
+        ("math.", "import math"),
+        ("PCA", "from sklearn.decomposition import PCA"),
+        ("shutil", "import shutil"),
+        ("csv.", "import csv"),
+    ]
+
+    missing_imports = []
+    for usage, import_stmt in imports_to_check:
+        if usage in s:
+            import_pattern = import_stmt.replace("import ", r"import\s+").replace("from ", r"from\s+")
+            if not re.search(import_pattern, s):
+                if import_stmt not in missing_imports:
+                    missing_imports.append(import_stmt)
+
+    if missing_imports:
+        imports_block = "\n".join(missing_imports) + "\n"
+        s = imports_block + s
+
+    # Inject the path_block if we used any path constants in our replacements
+    if "DATA_FILE_PATH" in s or "METADATA_FILE_PATH" in s or "OUTPUT_DIR" in s:
+        if "Programmatic path resolution" not in s:
+            s = path_preamble + "\n" + s
+            
+    return s
 
 
 def _validate_python_syntax(code: str) -> tuple[bool, str]:
@@ -1126,8 +1200,16 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
         try:
             with open(script_path, "r", encoding="utf-8") as f:
                 generated_code = f.read()
-        except Exception:
-            pass
+            
+            # Programmatic Auto-Repair BEFORE syntax check and execution
+            repaired_code = _normalize_code_string(generated_code, datatype)
+            if repaired_code != generated_code:
+                print(f"[Auto-Repair] Programmatically repaired paths/casing/imports in script: {os.path.basename(script_path)}")
+                with open(script_path, "w", encoding="utf-8") as f_out:
+                    f_out.write(repaired_code)
+                generated_code = repaired_code
+        except Exception as e:
+            print(f"[Warning] Auto-repair failed for script {os.path.basename(script_path)}: {e}")
 
     syntax_valid, syntax_error = _validate_python_syntax(generated_code)
     if not syntax_valid:

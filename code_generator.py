@@ -341,12 +341,24 @@ Tasks (<=2):
             return prefix + escaped_code + suffix
         return re.sub(pattern, replacer, text, flags=re.DOTALL)
 
+    def repair_unescaped_code_strings(text: str) -> str:
+        # Match "code": " followed by multiline content up to the closing " and newline with } or ,
+        pattern = r'("code"\s*:\s*")(.*?)("\s*(?=\n\s*[},]))'
+        def replacer(match):
+            prefix = match.group(1)
+            code_content = match.group(2)
+            suffix = match.group(3)
+            escaped_code = json.dumps(code_content)
+            return prefix + escaped_code[1:-1] + suffix
+        return re.sub(pattern, replacer, text, flags=re.DOTALL)
+
     def parse_json(text: str):
         try:
             return json.loads(text)
         except Exception:
             try:
                 repaired = repair_invalid_triple_quotes(text)
+                repaired = repair_unescaped_code_strings(repaired)
                 return json.loads(repaired)
             except Exception:
                 return None
@@ -355,8 +367,9 @@ Tasks (<=2):
     if not tasks_json:
         try:
             repaired_raw = repair_invalid_triple_quotes(raw_output)
+            repaired_raw = repair_unescaped_code_strings(repaired_raw)
             tasks_json = extract_first_json_object(repaired_raw)
-            print(f"[DEBUG] Successfully extracted JSON after repairing triple quotes")
+            print(f"[DEBUG] Successfully extracted JSON after repairing triple quotes/unescaped strings")
         except Exception:
             pass
 

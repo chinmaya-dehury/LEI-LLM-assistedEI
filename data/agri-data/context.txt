@@ -6,7 +6,7 @@ The objective is to support precision crop prediction, environmental stress anal
 
 The deployment environment includes smart farms with varying soil types (Sandy, Loamy, Clay) and different growth stages (Seedling, Vegetative, Flowering).
 
-Useful analytical insights may include:
+Useful analytical insights may include (not limited to):
 - Precision crop prediction and classification (e.g., matching NPK, temperature, and soil moisture to labels).
 - Composite environmental stress analysis using derived features like Temperature-Humidity Index (THI) and Photosynthesis Potential (PP).
 - Resource management optimization by analyzing Fertilizer Usage, Irrigation Frequency, and Water Usage Efficiency (L/kg).

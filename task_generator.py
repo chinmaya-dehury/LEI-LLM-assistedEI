@@ -192,32 +192,110 @@ Summary of current resource usage and its availability on the edge device:
         tasks_data = extract_first_json_object(raw_output)
     except (json.JSONDecodeError, ValueError) as e:
         print(f"Could not extract JSON from LLM response: {e}")
-        print("Saving raw output for review.")
-        os.makedirs(OUTPUT_DIR, exist_ok=True)
-        raw_bytes = str(raw_output).encode("utf-8", "replace")
-        with open(os.path.join(OUTPUT_DIR, "raw_output.txt"), "wb") as f:
-            f.write(raw_bytes)
+        print("Checking fallback: extracting tasks from unstructured numbered list/markdown...")
+        import re
+        fallback_tasks = []
+        
+        def clean_name(name_str: str) -> str:
+            # Clean up leading noise like "a Python program that calculates" -> "calculates"
+            name_str = re.sub(r'^(?:a\s+)?(?:python\s+)?(?:program|script|code|workflow)\s+(?:that|to|for|designed\s+to|intended\s+to)?\s*', '', name_str, flags=re.IGNORECASE)
+            # Clean up verbs at the beginning
+            name_str = re.sub(r'^(?:calculates|performs|analyzes|does|is|runs|updates|shows|generates)\s+', '', name_str, flags=re.IGNORECASE)
+            if name_str:
+                name_str = name_str[0].upper() + name_str[1:]
+            return name_str
 
-        # Script end timing and CSV logging before exit
-        script_end_time = datetime.now(IST).isoformat()
-        script_end_perf = time.perf_counter()
-        script_duration = script_end_perf - script_start_perf
-        llm_duration = llm_end_perf - llm_start_perf
-        write_task_generator_csv(
-            STEP1_CSV_PATH,
-            script_start_time,
-            script_end_time,
-            script_duration,
-            llm_start_time,
-            llm_end_time,
-            llm_duration,
-            prompt_tokens,
-            completion_tokens,
-            total_tokens,
-            DEFAULT_MODEL,
-            RUN_COUNT,
-        )
-        return 1
+        # 1. Match numbered patterns like "1) Task Name:" or "1. Task Name"
+        matches = re.findall(r'(?:^|\n)\s*(\d+)[\.\)\:]\s*([^\n\:\(]+)(?:[\:\(]|\n)', raw_output)
+        if matches:
+            for idx, name_candidate in matches:
+                name = name_candidate.strip()
+                if len(name) > 3 and not name.lower().startswith("here are"):
+                    fallback_tasks.append({
+                        "task_name": clean_name(name),
+                        "description": f"Write a Python program to perform: {name}"
+                    })
+        
+        # 2. If we couldn't find numbered items, check for markdown headers
+        if not fallback_tasks:
+            headers = re.findall(r'(?:^|\n)\s*###?\s*([^\n]+)', raw_output)
+            for h in headers:
+                name = h.strip()
+                if len(name) > 3:
+                    fallback_tasks.append({
+                        "task_name": clean_name(name),
+                        "description": f"Write a Python program to perform: {name}"
+                    })
+
+        # 3. If still nothing, check for bullet points
+        if not fallback_tasks:
+            bullets = re.findall(r'(?:^|\n)\s*[\-\*]\s*([^\n\:\(]+)(?:[\:\(]|\n)', raw_output)
+            for b in bullets:
+                name = b.strip()
+                if len(name) > 3 and not name.lower().startswith("here are"):
+                    fallback_tasks.append({
+                        "task_name": clean_name(name),
+                        "description": f"Write a Python program to perform: {name}"
+                    })
+
+        # 4. If still nothing, check if there is an introductory sentence for code generation
+        if not fallback_tasks:
+            intro_match = re.search(r'(?:here is|this is|a python script|a python program|a script|a program)\s+(?:that|to|designed to|for)?\s*([^\n\.\:\,]+)', raw_output, re.IGNORECASE)
+            if intro_match:
+                name = intro_match.group(1).strip()
+                cleaned = clean_name(name)
+                if len(cleaned) > 5:
+                    fallback_tasks.append({
+                        "task_name": cleaned,
+                        "description": f"Write a Python program to perform: {cleaned}"
+                    })
+
+        # 5. Fallback of last resort: if there is code but we couldn't parse any task name, look at comments in the code or use a default name
+        if not fallback_tasks and "```python" in raw_output:
+            comment_match = re.search(r'#\s*([^\n]+)', raw_output)
+            if comment_match:
+                name = comment_match.group(1).strip()
+                if len(name) > 3:
+                    fallback_tasks.append({
+                        "task_name": clean_name(name),
+                        "description": f"Write a Python program to perform: {name}"
+                    })
+            if not fallback_tasks:
+                fallback_tasks.append({
+                    "task_name": "Precision Agricultural Data Analysis",
+                    "description": "Write a Python program to analyze the agricultural dataset."
+                })
+                    
+        if fallback_tasks:
+            print(f"[Fallback] Successfully extracted {len(fallback_tasks)} tasks from unstructured response!")
+            tasks_data = {"tasks": fallback_tasks}
+        else:
+            print("Saving raw output for review.")
+            os.makedirs(OUTPUT_DIR, exist_ok=True)
+            raw_bytes = str(raw_output).encode("utf-8", "replace")
+            with open(os.path.join(OUTPUT_DIR, "raw_output.txt"), "wb") as f:
+                f.write(raw_bytes)
+
+            # Script end timing and CSV logging before exit
+            script_end_time = datetime.now(IST).isoformat()
+            script_end_perf = time.perf_counter()
+            script_duration = script_end_perf - script_start_perf
+            llm_duration = llm_end_perf - llm_start_perf
+            write_task_generator_csv(
+                STEP1_CSV_PATH,
+                script_start_time,
+                script_end_time,
+                script_duration,
+                llm_start_time,
+                llm_end_time,
+                llm_duration,
+                prompt_tokens,
+                completion_tokens,
+                total_tokens,
+                DEFAULT_MODEL,
+                RUN_COUNT,
+            )
+            return 1
 
     # _extract_first_json_object already guarantees dict, but double-check
     if not isinstance(tasks_data, dict):

@@ -67,6 +67,82 @@ def _repair_truncated_json(s: str) -> str:
     return s + suffix
 
 
+def _repair_json_structure(s: str) -> str:
+    """Repair mismatched bracket/brace enclosures in LLM-generated JSON."""
+    stack = []
+    in_string = False
+    escape_next = False
+    repaired_chars = []
+    
+    i = 0
+    while i < len(s):
+        char = s[i]
+        
+        if escape_next:
+            escape_next = False
+            repaired_chars.append(char)
+            i += 1
+            continue
+            
+        if char == '\\':
+            escape_next = True
+            repaired_chars.append(char)
+            i += 1
+            continue
+            
+        if char == '"':
+            in_string = not in_string
+            repaired_chars.append(char)
+            i += 1
+            continue
+            
+        if in_string:
+            repaired_chars.append(char)
+            i += 1
+            continue
+            
+        if char == '{':
+            stack.append('}')
+            repaired_chars.append(char)
+        elif char == '[':
+            stack.append(']')
+            repaired_chars.append(char)
+        elif char == '}':
+            if stack:
+                if stack[-1] == '}':
+                    stack.pop()
+                    repaired_chars.append(char)
+                elif stack[-1] == ']':
+                    repaired_chars.append(']')
+                    stack.pop()
+                    if stack and stack[-1] == '}':
+                        stack.pop()
+                        repaired_chars.append('}')
+                    else:
+                        repaired_chars.append('}')
+            else:
+                repaired_chars.append(char)
+        elif char == ']':
+            if stack:
+                if stack[-1] == ']':
+                    stack.pop()
+                    repaired_chars.append(char)
+                elif stack[-1] == '}':
+                    repaired_chars.append('}')
+                    stack.pop()
+            else:
+                repaired_chars.append(char)
+        else:
+            repaired_chars.append(char)
+            
+        i += 1
+        
+    for expected in reversed(stack):
+        repaired_chars.append(expected)
+        
+    return "".join(repaired_chars)
+
+
 def extract_first_json_object(text: str) -> dict:
     """
     Extract first JSON object from text that may contain extra content.
@@ -108,8 +184,41 @@ def extract_first_json_object(text: str) -> dict:
     except json.JSONDecodeError as e:
         # If standard parsing fails, try to fix unescaped control characters
         # This handles cases where LLM returns JSON with literal newlines in strings
+        import re
+
+        def repair_invalid_triple_quotes(text: str) -> str:
+            pattern = r'(:\s*)"""(.*?)"""(\s*(?=[,}\]]))'
+            def replacer(match):
+                prefix = match.group(1)
+                code_content = match.group(2)
+                suffix = match.group(3)
+                escaped_code = json.dumps(code_content)
+                return prefix + escaped_code + suffix
+            return re.sub(pattern, replacer, text, flags=re.DOTALL)
+
+        def repair_unescaped_code_strings(text: str) -> str:
+            pattern = r'("code"\s*:\s*")(.*?)("\s*(?=\n\s*[},]))'
+            def replacer(match):
+                prefix = match.group(1)
+                code_content = match.group(2)
+                suffix = match.group(3)
+                escaped_code = json.dumps(code_content)
+                return prefix + escaped_code[1:-1] + suffix
+            return re.sub(pattern, replacer, text, flags=re.DOTALL)
+
         json_str = s[start:]
+        json_str = repair_invalid_triple_quotes(json_str)
+        json_str = repair_unescaped_code_strings(json_str)
         
+        # Try stack-based structural repair for mismatched brackets/braces
+        try:
+            struct_repaired = _repair_json_structure(json_str)
+            obj = json.loads(struct_repaired)
+            if isinstance(obj, dict):
+                return obj
+        except Exception:
+            pass
+
         # Find the closing brace by counting braces (more robust than fixing escapes)
         brace_count = 0
         in_string = False

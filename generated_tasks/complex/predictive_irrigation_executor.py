@@ -1,3 +1,4 @@
+import re
 """
 Auto-generated Complex Task Executor
 Task: Predictive Irrigation
@@ -275,7 +276,8 @@ def analyze_and_combine_results(subtask_results):
 
 
 def main():
-    print('\n' + '=' * 80)
+    print('
+' + '=' * 80)
     print('[WORKFLOW] PREDICTIVE IRRIGATION')
     print('=' * 80)
 
@@ -301,7 +303,8 @@ def main():
     result_path = result_dir / result_filename
     result_path.write_text(json.dumps(final_payload, ensure_ascii=False, indent=2), encoding='utf-8')
 
-    print('\n' + '=' * 80)
+    print('
+' + '=' * 80)
     print('[RESULT] COMBINED METRICS PAYLOAD')
     print('=' * 80)
     print(f"Status: {final_payload['status']}")

@@ -195,7 +195,7 @@ def run_pipeline() -> None:
 	failures: list[str] = []
 	_set_pipeline_run(model)
 
-	for run_num in range(1, 3):
+	for run_num in range(1, 2):
 		print(f"\nRunning pipeline for model {model} Run {run_num}")
 		# Removed _clean_before_run() to preserve generated_tasks and output directories
 		env_override = {

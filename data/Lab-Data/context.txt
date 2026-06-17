@@ -6,7 +6,7 @@ The objective is to support environmental analysis, anomaly detection, sensor he
 
 The deployment environment includes a laboratory setting with 54 IoT sensor nodes equipped with temperature, humidity, light, and voltage sensors. Sensors report readings with timestamps and epoch-based sequencing. Data spans from February 2004 onwards with approximately 2.3 million total readings collected.
 
-Useful analytical insights may include:
+Useful analytical insights may include (not limited to):
 - Temperature and humidity trend analysis across different motes and time periods
 - Light level pattern recognition and anomaly detection
 - Sensor battery health monitoring through voltage analysis and correlation with temperature
