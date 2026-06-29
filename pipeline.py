@@ -28,7 +28,7 @@ validate_data_type_exists(DATA_TYPE)
 BASE_DIR = Path(__file__).parent.resolve()
 STEP_1_SCRIPT = BASE_DIR / "task_generator.py"
 STEP_2_SCRIPT = BASE_DIR / "code_generator.py"
-STEP_3_SCRIPT = BASE_DIR / "scheduler" / "edge_scheduler.py"
+STEP_3_SCRIPT = BASE_DIR / "scheduler" / "edge_scheduler_sequential.py"
 
 TIMESTAMP_DIR = BASE_DIR / "timestamp_path" / DATA_TYPE
 RUN_ID = ""

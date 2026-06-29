@@ -9,6 +9,7 @@ data/agri-data/*.csv
 data/agri-data/*.txt
 data/meteo-data/*.csv
 data/meteo-data/*.txt
+data/air-quality/metadata.json
 
 # Environment and logs
 .env

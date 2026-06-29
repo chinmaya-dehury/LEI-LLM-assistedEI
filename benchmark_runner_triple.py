@@ -60,23 +60,38 @@ class ResourceProfiler:
 
     def _profile_loop(self):
         self.process.cpu_percent(interval=None)
+        child_processes = {}
         while not self._stop_event.is_set():
+            time.sleep(self.interval)
+            if self._stop_event.is_set():
+                break
             try:
                 cpu = self.process.cpu_percent(interval=None)
                 mem = self.process.memory_info().rss
                 
+                # Accrue child process stats (e.g. validator executions or scheduler tasks)
+                active_children = {}
                 for child in self.process.children(recursive=True):
                     try:
-                        cpu += child.cpu_percent(interval=None)
-                        mem += child.memory_info().rss
+                        pid = child.pid
+                        if pid in child_processes:
+                            child_obj = child_processes[pid]
+                        else:
+                            child_obj = child
+                            child_obj.cpu_percent(interval=None)  # Establish baseline
+                        
+                        active_children[pid] = child_obj
+                        
+                        cpu += child_obj.cpu_percent(interval=None)
+                        mem += child_obj.memory_info().rss
                     except (psutil.NoSuchProcess, psutil.AccessDenied):
                         pass
+                child_processes = active_children
                 
                 self.cpu_samples.append(cpu)
                 self.memory_samples.append(mem)
             except Exception:
                 pass
-            time.sleep(self.interval)
 
     def start(self):
         self.cpu_samples.clear()
@@ -350,9 +365,9 @@ def run_lei_benchmark(dataset_name: str, run_id: str, run_num: int, results_dir:
         if ret3 != 0:
             raise RuntimeError(f"validator.py failed: return code {ret3}")
         
-        ret4 = _run_lei_script_in_process(LEI_DIR / "scheduler" / "edge_scheduler.py", env)
+        ret4 = _run_lei_script_in_process(LEI_DIR / "scheduler" / "edge_scheduler_sequential.py", env)
         if ret4 != 0:
-            raise RuntimeError(f"edge_scheduler.py failed: return code {ret4}")
+            raise RuntimeError(f"edge_scheduler_sequential.py failed: return code {ret4}")
     finally:
         stats = profiler.stop(label=f"LEI_run{run_num}", results_dir=results_dir)
     
@@ -698,8 +713,8 @@ def main():
     parser.add_argument(
         "--runs",
         type=int,
-        default=10,
-        help="Number of iterations to execute for each framework (default: 10)"
+        default=5,
+        help="Number of iterations to execute for each framework (default: 5)"
     )
     args = parser.parse_args()
     
