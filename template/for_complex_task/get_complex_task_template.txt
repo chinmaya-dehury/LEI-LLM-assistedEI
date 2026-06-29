@@ -1,0 +1,88 @@
+
+USER_PROMPT_TEMPLATE = """
+You are provided with multiple environmental sensing domains running on an edge-intelligence framework.
+
+Each domain contains:
+- validated analytical tasks
+- task descriptions
+- sample sensor data
+- metadata definitions
+- operational context
+
+Your objective is to identify opportunities where multiple domains can be combined to generate higher-level insights that are not achievable using a single domain alone.
+
+Available domains and validated tasks:
+$DOMAINS_AND_TASKS
+
+Metadata for each domain:
+$DOMAIN_METADATA
+
+Sample data snapshots:
+$DOMAIN_SAMPLES
+
+Operational context for each domain:
+$DOMAIN_CONTEXTS
+
+Edge-device resource statistics:
+$RESOURCE_STATS
+
+Previously generated composite tasks:
+$EXISTING_COMPOSITE_TASKS
+
+Composite task generation guidelines:
+- Combine at least 2 domains
+- Reuse existing validated tasks whenever possible
+- Generate new subtasks only if necessary
+- Define logical task dependencies
+- Ensure meaningful data flow between subtasks
+- Avoid duplicate analytical pipelines
+- Prefer lightweight workflows suitable for edge execution
+- Focus on actionable and interpretable insights
+- Include explicit business-logic fields so the combined output is more than raw aggregation:
+  - final_insight: a concise interpretation of the combined result
+  - decision_rules: short rules describing how subtask outputs lead to that interpretation
+  - recommended_action: the resulting action, alert, or recommendation
+
+Examples of valuable composite reasoning:
+- Air quality + wind → pollution source movement analysis
+
+For each composite task:
+1. Define the high-level objective
+2. Identify reusable existing tasks
+3. Identify missing capabilities requiring generation
+4. Define dependency ordering between subtasks
+5. Describe how outputs from one subtask are consumed by another
+6. Ensure the workflow forms a valid DAG
+7. Explain the final combined interpretation and the business rule used to reach it
+
+Return ONLY valid JSON array using this schema:
+
+[
+  {
+    "task_name": "",
+    "description": "",
+    "business_value": "",
+    "final_insight": "",
+    "decision_rules": [],
+    "recommended_action": "",
+    "domains": [],
+    "subtasks": [
+      {
+        "subtask_name": "",
+        "task_id": "",
+        "domain": "",
+        "description": "",
+        "depends_on": []
+      }
+    ],
+    "missing_capabilities": [],
+    "data_flow": []
+  }
+]
+
+Rules:
+- Use exact existing task_id where reusable
+- Use "needs_generation" for unavailable subtasks
+- Return [] if no meaningful composite tasks exist
+- No explanations outside JSON
+"""

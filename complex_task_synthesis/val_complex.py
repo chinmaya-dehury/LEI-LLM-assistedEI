@@ -8,21 +8,23 @@ checks, and retry/fix behavior.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 from typing import Dict, Any
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
+# Define paths directly to avoid None-import issues from validator globals
+COMPLEX_TASKS_FILE = os.path.join("generated_tasks", "complex", "complex_tasks_list.json")
+COMPLEX_SCRIPTS_DIR = os.path.join("generated_tasks", "complex")
+COMPLEX_VALIDATOR_LOG = os.path.join("validator", "complex")
+
+from config import DEFAULT_MODEL
+from shared_utils import get_environment_vars
 from validator import (  # noqa: E402
-    COMPLEX_SCRIPTS_DIR,
-    COMPLEX_TASKS_FILE,
-    RUN_COUNT,
-    DEFAULT_MODEL,
-    COMPLEX_VALIDATOR_LOG,
     _build_complex_validation_targets,
     _load_complex_context_for,
     _load_complex_task_specs,
@@ -30,13 +32,27 @@ from validator import (  # noqa: E402
     validate_complex_generated_tasks,
 )
 
-
 def run_complex_validation() -> Dict[str, Any]:
     """Run complex-task validation in execution-first order.
 
     Each target is executed first, then the shared validator performs semantic
     validation by calling the LLM on the produced output.
     """
+    # Ensure global variables in validator module are initialized before calling validation
+    import validator
+    env_vars = get_environment_vars()
+    validator.RUN_ID = env_vars.get("RUN_ID", "complex_run")
+    validator.RUN_COUNT = env_vars.get("RUN_COUNT", "1")
+    validator.COMPLEX_TASKS_FILE = COMPLEX_TASKS_FILE
+    validator.COMPLEX_SCRIPTS_DIR = COMPLEX_SCRIPTS_DIR
+    validator.COMPLEX_VALIDATOR_LOG = COMPLEX_VALIDATOR_LOG
+    validator.ERROR_LOG_PATH = os.path.join(COMPLEX_SCRIPTS_DIR, "error.csv")
+    
+    # Initialize OpenAI client in validator
+    from openai import OpenAI
+    import config as cfg
+    validator.client = OpenAI(base_url=cfg.LLM_BASE_URL, api_key=cfg.LLM_API_KEY, timeout=120)
+    
     return validate_complex_generated_tasks(COMPLEX_TASKS_FILE, COMPLEX_SCRIPTS_DIR)
 
 
@@ -57,6 +73,21 @@ def validate_complex_generated_tasks_entry() -> Dict[str, object]:
     runtime output into the shared semantic validator, which uses the LLM to
     check schema and code-description alignment.
     """
+    # Ensure global variables in validator module are initialized
+    import validator
+    env_vars = get_environment_vars()
+    validator.RUN_ID = env_vars.get("RUN_ID", "complex_run")
+    validator.RUN_COUNT = env_vars.get("RUN_COUNT", "1")
+    validator.COMPLEX_TASKS_FILE = COMPLEX_TASKS_FILE
+    validator.COMPLEX_SCRIPTS_DIR = COMPLEX_SCRIPTS_DIR
+    validator.COMPLEX_VALIDATOR_LOG = COMPLEX_VALIDATOR_LOG
+    validator.ERROR_LOG_PATH = os.path.join(COMPLEX_SCRIPTS_DIR, "error.csv")
+    
+    # Initialize OpenAI client in validator
+    from openai import OpenAI
+    import config as cfg
+    validator.client = OpenAI(base_url=cfg.LLM_BASE_URL, api_key=cfg.LLM_API_KEY, timeout=120)
+
     targets = build_complex_validation_targets()
     results: list[Dict[str, object]] = []
 
@@ -68,8 +99,6 @@ def validate_complex_generated_tasks_entry() -> Dict[str, object]:
         if not script_path:
             continue
 
-        # The shared validator runs the script first, then performs semantic
-        # validation via the LLM on the captured output.
         result = validate_and_fix_task(script_path, task_info, target_scripts_dir)
         results.append(result)
 
@@ -77,7 +106,7 @@ def validate_complex_generated_tasks_entry() -> Dict[str, object]:
     failed = sum(1 for item in results if item.get("status") == "failed")
 
     summary = {
-        "run_count": RUN_COUNT,
+        "run_count": env_vars.get("RUN_COUNT", "1"),
         "model": DEFAULT_MODEL,
         "tasks": results,
         "summary": {

@@ -40,6 +40,8 @@ LEI-LLM-assistedEI/
 ├── .env.example                       # Example .env file with Ollama and cloud provider configs
 ├── pipeline.py                        # Main orchestrator: runs Steps 1-4 sequentially
 ├── resource_monitor.py                # Utility: logs CPU, memory, network metrics (used by all steps)
+├── benchmark_v3.py                    # Coordinator for LEI steps and Ollama models comparison
+├── benchmark_runner_triple.py         # Coordinator for 3-way framework comparison (LEI, AutoGen, LangGraph)
 │
 ├── task_generator.py                  # Step 1: Generate task list from data + LLM
 ├── code_generator.py                  # Step 2: Generate Python code for each task
@@ -55,21 +57,29 @@ LEI-LLM-assistedEI/
 │   └── get_validated.py
 │
 ├── data/                              # Input layer: sample data, metadata, context
-│   ├── air_quality/
-│   ├── soil/
-│   └── ...
+│   ├── agri-data/
+│   ├── air-quality/
+│   ├── lab-data/
+│   └── meteo-data/
 │
 ├── generated_tasks/                   # Output from Steps 1-2: task lists and generated scripts
-│   ├── <DATA_TYPE>/
-│   │   ├── tasks_list.json
-│   │   ├── task1_*.py
-│   │   ├── task2_*.py
-│   │   └── ...
+│   └── <DATA_TYPE>/
+│       ├── tasks_list.json
+│       ├── task1_*.py
+│       └── ...
 │
 ├── output/                            # Output from Step 4: task execution results
 │   └── <DATA_TYPE>/
 │       ├── task_output_*.json
 │       └── ...
+│
+├── results/                           # Output directory for benchmark results
+│   ├── benchmark_results_v3.csv       # Detailed model comparison step-level metrics
+│   ├── benchmark_summary_v3.csv       # Statistical summaries for model comparison
+│   └── <DATA_TYPE>/
+│       ├── benchmark_results_triple.csv # Detailed framework comparison metrics
+│       ├── benchmark_summary_triple.csv  # Statistical summaries for framework comparison
+│       └── samples/                   # High-frequency (0.1s) CPU/memory sample logs
 │
 ├── timestamp_path/                    # Execution timing logs for each step
 │   └── <DATA_TYPE>/
@@ -224,6 +234,42 @@ This executes Steps 1–4 sequentially for 5 runs with the configured model, log
 ```
 python resource_stat/stop_monitor.py
 ```
+
+## Run Benchmarks
+
+### 1. Framework Comparison (LEI vs AutoGen vs LangGraph)
+To compare the performance of LEI against AutoGen and LangGraph across all discovered datasets (e.g., `agri-data`, `air-quality`, etc.) for 10 runs each:
+
+1. Ensure that the sibling repositories (`autogen` and `langgraph`) are located in the same parent directory as `LEI-LLM-assistedEI`.
+2. Comment out any `DATA_TYPE` definitions inside your `.env` file since the script overrides it dynamically.
+3. Run the framework comparison script from the root of the `LEI-LLM-assistedEI` folder:
+   ```bash
+   python benchmark_runner_triple.py --runs 10
+   ```
+4. **Output Folder & Files**:
+   - Detailed iteration results: [benchmark_results_triple.csv](results/%3Cdataset_name%3E/benchmark_results_triple.csv) (saved in `results/<dataset_name>/`)
+   - Statistical summaries: [benchmark_summary_triple.csv](results/%3Cdataset_name%3E/benchmark_summary_triple.csv) (saved in `results/<dataset_name>/`)
+   - Raw CPU & memory usage samples (0.1s interval): `results/<dataset_name>/samples/`
+
+### 2. Ollama Code-Based Model Comparison on LEI Framework (v3)
+To compare the performance of different Ollama code models (`qwen2.5-coder`, `deepseek-coder`, `codegemma`, `granite-code`, `yi-coder`, `codellama`) across all datasets (`agri-data`, `air-quality`, `lab-data`, `meteo-data`) for 10 runs each, profiling step-by-step (task generation, code generation, validation, and scheduling):
+
+1. Ensure Ollama is running and has the following models pulled:
+   - `qwen2.5-coder:7b-instruct-q8_0`
+   - `deepseek-coder:6.7b-instruct-q8_0`
+   - `codegemma:7b-instruct-v1.1-q8_0`
+   - `granite-code:8b-instruct-q8_0`
+   - `yi-coder:9b-chat-q8_0`
+   - `codellama:7b-instruct-q8_0`
+2. Run the models comparison script from the root of the `LEI-LLM-assistedEI` folder:
+   ```bash
+   python benchmark_v3.py
+   ```
+3. **Output Folder & Files**:
+   - Detailed step-level execution metrics (task_generator, code_generator, validator, scheduler): [benchmark_results_v3.csv](results/benchmark_results_v3.csv) (saved in `results/`)
+   - Statistical summaries grouping by dataset, model, and pipeline step: [benchmark_summary_v3.csv](results/benchmark_summary_v3.csv) (saved in `results/`)
+   - Raw CPU & memory usage samples (0.1s interval) for each step: `results/<dataset_name>/samples/`
+
 
 ## Run individual steps
 * **Step 1 – Generate task list:**

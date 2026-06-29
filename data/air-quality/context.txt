@@ -1,0 +1,16 @@
+This dataset represents hourly averaged responses from an array of 5 metal oxide chemical sensors embedded in an Air Quality Chemical Multisensor Device.
+
+The IoT edge device continuously collects sensor readings for air quality monitoring and gas concentration estimation at road level.
+
+The objective is to support on-field air pollution assessment, identify environmental patterns, and support ground truth validation.
+
+The deployment environment includes a significantly polluted field area at road level within an Italian city, recorded from March 2004 to February 2005.
+
+Useful analytical insights may include (not limited to):
+- Estimation of CO, Non Metanic Hydrocarbons (NMHC), Benzene (C6H6), NOx, and NO2 concentrations compared against certified co-located reference analyzer ground truth.
+- Identification of sensor cross-sensitivities under varying temperature and relative/absolute humidity conditions.
+- Detection of both concept and sensor drifts over the year-long deployment timeline.
+
+The LLM should generate small, efficient, and modular Python programs suitable for execution on resource-constrained edge devices.
+
+Each generated task should focus on a single analytical insight while avoiding duplicate or computationally expensive operations.

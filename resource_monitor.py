@@ -9,7 +9,7 @@ Monitors Raspberry Pi system resources:
 
 Can be called from pipeline steps to log metrics at start/end of each step.
 
-Created on 18-12-2025 by Siddharth
+Created on 04-06-2026 by Siddharth
 """
 
 import os
@@ -58,6 +58,10 @@ def get_cpu_temperature() -> Optional[float]:
                 return temp_millidegrees / 1000.0
         
         # Alternative: using psutil (requires psutil with sensors)
+        # sensors_temperatures() may not be available on Windows
+        if not hasattr(psutil, 'sensors_temperatures'):
+            return None
+        
         temps = psutil.sensors_temperatures()
         if "coretemp" in temps:
             return temps["coretemp"][0].current
@@ -65,8 +69,16 @@ def get_cpu_temperature() -> Optional[float]:
             return temps["cpu_thermal"][0].current
         
         return None
+    except (AttributeError, FileNotFoundError, ValueError):
+        # Silent return on Windows or systems without sensor support
+        return None
     except Exception as e:
+<<<<<<< HEAD
         print(f"[WARNING] Could not read CPU temperature: {e}")
+=======
+        # Only warn on unexpected errors
+        print(f"[WARNING] Unexpected error reading CPU temperature: {e}")
+>>>>>>> benchmark-v3.0
         return None
 
 

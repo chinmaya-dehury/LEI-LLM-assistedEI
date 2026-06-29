@@ -1,0 +1,158 @@
+{
+  "domain": "meteo-data",
+  "data_source": {
+    "source_type": "sensor",
+    "provider": "High-Altitude Alpine Meteorological IoT Sensing Station",
+    "sampling_interval": "2min",
+    "data_format": "csv"
+  },
+  "columns": [
+    {
+      "name": "Station_ID",
+      "type": "integer",
+      "unit": null,
+      "range": null,
+      "description": "Station ID number identifying the sensing device"
+    },
+    {
+      "name": "Year",
+      "type": "integer",
+      "unit": null,
+      "range": null,
+      "description": "Year of measurement"
+    },
+    {
+      "name": "Month",
+      "type": "integer",
+      "unit": null,
+      "range": null,
+      "description": "Month of measurement"
+    },
+    {
+      "name": "Day",
+      "type": "integer",
+      "unit": null,
+      "range": null,
+      "description": "Day of measurement"
+    },
+    {
+      "name": "Hour",
+      "type": "integer",
+      "unit": null,
+      "range": null,
+      "description": "Hour of measurement (24-hour format)"
+    },
+    {
+      "name": "Minute",
+      "type": "integer",
+      "unit": null,
+      "range": null,
+      "description": "Minute of measurement"
+    },
+    {
+      "name": "Second",
+      "type": "integer",
+      "unit": null,
+      "range": null,
+      "description": "Second of measurement"
+    },
+    {
+      "name": "Time_Since_Epoch",
+      "type": "integer",
+      "unit": "s",
+      "range": null,
+      "description": "Time elapsed since the UNIX epoch"
+    },
+    {
+      "name": "Ambient_Temperature",
+      "type": "float",
+      "unit": "C",
+      "range": null,
+      "description": "Ambient air temperature recorded at the station"
+    },
+    {
+      "name": "Surface_Temperature",
+      "type": "float",
+      "unit": "C",
+      "range": null,
+      "description": "Ground surface temperature recorded at the station"
+    },
+    {
+      "name": "Solar_Radiation",
+      "type": "float",
+      "unit": "W/m^2",
+      "range": null,
+      "description": "Hourly averaged solar radiation intensity"
+    },
+    {
+      "name": "Relative_Humidity",
+      "type": "float",
+      "unit": "%",
+      "range": {
+        "min": 0,
+        "max": 100
+      },
+      "description": "Relative humidity level"
+    },
+    {
+      "name": "Soil_Moisture",
+      "type": "float",
+      "unit": "%",
+      "range": {
+        "min": 0,
+        "max": 100
+      },
+      "description": "Soil volumetric water content percentage"
+    },
+    {
+      "name": "Watermark",
+      "type": "float",
+      "unit": "kPa",
+      "range": null,
+      "description": "Watermark matric potential tension (negative indicates drier soil)"
+    },
+    {
+      "name": "Rain_Meter",
+      "type": "float",
+      "unit": "mm",
+      "range": null,
+      "description": "Precipitation amount measured by the rain gauge"
+    },
+    {
+      "name": "Wind_Speed",
+      "type": "float",
+      "unit": "m/s",
+      "range": null,
+      "description": "Wind speed recorded at the station"
+    },
+    {
+      "name": "Wind_Direction",
+      "type": "float",
+      "unit": "deg",
+      "range": {
+        "min": 0,
+        "max": 360
+      },
+      "description": "Wind direction in compass degrees"
+    }
+  ],
+  "data_quality": {
+    "missing_values": "allowed",
+    "missing_values_tag": "NaN",
+    "sensor_accuracy": "high"
+  },
+  "device_specs": {
+    "edge_device": "Alpine Weather Edge Node",
+    "cpu": "ARM Cortex-M7",
+    "memory": "512KB SRAM"
+  },
+  "resource_constraints": {
+    "max_cpu_percent": 80,
+    "max_memory_percent": 80,
+    "lightweight_execution_required": true
+  },
+  "storage": {
+    "type": "csv",
+    "sync_policy": "local"
+  }
+}

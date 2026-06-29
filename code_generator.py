@@ -23,9 +23,8 @@ import time
 import csv
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-from openai import OpenAI
 from config import LLM_BASE_URL, LLM_API_KEY, DATA_TYPE, DEFAULT_MODEL
-from string import Template
+
 from prompts.get_code import SYSTEM_PROMPT
 from typing import List
 import re
@@ -37,49 +36,91 @@ from shared_utils import (
     get_environment_vars,
     setup_timing_paths,
     append_timing_rows_to_csv,
+    validate_data_type_exists,
     write_code_generator_csv,
     IST,
 )
 
-# Ensure Unicode-safe stdout/stderr on Windows
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")
-if hasattr(sys.stderr, "reconfigure"):
-    sys.stderr.reconfigure(encoding="utf-8")
+import threading
+file_lock = threading.Lock()
 
-# Initialize the LLM client
-client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY)
-
-# Paths
-BASE_PATH = f"data/{DATA_TYPE}/"
-DATA_PATH = os.path.join(BASE_PATH, "sample_data.csv")
-META_PATH = os.path.join(BASE_PATH, "metadata.json")
-CONTEXT_PATH = os.path.join(BASE_PATH, "context.txt")
-OUTPUT_DIR = os.path.join("generated_tasks", DATA_TYPE)
-TASK_LIST_PATH = os.path.join(OUTPUT_DIR, "new_tasks.json")
-RESOURCE_SUMMARY_PATH = "resource_stat/resource_usage_summary.json"
-
-# Per-run CSV path with model name and run ID
-env_vars = get_environment_vars()
-RUN_ID = env_vars["RUN_ID"]
-RUN_COUNT = env_vars["RUN_COUNT"]
-timing_paths = setup_timing_paths(DATA_TYPE, "step2", DEFAULT_MODEL)
-TIMESTAMP_PATH = timing_paths["TIMESTAMP_PATH"]
-STEP2_CSV = timing_paths["STEP_CSV"]
-RESOURCE_CSV = timing_paths["RESOURCE_CSV"]
-
-
-# Step-level timing (for entire script)
-SCRIPT_START_TIME = datetime.now(IST).isoformat()
-SCRIPT_START_PERF = time.perf_counter()
-
-# Log resource metrics at start
-log_resource_metrics(RESOURCE_CSV, "step2_code_generator", "start", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
+# Placeholders for global variables populated in main()
+client = None
+DATA_PATH = None
+META_PATH = None
+CONTEXT_PATH = None
+OUTPUT_DIR = None
+TASK_LIST_PATH = None
+NEW_TASKS_PATH = None
+RESOURCE_SUMMARY_PATH = None
+RUN_ID = None
+RUN_COUNT = None
+TIMESTAMP_PATH = None
+STEP2_CSV = None
+RESOURCE_CSV = None
+SCRIPT_START_TIME = None
+SCRIPT_START_PERF = None
 
 def _truncate(text: str, max_chars: int) -> str:
     if not isinstance(text, str):
         return ""
     return text if len(text) <= max_chars else (text[:max_chars] + "\n... [truncated] ...")
+
+
+def get_previous_errors_for_task(task_dt: str, task_name: str) -> str:
+    """Read previous errors for the task from error.csv (or fallback error.txt)."""
+    custom_tasks_dir = os.environ.get("LEI_TASKS_DIR")
+    if custom_tasks_dir:
+        error_csv_path = os.path.join(custom_tasks_dir, "error.csv")
+        error_txt_path = os.path.join(custom_tasks_dir, "error.txt")
+    else:
+        error_csv_path = os.path.join("generated_tasks", task_dt, "error.csv")
+        error_txt_path = os.path.join("generated_tasks", task_dt, "error.txt")
+    
+    if os.path.exists(error_csv_path):
+        try:
+            import csv
+            errors = []
+            with open(error_csv_path, "r", newline="", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    if row.get("task_name") == task_name:
+                        errors.append(row)
+            
+            if errors:
+                # Sort errors by count descending (most common errors first)
+                errors.sort(key=lambda x: int(x.get("count", "1")), reverse=True)
+                
+                formatted = []
+                for idx, err in enumerate(errors):
+                    count = err.get("count", "1")
+                    exit_code = err.get("exit_code", "unknown")
+                    msg = err.get("error_message", "").strip()
+                    formatted.append(
+                        f"Error #{idx+1} (Occurred {count} time(s), Exit Code {exit_code}):\n{msg}"
+                    )
+                return "\n\n".join(formatted)
+        except Exception as e:
+            print(f"[WARNING] Could not parse error.csv: {e}")
+            
+    if os.path.exists(error_txt_path):
+        try:
+            with open(error_txt_path, "r", encoding="utf-8", errors="replace") as f:
+                content = f.read()
+            raw_entries = content.split("-" * 60)
+            entries = []
+            for entry in raw_entries:
+                entry_stripped = entry.strip()
+                if not entry_stripped:
+                    continue
+                if f"TASK: {task_name} |" in entry_stripped or f"TASK: {task_name}\n" in entry_stripped:
+                    entries.append(entry_stripped)
+            if entries:
+                return "\n\n".join(entries[-2:])
+        except Exception as e:
+            print(f"[WARNING] Could not parse error.txt: {e}")
+            
+    return ""
 
 
 def call_llm_for_task_code(task_payload: dict) -> dict:
@@ -93,7 +134,26 @@ def call_llm_for_task_code(task_payload: dict) -> dict:
     else:
         task_dt = task_payload.get("data_type", DATA_TYPE)
 
-    system_prompt = Template(SYSTEM_PROMPT).substitute(DATA_TYPE=task_dt)
+    # Retrieve task name (since batch size is 1, take the first task)
+    task_name = ""
+    if isinstance(task_payload, dict) and task_payload.get("tasks") and len(task_payload["tasks"]) > 0:
+        task_name = task_payload["tasks"][0].get("task_name", "")
+
+    previous_errors = ""
+    if task_dt and task_name:
+        previous_errors = get_previous_errors_for_task(task_dt, task_name)
+
+    previous_errors_section = ""
+    if previous_errors:
+        previous_errors_section = f"""
+### CRITICAL: FIX PREVIOUS EXECUTION ERROR(S)
+The previous attempt to generate code for this task failed validation.
+Analyze the error(s) below carefully (paying attention to exit code, traceback, missing imports/variables, or capitalization of keys e.g., 'Label' vs 'label'), and write corrected code that specifically resolves these issues and avoids repeating them:
+{previous_errors}
+"""
+
+    output_dir_str = os.environ.get("LEI_OUTPUT_DIR", os.path.join("output", task_dt)).replace("\\", "/")
+    system_prompt = SYSTEM_PROMPT.replace("{DATA_TYPE}", task_dt).replace("{OUTPUT_DIR}", output_dir_str)
 
     task_list_payload = json.dumps(task_payload, ensure_ascii=False, indent=2) \
         if isinstance(task_payload, dict) else str(task_payload)
@@ -145,6 +205,8 @@ Metadata:
 Context:
 {context}
 
+{previous_errors_section}
+
 Tasks (<=2):
 {task_list_payload}
 """.strip()
@@ -186,21 +248,22 @@ Tasks (<=2):
         script_duration = time.perf_counter() - SCRIPT_START_PERF
 
         # Log failed call timing
-        write_code_generator_csv(
-            STEP2_CSV,
-            SCRIPT_START_TIME,
-            script_end_time,
-            script_duration,
-            "",
-            "",
-            0,
-            0,
-            0,
-            0,
-            DEFAULT_MODEL,
-            RUN_COUNT,
-            "",
-        )
+        with file_lock:
+            write_code_generator_csv(
+                STEP2_CSV,
+                SCRIPT_START_TIME,
+                script_end_time,
+                script_duration,
+                "",
+                "",
+                0,
+                0,
+                0,
+                0,
+                DEFAULT_MODEL,
+                RUN_COUNT,
+                "",
+            )
         return None
 
     # Capture finish reason for diagnostics
@@ -217,14 +280,17 @@ Tasks (<=2):
             "[Generator] Empty LLM output. Check finish_reason/max_tokens and OpenRouter model availability. "
             "Saved debug response to output/debug/task_codegen_empty_content.json"
         )
+        print(f"[DEBUG] Response finish_reason: {finish_reason}")
+        print(f"[DEBUG] Token usage - Prompt: {prompt_tokens}, Completion: {completion_tokens}")
         return None
 
     # Parse using extract-first-json (tolerate extra text)
     tasks_json = None
     try:
         tasks_json = extract_first_json_object(raw_output)
-    except Exception:
-        raw_output = str(response)
+        print(f"[DEBUG] Successfully extracted JSON from LLM response")
+    except Exception as e:
+        print(f"[DEBUG] Failed to extract JSON: {e}")
 
     usage = getattr(response, "usage", None) or {}
     if isinstance(usage, dict):
@@ -244,36 +310,78 @@ Tasks (<=2):
 
     # Log successful call timing
     task_names = ",".join([t.get("task_name", "") for t in task_payload.get("tasks", [])]) if isinstance(task_payload, dict) else ""
-    write_code_generator_csv(
-        STEP2_CSV,
-        SCRIPT_START_TIME,
-        script_end_time,
-        script_duration,
-        llm_start_time,
-        llm_end_time,
-        llm_duration,
-        prompt_tokens,
-        completion_tokens,
-        total_tokens,
-        used_model,
-        RUN_COUNT,
-        task_names,
-    )
+    with file_lock:
+        write_code_generator_csv(
+            STEP2_CSV,
+            SCRIPT_START_TIME,
+            script_end_time,
+            script_duration,
+            llm_start_time,
+            llm_end_time,
+            llm_duration,
+            prompt_tokens,
+            completion_tokens,
+            total_tokens,
+            used_model,
+            RUN_COUNT,
+            task_names,
+        )
 
     print(f"[Generator] Model '{used_model}' success in {llm_duration:.2f}s. Raw length={len(raw_output)}")
 
     # Attempt strict JSON parse
+    def repair_invalid_triple_quotes(text: str) -> str:
+        # Match :" followed by optional spaces then triple quotes, then the content, then triple quotes and a delimiter
+        pattern = r'(:\s*)"""(.*?)"""(\s*(?=[,}\]]))'
+        def replacer(match):
+            prefix = match.group(1)
+            code_content = match.group(2)
+            suffix = match.group(3)
+            escaped_code = json.dumps(code_content)
+            return prefix + escaped_code + suffix
+        return re.sub(pattern, replacer, text, flags=re.DOTALL)
+
+    def repair_unescaped_code_strings(text: str) -> str:
+        # Match "code": " followed by multiline content up to the closing " and newline with } or ,
+        pattern = r'("code"\s*:\s*")(.*?)("\s*(?=\n\s*[},]))'
+        def replacer(match):
+            prefix = match.group(1)
+            code_content = match.group(2)
+            suffix = match.group(3)
+            escaped_code = json.dumps(code_content)
+            return prefix + escaped_code[1:-1] + suffix
+        return re.sub(pattern, replacer, text, flags=re.DOTALL)
+
     def parse_json(text: str):
         try:
             return json.loads(text)
         except Exception:
-            return None
+            try:
+                repaired = repair_invalid_triple_quotes(text)
+                repaired = repair_unescaped_code_strings(repaired)
+                return json.loads(repaired)
+            except Exception:
+                return None
+
+    # Try to extract JSON first, applying the repair if needed
+    if not tasks_json:
+        try:
+            repaired_raw = repair_invalid_triple_quotes(raw_output)
+            repaired_raw = repair_unescaped_code_strings(repaired_raw)
+            tasks_json = extract_first_json_object(repaired_raw)
+            print(f"[DEBUG] Successfully extracted JSON after repairing triple quotes/unescaped strings")
+        except Exception:
+            pass
 
     tasks_data = parse_json(raw_output)
     if not tasks_data:
         blob = _extract_json_blob(raw_output)
         if blob:
             tasks_data = parse_json(blob)
+
+    if not tasks_json and tasks_data:
+        tasks_json = tasks_data
+        print("[DEBUG] Using parsed tasks_data as fallback tasks_json")
 
     # Fallback: synthesize JSON if model returned code blocks instead of JSON
     if not tasks_json:
@@ -287,7 +395,21 @@ Tasks (<=2):
 
     if not tasks_json or "tasks" not in tasks_json or not isinstance(tasks_json["tasks"], list):
         print("[Generator] Could not parse LLM output into tasks JSON.")
+        print("[Generator] Attempting fallback: extracting code from code blocks...")
         _debug_dump_response(response, Path("output") / "debug", prefix="task_codegen_unparseable")
+        
+        # Fallback: try to extract code blocks from raw output
+        code_blocks = re.findall(r"```(?:python)?\s*(.+?)```", raw_output, flags=re.DOTALL | re.IGNORECASE)
+        if code_blocks:
+            print(f"[Generator] Found {len(code_blocks)} code block(s) in output")
+            # Return the first code block found
+            cleaned = [{
+                "task_name": task_payload.get("tasks", [{}])[0].get("task_name", "Unknown"),
+                "description": task_payload.get("tasks", [{}])[0].get("description", ""),
+                "code": code_blocks[0].strip()
+            }]
+            return {"tasks": cleaned}
+        
         try:
             out_dir = Path("output") / "debug"
             out_dir.mkdir(parents=True, exist_ok=True)
@@ -321,33 +443,121 @@ Tasks (<=2):
 
     if not cleaned:
         print("[Generator] Parsed output but found no matching tasks.")
+        print(f"[DEBUG] Requested task names: {requested_order}")
+        print(f"[DEBUG] Returned task names: {[t.get('task_name', '') for t in tasks_json.get('tasks', [])]}")
         return None
 
     return {"tasks": cleaned}
 
 
 def update_task_status_in_file(all_tasks_payload, task_name, status_message):
-    for task_entry in all_tasks_payload.get("tasks", []):
-        if task_entry.get("task_name") == task_name:
-            task_entry["status"] = status_message
-            break
-    with open(TASK_LIST_PATH, "w", encoding="utf-8") as out_file:
-        json.dump(all_tasks_payload, out_file, ensure_ascii=False, indent=2)
+    with file_lock:
+        for task_entry in all_tasks_payload.get("tasks", []):
+            if task_entry.get("task_name") == task_name:
+                task_entry["status"] = status_message
+                break
+        # Update tasks_list.json persistent archive
+        with open(TASK_LIST_PATH, "w", encoding="utf-8") as out_file:
+            json.dump(all_tasks_payload, out_file, ensure_ascii=False, indent=2)
+
+        # Update only the matching task in new_tasks.json (if it exists) to keep it decoupled from tasks_list.json history
+        if os.path.exists(NEW_TASKS_PATH) and os.path.getsize(NEW_TASKS_PATH) > 0:
+            try:
+                with open(NEW_TASKS_PATH, "r", encoding="utf-8") as f:
+                    new_tasks_payload = json.load(f)
+            except Exception:
+                new_tasks_payload = {"tasks": []}
+            
+            updated_new = False
+            for task_entry in new_tasks_payload.get("tasks", []):
+                if task_entry.get("task_name") == task_name:
+                    task_entry["status"] = status_message
+                    updated_new = True
+                    break
+            
+            if updated_new:
+                with open(NEW_TASKS_PATH, "w", encoding="utf-8") as out_file:
+                    json.dump(new_tasks_payload, out_file, ensure_ascii=False, indent=2)
 
 
 def normalize_code_string(code: str) -> str:
-    """Convert JSON-escaped/code-fenced text into plain Python source."""
+    """Convert JSON-escaped/code-fenced text into plain Python source and auto-repair paths/typos."""
     if not isinstance(code, str):
         return ""
     s = code.strip()
-    # strip fenced blocks if present
+    
+    # Strip markdown code blocks robustly
     if s.startswith("```"):
         s = re.sub(r"^```(?:python)?\s*", "", s, flags=re.IGNORECASE)
         s = re.sub(r"\s*```$", "", s)
-    # unescape common sequences if they appear literally
-    if "\\r\\n" in s or "\\n" in s or "\\t" in s:
-        s = s.replace("\\r\\n", "\n").replace("\\n", "\n").replace("\\t", "\t")
-    return s
+    elif "```python" in s:
+        match = re.search(r"```python\s*(.+?)\s*```", s, flags=re.DOTALL | re.IGNORECASE)
+        if match:
+            s = match.group(1)
+            
+    # Remove literal backslash sequences that should be normal escapes
+    s = s.replace("\\r\\n", "\n").replace("\\n", "\n").replace("\\t", "\t")
+    s = s.replace("\\'", "'").replace('\\"', '"')
+    
+    # Auto-repair common boolean/null typos
+    s = re.sub(r'\bfalse\b', 'False', s)
+    s = re.sub(r'\btrue\b', 'True', s)
+    s = re.sub(r'\bnull\b', 'None', s)
+    
+    # Resolve DATA_TYPE dynamically
+    try:
+        from config import DATA_TYPE as config_dt
+        data_type = os.environ.get("DATA_TYPE", config_dt)
+    except Exception:
+        data_type = "lab-data"  # fallback default
+        
+    # Inject robust path preamble
+    path_preamble = f"""# Programmatic path resolution pre-injected for reliability
+import os
+from pathlib import Path
+
+_curr_dir = Path(__file__).resolve().parent
+_root_dir = _curr_dir
+while _root_dir.name and not (_root_dir / "data").exists():
+    _parent = _root_dir.parent
+    if _parent == _root_dir:
+        break
+    _root_dir = _parent
+
+DATA_FILE_PATH = os.path.join(_root_dir, "data", "{data_type}", "raw_data.csv")
+if not os.path.exists(DATA_FILE_PATH):
+    DATA_FILE_PATH = os.path.join(_root_dir, "data", "{data_type}", "raw_data.txt")
+
+METADATA_FILE_PATH = os.path.join(_root_dir, "data", "{data_type}", "metadata.json")
+OUTPUT_DIR = os.path.join(_root_dir, "output", "{data_type}")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+"""
+    
+    # Apply regex path correction
+    # Replace any read_csv, open, etc. loading csv or txt files with DATA_FILE_PATH
+    s = re.sub(
+        r'(read_csv|open)\(\s*r?["\'][^"\']+\.(csv|txt)["\']',
+        r'\1(DATA_FILE_PATH',
+        s
+    )
+    
+    # Replace open for json metadata files with METADATA_FILE_PATH
+    s = re.sub(
+        r'open\(\s*r?["\'][^"\']+\.json["\']',
+        r'open(METADATA_FILE_PATH',
+        s
+    )
+    
+    # Replace literal output path variables or placeholders
+    s = s.replace("{OUTPUT_DIR}", "OUTPUT_DIR").replace("{OUTPUT}", "OUTPUT_DIR")
+    s = re.sub(
+        r'["\']output/[^"\']+["\']',
+        r'OUTPUT_DIR',
+        s
+    )
+    
+    # Combine preamble and corrected code
+    return path_preamble + "\n" + s
 
 def _extract_json_blob(text: str) -> str:
     """Extract a JSON object string from text that may contain extra content."""
@@ -435,41 +645,146 @@ def _debug_dump_response(response, out_dir: Path, prefix: str = "llm_response") 
     except Exception:
         # don't crash the pipeline due to debug logging
         pass
+def main() -> int:
+    global client, DATA_PATH, META_PATH, CONTEXT_PATH, OUTPUT_DIR, TASK_LIST_PATH, NEW_TASKS_PATH, RESOURCE_SUMMARY_PATH, RUN_ID, RUN_COUNT, TIMESTAMP_PATH, STEP2_CSV, RESOURCE_CSV, SCRIPT_START_TIME, SCRIPT_START_PERF
 
-def main() -> None:
+    # Ensure Unicode-safe stdout/stderr on Windows
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8")
+
+    from openai import OpenAI
+    # Initialize the LLM client
+    client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY, timeout=120)
+
+    # Validate that the DATA_TYPE folder exists with required files
+    validate_data_type_exists(DATA_TYPE)
+
+    # Paths
+    BASE_PATH = f"data/{DATA_TYPE}/"
+    DATA_PATH = os.path.join(BASE_PATH, "sample_data.csv")
+    META_PATH = os.path.join(BASE_PATH, "metadata.json")
+    CONTEXT_PATH = os.path.join(BASE_PATH, "context.txt")
+    OUTPUT_DIR = os.environ.get("LEI_TASKS_DIR", os.path.join("generated_tasks", DATA_TYPE))
+    TASK_LIST_PATH = os.path.join(OUTPUT_DIR, "tasks_list.json")  # Read from persistent task list
+    NEW_TASKS_PATH = os.path.join(OUTPUT_DIR, "new_tasks.json")    # For status updates
+    RESOURCE_SUMMARY_PATH = "resource_stat/resource_usage_summary.json"
+
+    # Per-run CSV path with model name and run ID
+    env_vars = get_environment_vars()
+    RUN_ID = env_vars["RUN_ID"]
+    RUN_COUNT = env_vars["RUN_COUNT"]
+    timing_paths = setup_timing_paths(DATA_TYPE, "step2", DEFAULT_MODEL)
+    TIMESTAMP_PATH = timing_paths["TIMESTAMP_PATH"]
+    STEP2_CSV = timing_paths["STEP_CSV"]
+    RESOURCE_CSV = timing_paths["RESOURCE_CSV"]
+
+    # Step-level timing (for entire script)
+    SCRIPT_START_TIME = datetime.now(IST).isoformat()
+    SCRIPT_START_PERF = time.perf_counter()
+
+    # Log resource metrics at start
+    log_resource_metrics(RESOURCE_CSV, "step2_code_generator", "start", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
+
     # ensure output dir exists
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     # ensure task list exists before trying to read it
     if not os.path.exists(TASK_LIST_PATH):
         print(f"[ERROR] Task list not found: {TASK_LIST_PATH}")
-        print("Create the new_tasks.json (or ensure pipeline writes it) and re-run.")
-        sys.exit(1)
+        print("Ensure task_generator.py has run and created tasks_list.json before running code_generator.py")
+        return 1
 
     with open(TASK_LIST_PATH, "r", encoding="utf-8") as f:
         tasks_payload = json.load(f)
 
-    pending_tasks = tasks_payload.get("tasks", [])
+    # Load tasks to generate code for from new_tasks.json to only generate code for the current run's tasks
+    if os.path.exists(NEW_TASKS_PATH) and os.path.getsize(NEW_TASKS_PATH) > 0:
+        try:
+            with open(NEW_TASKS_PATH, "r", encoding="utf-8") as f:
+                new_tasks_data = json.load(f)
+            pending_tasks = new_tasks_data.get("tasks", [])
+            print(f"[INFO] Loaded {len(pending_tasks)} tasks from new_tasks.json for code generation.")
+        except Exception as e:
+            print(f"[WARNING] Failed to load new_tasks.json: {e}. Falling back to tasks_list.json")
+            pending_tasks = tasks_payload.get("tasks", [])
+    else:
+        pending_tasks = tasks_payload.get("tasks", [])
+    
+    if not pending_tasks:
+        print(f"[WARNING] No tasks found to generate code.")
+        return 0
+
+    print(f"[INFO] Found {len(pending_tasks)} pending tasks for code generation.")
+    print(f"[INFO] LLM Model: {DEFAULT_MODEL}\n")
 
     # Build list of tasks that need generation, skip existing files
     tasks_to_generate = []
-    for task_info in pending_tasks:
+    for idx, task_info in enumerate(pending_tasks):
         name = task_info.get("task_name")
         if not name:
-            print(f" Skipping task with missing name: {task_info}")
-            task_info["status"] = "failed to generate correct code"
-            continue
+            task_id = task_info.get("task_id")
+            desc = task_info.get("description", "")
+            if desc:
+                import re
+                clean_desc = re.sub(r'[^a-zA-Z0-9\s_-]', '', desc)
+                clean_desc = clean_desc.strip().replace(' ', '_').replace('-', '_')
+                clean_desc = re.sub(r'_+', '_', clean_desc)
+                if len(clean_desc) > 50:
+                    clean_desc = clean_desc[:50].rstrip('_')
+                if task_id is not None:
+                    name = f"task_{task_id}_{clean_desc}"
+                else:
+                    name = f"task_{clean_desc}"
+            else:
+                if task_id is not None:
+                    name = f"task_{task_id}"
+                else:
+                    name = f"task_{idx + 1}"
+            
+            task_info["task_name"] = name
+            
+            # Sync back to tasks_payload (tasks_list.json)
+            matched = False
+            for t_entry in tasks_payload.get("tasks", []):
+                if task_id is not None and t_entry.get("task_id") == task_id:
+                    t_entry["task_name"] = name
+                    matched = True
+                    break
+                elif desc and t_entry.get("description") == desc:
+                    t_entry["task_name"] = name
+                    matched = True
+                    break
+            if not matched and idx < len(tasks_payload.get("tasks", [])):
+                tasks_payload["tasks"][idx]["task_name"] = name
+
+            # Save updated JSON lists
+            try:
+                with open(TASK_LIST_PATH, "w", encoding="utf-8") as out_file:
+                    json.dump(tasks_payload, out_file, ensure_ascii=False, indent=2)
+                if os.path.exists(NEW_TASKS_PATH):
+                    with open(NEW_TASKS_PATH, "w", encoding="utf-8") as out_file:
+                        json.dump({"tasks": pending_tasks}, out_file, ensure_ascii=False, indent=2)
+            except Exception as e:
+                print(f"[WARNING] Failed to write updated tasks with fallback names: {e}")
 
         existing_task_path = os.path.join(OUTPUT_DIR, f"{name}.py")
         if os.path.exists(existing_task_path):
-            print(f" Skipping {name} - existing script detected at {existing_task_path}.")
+            print(f" [SKIP] {name} - existing script detected.")
             update_task_status_in_file(tasks_payload, name, "code_generated")
             continue
 
         tasks_to_generate.append(task_info)
+        print(f" [QUEUE] {name}")
+    
+    print(f"\n[INFO] {len(tasks_to_generate)} tasks need code generation\n")
 
-    # Process one task per LLM call (prevents truncation on long code responses)
-    for t in tasks_to_generate:
+    # Group tasks into batches of up to 1 tasks
+    batch_size = 1
+    task_batches = [tasks_to_generate[i:i + batch_size] for i in range(0, len(tasks_to_generate), batch_size)]
+
+    def process_batch(batch) -> None:
         payload = {
             "tasks": [
                 {
@@ -477,53 +792,76 @@ def main() -> None:
                     "description": t.get("description", ""),
                     "data_type": t.get("data_type", DATA_TYPE),
                 }
+                for t in batch
             ]
         }
 
-        tn = t.get("task_name")
-        print(f"\nRequesting code for task: {tn}")
+        batch_names = [t.get("task_name") for t in batch]
+        print(f"\n[PROCESSING] Batch tasks: {', '.join(batch_names)}")
         generated = call_llm_for_task_code(payload)
 
         if not generated or not generated.get("tasks"):
-            update_task_status_in_file(tasks_payload, tn, "failed to generate correct code")
-            print(f" [ERROR] LLM did not return code for {tn}. Marked as failed.")
-            with open(TASK_LIST_PATH, "w", encoding="utf-8") as out_file:
-                json.dump(tasks_payload, out_file, ensure_ascii=False, indent=2)
-            continue
-
-        ret = (generated.get("tasks") or [{}])[0]
-        if ret and ret.get("code"):
-            filepath = os.path.join(OUTPUT_DIR, f"{tn}.py")
-            try:
-                code_text = normalize_code_string(ret.get("code", ""))
-                
-                # Prepend task description as docstring for clarity and validation
-                description = t.get('description', '')
-                if description:
-                    code_with_docstring = f'"""\nTask: {tn}\nDescription: {description}\n"""\n\n{code_text}'
-                else:
-                    code_with_docstring = code_text
-                
-                with open(filepath, "w", encoding="utf-8") as wf:
-                    wf.write(code_with_docstring)
-                print(f" [OK] Saved: {tn}.py")
-                print(f"    Description: {description}\n")
-                update_task_status_in_file(tasks_payload, tn, "code_generated")
-            except Exception as e:
-                print(f" [ERROR] Failed to save {tn}.py: {e}")
+            for t in batch:
+                tn = t.get("task_name")
                 update_task_status_in_file(tasks_payload, tn, "failed to generate correct code")
-        else:
-            print(f" [ERROR] LLM did not return code for {tn}.")
-            update_task_status_in_file(tasks_payload, tn, "failed to generate correct code")
+                print(f" [FAIL] LLM did not return valid code for {tn}. Marked as failed.")
+            return
 
-        with open(TASK_LIST_PATH, "w", encoding="utf-8") as out_file:
-            json.dump(tasks_payload, out_file, ensure_ascii=False, indent=2)
+        generated_tasks = generated.get("tasks", [])
+        generated_map = {gt.get("task_name"): gt for gt in generated_tasks if gt.get("task_name")}
+
+        for t in batch:
+            tn = t.get("task_name")
+            ret = generated_map.get(tn)
+            
+            # Fallback by index if name matching failed
+            if not ret:
+                try:
+                    idx = batch.index(t)
+                    if idx < len(generated_tasks):
+                        ret = generated_tasks[idx]
+                except Exception:
+                    pass
+
+            if ret and ret.get("code"):
+                code_text = normalize_code_string(ret.get("code", "").strip())
+                code_lines = len(code_text.split('\n'))
+                print(f" [OK] LLM returned code for {tn} ({code_lines} lines)")
+                
+                filepath = os.path.join(OUTPUT_DIR, f"{tn}.py")
+                try:
+                    # Prepend task description as docstring for clarity and validation
+                    description = t.get('description', '')
+                    if description:
+                        code_with_docstring = f'"""\nTask: {tn}\nDescription: {description}\n"""\n\n{code_text}'
+                    else:
+                        code_with_docstring = code_text
+                    
+                    with open(filepath, "w", encoding="utf-8") as wf:
+                        wf.write(code_with_docstring)
+                    print(f" [SAVED] {tn}.py")
+                    update_task_status_in_file(tasks_payload, tn, "code_generated")
+                except Exception as e:
+                    print(f" [ERROR] Failed to save {tn}.py: {e}")
+                    update_task_status_in_file(tasks_payload, tn, "failed to generate correct code")
+            else:
+                print(f" [FAIL] LLM response missing 'code' field for {tn}")
+                update_task_status_in_file(tasks_payload, tn, "failed to generate correct code")
+
+    # Use ThreadPoolExecutor for parallel batch code generation
+    max_workers = min(len(task_batches), 4)  # run up to 4 batches in parallel
+    if max_workers > 0:
+        print(f"[INFO] Launching parallel code generation for {len(task_batches)} batches with {max_workers} threads...")
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            executor.map(process_batch, task_batches)
 
     print(f"\nAll requested batches processed. Check generated_tasks/{DATA_TYPE} for outputs.")
 
     # Log resource metrics at end
     log_resource_metrics(RESOURCE_CSV, "step2_code_generator", "end", model_name=DEFAULT_MODEL, run_count=RUN_COUNT)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

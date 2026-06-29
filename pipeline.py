@@ -19,8 +19,11 @@ from pathlib import Path
 from typing import Optional
 
 from config import DATA_TYPE, DEFAULT_MODEL
-from shared_utils import sanitize_model_name, IST
+from shared_utils import sanitize_model_name, validate_data_type_exists, IST
 
+
+# Validate that the DATA_TYPE folder exists with required files
+validate_data_type_exists(DATA_TYPE)
 
 BASE_DIR = Path(__file__).parent.resolve()
 STEP_1_SCRIPT = BASE_DIR / "task_generator.py"
@@ -71,31 +74,66 @@ def run_script(
 	cwd: Optional[Path] = None,
 	env_override: Optional[dict] = None,
 ) -> bool:
-	"""Execute a Python script using the current interpreter and log timing."""
-
-	command = [sys.executable, str(script_path)]
-	env = os.environ.copy()
-	env["PYTHONIOENCODING"] = "utf-8"
-	if env_override:
-		env.update(env_override)
-
-	active_model = env.get("LLM_MODEL", DEFAULT_MODEL)
-	run_count = env.get("RUN_COUNT", "")
+	"""Execute a Python script in-process and log timing."""
+	active_model = (env_override or {}).get("LLM_MODEL", DEFAULT_MODEL)
+	run_count = (env_override or {}).get("RUN_COUNT", "")
 	start_time_ist = datetime.now(IST).isoformat()
 	start_perf = time.perf_counter()
 
+	# Save old environment and CWD
+	old_env = os.environ.copy()
+	old_cwd = os.getcwd()
+
 	try:
-		print(f"\nStarting: {script_path} (CWD: {cwd if cwd else os.getcwd()})")
-		result = subprocess.run(
-			command,
-			check=True,
-			capture_output=True,
-			text=True,
-			encoding="utf-8",
-			errors="replace",
-			cwd=cwd,
-			env=env,
-		)
+		print(f"\nStarting: {script_path} (CWD: {cwd if cwd else os.getcwd()}) [In-Process]")
+		
+		# Change CWD if provided
+		if cwd:
+			os.chdir(cwd)
+
+		# Update environment
+		if env_override:
+			for k, v in env_override.items():
+				os.environ[k] = str(v)
+
+		import importlib
+		# Reload config and shared_utils to pick up new env vars
+		for mod_name in ['config', 'shared_utils']:
+			if mod_name in sys.modules:
+				try:
+					importlib.reload(sys.modules[mod_name])
+				except Exception as e:
+					print(f"[Pipeline] Warning: failed to reload {mod_name}: {e}")
+
+		# Add parent directory of script to path
+		script_dir = str(script_path.parent)
+		if script_dir not in sys.path:
+			sys.path.insert(0, script_dir)
+
+		# Import the module dynamically
+		module_name = script_path.stem
+		# Force a fresh load
+		sys.modules.pop(module_name, None)
+		
+		spec = importlib.util.spec_from_file_location(module_name, str(script_path))
+		if spec is None or spec.loader is None:
+			raise FileNotFoundError(f"Cannot find script at {script_path}")
+		module = importlib.util.module_from_spec(spec)
+		sys.modules[module_name] = module
+		spec.loader.exec_module(module)
+
+		# Run the script's main function
+		if hasattr(module, "main"):
+			return_code = module.main()
+		else:
+			print(f"[Warning] Module {module_name} has no main() function, just ran module code.")
+			return_code = 0
+
+		if return_code is None:
+			return_code = 0
+
+		if return_code != 0:
+			raise RuntimeError(f"Script returned non-zero exit code: {return_code}")
 
 		elapsed = time.perf_counter() - start_perf
 		end_time_ist = datetime.now(IST).isoformat()
@@ -112,17 +150,17 @@ def run_script(
 				"end_time_ist": end_time_ist,
 				"duration_sec": elapsed,
 				"status": "success",
-				"return_code": result.returncode,
+				"return_code": return_code,
 			}
 		])
 		return True
 
-	except subprocess.CalledProcessError as exc:
+	except Exception as exc:
 		elapsed = time.perf_counter() - start_perf
 		end_time_ist = datetime.now(IST).isoformat()
-		print(f"\nERROR: {script_path} failed (exit {exc.returncode}).")
-		print(f"--- Stderr ---\n{exc.stderr}")
-		print(f"--- Stdout ---\n{exc.stdout}")
+		print(f"\nERROR: {script_path} failed in-process.")
+		import traceback
+		traceback.print_exc()
 
 		_append_pipeline_rows([
 			{
@@ -135,31 +173,16 @@ def run_script(
 				"end_time_ist": end_time_ist,
 				"duration_sec": elapsed,
 				"status": "failed",
-				"return_code": exc.returncode,
+				"return_code": 1,
 			}
 		])
 		raise
 
-	except FileNotFoundError:
-		elapsed = time.perf_counter() - start_perf
-		end_time_ist = datetime.now(IST).isoformat()
-		print(f"\nERROR: Script not found at {script_path}")
-
-		_append_pipeline_rows([
-			{
-				"run_id": RUN_ID,
-				"model": active_model,
-				"run_count": run_count,
-				"step": step_name,
-				"script": str(script_path),
-				"start_time_ist": start_time_ist,
-				"end_time_ist": end_time_ist,
-				"duration_sec": elapsed,
-				"status": "missing",
-				"return_code": "",
-			}
-		])
-		raise
+	finally:
+		# Restore environment and CWD
+		os.environ.clear()
+		os.environ.update(old_env)
+		os.chdir(old_cwd)
 
 
 def run_pipeline() -> None:
@@ -172,7 +195,7 @@ def run_pipeline() -> None:
 	failures: list[str] = []
 	_set_pipeline_run(model)
 
-	for run_num in range(1, 3):
+	for run_num in range(1, 2):
 		print(f"\nRunning pipeline for model {model} Run {run_num}")
 		# Removed _clean_before_run() to preserve generated_tasks and output directories
 		env_override = {

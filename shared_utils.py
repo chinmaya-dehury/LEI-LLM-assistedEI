@@ -18,20 +18,150 @@ IST = timezone(timedelta(hours=5, minutes=30))
 
 
 def sanitize_model_name(model: str) -> str:
+<<<<<<< HEAD
     """Sanitize model name for use in filenames."""
     return (
         (model or "model")
         .replace(" ", "_")
         .replace(":", "_")
+=======
+    """Sanitize model name for use in filenames using a shorter version."""
+    if not model:
+        return "model"
+    # Take only the model prefix before ':' to keep filenames clean and short
+    short_model = model.split(":")[0]
+    return (
+        short_model
+        .replace(" ", "_")
+>>>>>>> benchmark-v3.0
         .replace("/", "_")
         .replace("\\", "_")
     )
 
 
+<<<<<<< HEAD
+=======
+def _repair_truncated_json(s: str) -> str:
+    """Attempt to repair a truncated JSON string by closing strings, arrays, and objects."""
+    stack = []
+    in_string = False
+    escape_next = False
+    for char in s:
+        if escape_next:
+            escape_next = False
+            continue
+        if char == '\\':
+            escape_next = True
+            continue
+        if char == '"':
+            in_string = not in_string
+            continue
+        if not in_string:
+            if char in ('{', '['):
+                stack.append(char)
+            elif char == '}':
+                if stack and stack[-1] == '{':
+                    stack.pop()
+            elif char == ']':
+                if stack and stack[-1] == '[':
+                    stack.pop()
+                    
+    suffix = ""
+    if in_string:
+        suffix += '"'
+    for open_char in reversed(stack):
+        if open_char == '{':
+            suffix += '}'
+        elif open_char == '[':
+            suffix += ']'
+    return s + suffix
+
+
+def _repair_json_structure(s: str) -> str:
+    """Repair mismatched bracket/brace enclosures in LLM-generated JSON."""
+    stack = []
+    in_string = False
+    escape_next = False
+    repaired_chars = []
+    
+    i = 0
+    while i < len(s):
+        char = s[i]
+        
+        if escape_next:
+            escape_next = False
+            repaired_chars.append(char)
+            i += 1
+            continue
+            
+        if char == '\\':
+            escape_next = True
+            repaired_chars.append(char)
+            i += 1
+            continue
+            
+        if char == '"':
+            in_string = not in_string
+            repaired_chars.append(char)
+            i += 1
+            continue
+            
+        if in_string:
+            repaired_chars.append(char)
+            i += 1
+            continue
+            
+        if char == '{':
+            stack.append('}')
+            repaired_chars.append(char)
+        elif char == '[':
+            stack.append(']')
+            repaired_chars.append(char)
+        elif char == '}':
+            if stack:
+                if stack[-1] == '}':
+                    stack.pop()
+                    repaired_chars.append(char)
+                elif stack[-1] == ']':
+                    repaired_chars.append(']')
+                    stack.pop()
+                    if stack and stack[-1] == '}':
+                        stack.pop()
+                        repaired_chars.append('}')
+                    else:
+                        repaired_chars.append('}')
+            else:
+                repaired_chars.append(char)
+        elif char == ']':
+            if stack:
+                if stack[-1] == ']':
+                    stack.pop()
+                    repaired_chars.append(char)
+                elif stack[-1] == '}':
+                    repaired_chars.append('}')
+                    stack.pop()
+            else:
+                repaired_chars.append(char)
+        else:
+            repaired_chars.append(char)
+            
+        i += 1
+        
+    for expected in reversed(stack):
+        repaired_chars.append(expected)
+        
+    return "".join(repaired_chars)
+
+
+>>>>>>> benchmark-v3.0
 def extract_first_json_object(text: str) -> dict:
     """
     Extract first JSON object from text that may contain extra content.
     Handles code fences (```json ... ```) and surrounding text.
+<<<<<<< HEAD
+=======
+    Also handles unescaped newlines and special characters in code strings.
+>>>>>>> benchmark-v3.0
     
     Args:
         text: Raw text from LLM that may contain JSON + other content
@@ -58,11 +188,98 @@ def extract_first_json_object(text: str) -> dict:
     if start == -1:
         raise ValueError("No JSON object start '{' found in text")
 
+<<<<<<< HEAD
     decoder = json.JSONDecoder()
     obj, _end = decoder.raw_decode(s[start:])
     if not isinstance(obj, dict):
         raise ValueError("Top-level JSON value is not an object")
     return obj
+=======
+    # Try standard JSON parsing first
+    decoder = json.JSONDecoder()
+    try:
+        obj, _end = decoder.raw_decode(s[start:])
+        if not isinstance(obj, dict):
+            raise ValueError("Top-level JSON value is not an object")
+        return obj
+    except json.JSONDecodeError as e:
+        # If standard parsing fails, try to fix unescaped control characters
+        # This handles cases where LLM returns JSON with literal newlines in strings
+        import re
+
+        def repair_invalid_triple_quotes(text: str) -> str:
+            pattern = r'(:\s*)"""(.*?)"""(\s*(?=[,}\]]))'
+            def replacer(match):
+                prefix = match.group(1)
+                code_content = match.group(2)
+                suffix = match.group(3)
+                escaped_code = json.dumps(code_content)
+                return prefix + escaped_code + suffix
+            return re.sub(pattern, replacer, text, flags=re.DOTALL)
+
+        def repair_unescaped_code_strings(text: str) -> str:
+            pattern = r'("code"\s*:\s*")(.*?)("\s*(?=\n\s*[},]))'
+            def replacer(match):
+                prefix = match.group(1)
+                code_content = match.group(2)
+                suffix = match.group(3)
+                escaped_code = json.dumps(code_content)
+                return prefix + escaped_code[1:-1] + suffix
+            return re.sub(pattern, replacer, text, flags=re.DOTALL)
+
+        json_str = s[start:]
+        json_str = repair_invalid_triple_quotes(json_str)
+        json_str = repair_unescaped_code_strings(json_str)
+        
+        # Try stack-based structural repair for mismatched brackets/braces
+        try:
+            struct_repaired = _repair_json_structure(json_str)
+            obj = json.loads(struct_repaired)
+            if isinstance(obj, dict):
+                return obj
+        except Exception:
+            pass
+
+        # Find the closing brace by counting braces (more robust than fixing escapes)
+        brace_count = 0
+        in_string = False
+        escape_next = False
+        for i, char in enumerate(json_str):
+            if escape_next:
+                escape_next = False
+                continue
+            if char == '\\':
+                escape_next = True
+                continue
+            if char == '"' and not escape_next:
+                in_string = not in_string
+            elif char == '{' and not in_string:
+                brace_count += 1
+            elif char == '}' and not in_string:
+                brace_count -= 1
+                if brace_count == 0:
+                    # Found the closing brace, try to parse just this portion
+                    json_str = json_str[:i+1]
+                    try:
+                        obj = json.loads(json_str)
+                        if isinstance(obj, dict):
+                            return obj
+                    except json.JSONDecodeError:
+                        pass
+                    break
+        
+        # Try to repair truncated JSON
+        try:
+            repaired_str = _repair_truncated_json(json_str)
+            obj = json.loads(repaired_str)
+            if isinstance(obj, dict):
+                return obj
+        except Exception:
+            pass
+
+        # If all else fails, raise the original error
+        raise e
+>>>>>>> benchmark-v3.0
 
 
 def extract_first_json_value(text: str):
@@ -186,6 +403,76 @@ def append_timing_rows_to_csv(csv_path: str, rows: list, fieldnames: list) -> No
             writer.writerow(row)
 
 
+<<<<<<< HEAD
+=======
+def validate_data_type_exists(data_type: str) -> bool:
+    """
+    Validate that a data type folder exists with required files.
+    
+    Args:
+        data_type: The DATA_TYPE (e.g., 'temp_humidity', 'air_quality', 'Lab-Data')
+        
+    Returns:
+        True if data folder and required files exist, otherwise exits with warning.
+    """
+    import sys
+    
+    base = os.path.join("data", data_type)
+    
+    # Check if data folder exists
+    if not os.path.exists(base):
+        print(f"\n{'='*70}")
+        print(f"[WARNING] Data type '{data_type}' does not exist.")
+        print(f"{'='*70}")
+        print(f"\nThe following data folder was not found:")
+        print(f"  {os.path.abspath(base)}\n")
+        print(f"Available data types in your workspace:")
+        data_dir = os.path.join("data")
+        if os.path.exists(data_dir):
+            available = [d for d in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, d))]
+            if available:
+                for dt in sorted(available):
+                    print(f"  - {dt}")
+            else:
+                print(f"  (No data types found)")
+        else:
+            print(f"  (Data directory does not exist)")
+        
+        print(f"\nPlease update your .env file with a valid DATA_TYPE.")
+        print(f"{'='*70}\n")
+        sys.exit(1)
+    
+    # Check if required files exist
+    sample_path = os.path.join(base, "sample_data.csv")
+    meta_path = os.path.join(base, "metadata.json")
+    context_path = os.path.join(base, "context.txt")
+    
+    missing_files = []
+    if not os.path.exists(sample_path):
+        missing_files.append("sample_data.csv")
+    if not os.path.exists(meta_path):
+        missing_files.append("metadata.json")
+    if not os.path.exists(context_path):
+        missing_files.append("context.txt")
+    
+    if missing_files:
+        print(f"\n{'='*70}")
+        print(f"[WARNING] Data type '{data_type}' is incomplete.")
+        print(f"{'='*70}")
+        print(f"\nMissing required files in {os.path.abspath(base)}:")
+        for fname in missing_files:
+            print(f"  - {fname}")
+        print(f"\nPlease ensure all required files are present:")
+        print(f"  - sample_data.csv")
+        print(f"  - metadata.json")
+        print(f"  - context.txt")
+        print(f"{'='*70}\n")
+        sys.exit(1)
+    
+    return True
+
+
+>>>>>>> benchmark-v3.0
 def load_context_for_data_type(data_type: str) -> Dict[str, Any]:
     """
     Load sample data, metadata, and context for a given data type.

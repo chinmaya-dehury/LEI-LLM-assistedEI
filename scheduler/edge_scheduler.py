@@ -31,7 +31,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 from queue import Queue, PriorityQueue
-from concurrent.futures import ProcessPoolExecutor, as_completed, ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed, ThreadPoolExecutor, wait
 from threading import Lock, Event
 import traceback
 
@@ -63,7 +63,7 @@ from resource_monitor import log_resource_metrics
 # CONFIGURATION & SETUP
 # ============================================================================
 
-TASKS_DIR = os.path.join("generated_tasks", DATA_TYPE)
+TASKS_DIR = os.environ.get("LEI_TASKS_DIR", os.path.join("generated_tasks", DATA_TYPE))
 LOG_DIR = "logs"
 os.makedirs(LOG_DIR, exist_ok=True)
 
@@ -168,7 +168,7 @@ class TaskQueue:
 class TaskExecutor:
     """Executes individual tasks in isolated subprocess."""
     
-    TIMEOUT = 120  # seconds
+    TIMEOUT = int(os.environ.get("EDGE_TASK_TIMEOUT_SECONDS", "10"))  # seconds
     
     @staticmethod
     def execute(task_path: Path) -> Dict:
@@ -536,7 +536,7 @@ class TaskOrchestrator:
             # Wait for any task to complete
             done = set()
             try:
-                done, _ = as_completed(futures, timeout=1) if futures else (set(), set())
+                done, _ = wait(futures, timeout=1) if futures else (set(), set())
             except:
                 pass
             

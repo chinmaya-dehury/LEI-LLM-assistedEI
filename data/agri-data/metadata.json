@@ -1,0 +1,261 @@
+{
+  "domain": "agri-data",
+  "data_source": {
+    "source_type": "sensor",
+    "provider": "Precision Smart Agriculture IoT Sensing Campaign",
+    "sampling_interval": "daily",
+    "data_format": "csv"
+  },
+  "columns": [
+    {
+      "name": "N",
+      "type": "integer",
+      "unit": "ppm",
+      "range": {
+        "min": 0,
+        "max": 200
+      },
+      "description": "Nitrogen content in the soil"
+    },
+    {
+      "name": "P",
+      "type": "integer",
+      "unit": "ppm",
+      "range": {
+        "min": 0,
+        "max": 200
+      },
+      "description": "Phosphorus content in the soil"
+    },
+    {
+      "name": "K",
+      "type": "integer",
+      "unit": "ppm",
+      "range": {
+        "min": 0,
+        "max": 200
+      },
+      "description": "Potassium content in the soil"
+    },
+    {
+      "name": "Temperature",
+      "type": "float",
+      "unit": "C",
+      "range": null,
+      "description": "Ambient temperature recorded at the farm"
+    },
+    {
+      "name": "Humidity",
+      "type": "float",
+      "unit": "%",
+      "range": {
+        "min": 0,
+        "max": 100
+      },
+      "description": "Relative humidity at the location"
+    },
+    {
+      "name": "pH",
+      "type": "float",
+      "unit": null,
+      "range": {
+        "min": 0,
+        "max": 14
+      },
+      "description": "Soil pH level indicating acidity or alkalinity"
+    },
+    {
+      "name": "Rainfall",
+      "type": "float",
+      "unit": "mm",
+      "range": null,
+      "description": "Amount of rainfall received"
+    },
+    {
+      "name": "Label",
+      "type": "string",
+      "unit": null,
+      "range": null,
+      "description": "Type of crop associated with the recorded conditions"
+    },
+    {
+      "name": "Soil_Moisture",
+      "type": "float",
+      "unit": "%",
+      "range": {
+        "min": 0,
+        "max": 100
+      },
+      "description": "Percentage of water content in the soil"
+    },
+    {
+      "name": "Soil_Type",
+      "type": "integer",
+      "unit": "categorical",
+      "range": {
+        "min": 1,
+        "max": 3
+      },
+      "description": "Type of soil (1 = Sandy, 2 = Loamy, 3 = Clay)"
+    },
+    {
+      "name": "Sunlight_Exposure",
+      "type": "float",
+      "unit": "hrs/day",
+      "range": {
+        "min": 0,
+        "max": 24
+      },
+      "description": "Average daily sunlight exposure"
+    },
+    {
+      "name": "Wind_Speed",
+      "type": "float",
+      "unit": "km/h",
+      "range": null,
+      "description": "Wind speed at the farm"
+    },
+    {
+      "name": "CO2_Concentration",
+      "type": "float",
+      "unit": "ppm",
+      "range": null,
+      "description": "Carbon dioxide concentration in the air"
+    },
+    {
+      "name": "Organic_Matter",
+      "type": "float",
+      "unit": "%",
+      "range": {
+        "min": 0,
+        "max": 100
+      },
+      "description": "Percentage of organic material in the soil"
+    },
+    {
+      "name": "Irrigation_Frequency",
+      "type": "integer",
+      "unit": "times/week",
+      "range": null,
+      "description": "Frequency of irrigation"
+    },
+    {
+      "name": "Crop_Density",
+      "type": "integer",
+      "unit": "plants/m^2",
+      "range": null,
+      "description": "Number of plants per square meter"
+    },
+    {
+      "name": "Pest_Pressure",
+      "type": "float",
+      "unit": "index",
+      "range": null,
+      "description": "Level of pest infestation pressure"
+    },
+    {
+      "name": "Fertilizer_Usage",
+      "type": "float",
+      "unit": "kg/ha",
+      "range": null,
+      "description": "Amount of fertilizer applied per hectare"
+    },
+    {
+      "name": "Growth_Stage",
+      "type": "integer",
+      "unit": "categorical",
+      "range": {
+        "min": 1,
+        "max": 3
+      },
+      "description": "Current growth stage of the crop (1 = Seedling, 2 = Vegetative, 3 = Flowering)"
+    },
+    {
+      "name": "Urban_Area_Proximity",
+      "type": "float",
+      "unit": "km",
+      "range": null,
+      "description": "Distance to the nearest urban area"
+    },
+    {
+      "name": "Water_Source_Type",
+      "type": "integer",
+      "unit": "categorical",
+      "range": {
+        "min": 1,
+        "max": 3
+      },
+      "description": "Type of water source used for irrigation (1 = River, 2 = Groundwater, 3 = Recycled)"
+    },
+    {
+      "name": "Frost_Risk",
+      "type": "float",
+      "unit": "index",
+      "range": {
+        "min": 0,
+        "max": 1
+      },
+      "description": "Risk index of frost occurrence"
+    },
+    {
+      "name": "Water_Usage_Efficiency",
+      "type": "float",
+      "unit": "L/kg",
+      "range": null,
+      "description": "Efficiency of water usage per kilogram of crop yield"
+    },
+    {
+      "name": "THI",
+      "type": "float",
+      "unit": "index",
+      "range": null,
+      "description": "Temperature-Humidity Index: evaluations of crop stress due to heat and moisture"
+    },
+    {
+      "name": "NBR",
+      "type": "float",
+      "unit": "ratio",
+      "range": null,
+      "description": "Nutrient Balance Ratio: balance between nitrogen, phosphorus, and potassium in the soil"
+    },
+    {
+      "name": "WAI",
+      "type": "float",
+      "unit": "index",
+      "range": null,
+      "description": "Water Availability Index: composite assessment of soil moisture and rainfall"
+    },
+    {
+      "name": "PP",
+      "type": "float",
+      "unit": "potential_index",
+      "range": null,
+      "description": "Photosynthesis Potential: estimate based on sunlight exposure, CO2, and temperature"
+    },
+    {
+      "name": "SFI",
+      "type": "float",
+      "unit": "index",
+      "range": null,
+      "description": "Soil Fertility Index: composite fertility based on organic matter and NPK levels"
+    }
+  ],
+  "data_quality": {
+    "missing_values": "none",
+    "sensor_accuracy": "high"
+  },
+  "device_specs": {
+    "edge_device": "Smart Farming Sensor Node",
+    "cpu": "ARM Cortex-M7",
+    "memory": "512KB SRAM"
+  },
+  "resource_constraints": {
+    "max_cpu_percent": 80,
+    "max_memory_percent": 80,
+    "lightweight_execution_required": true
+  },
+  "storage": {
+    "type": "csv",
+    "sync_policy": "local"
+  }
+}

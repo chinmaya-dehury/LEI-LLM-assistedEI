@@ -1,0 +1,19 @@
+task_name,exit_code,error_message,count,last_timestamp
+Predictive Irrigation,1,"Syntax error at line 279, column 11: unterminated string literal (detected at line 279)",2,2026-06-19T22:52:46.763051
+Predictive Irrigation,1,"Validation failed (exit 1).
+Stdout:
+
+Stderr:
+Syntax error at line 279, column 11: unterminated string literal (detected at line 279)
+Semantic Error:
+None",2,2026-06-19T22:53:17.686372
+Predictive Irrigation,1,"Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\complex\predictive_irrigation_executor.py.tmp"", line 126, in <module>
+    main()
+    ~~~~^^
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\complex\predictive_irrigation_executor.py.tmp"", line 80, in main
+    analysis = analyze_and_combine_results(results)
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\complex\predictive_irrigation_executor.py.tmp"", line 40, in analyze_and_combine_results
+    if subtask.get('status') == 'available':
+       ^^^^^^^^^^^
+AttributeError: 'MockSubtask' object has no attribute 'get'",1,2026-06-17T21:55:08.618616

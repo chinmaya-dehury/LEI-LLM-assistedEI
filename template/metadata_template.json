@@ -1,0 +1,45 @@
+{
+  "domain": "<domain_name>",
+
+  "data_source": {
+    "source_type": "<sensor|api|database>",
+    "provider": "<provider_name>",
+    "sampling_interval": "<interval>",
+    "data_format": "<csv|json|parquet>"
+  },
+
+  "columns": [
+    {
+      "name": "<column_name>",
+      "type": "<float|integer|string|datetime>",
+      "unit": "<unit_or_null>",
+      "range": {
+        "min": "<min_value_or_null>",
+        "max": "<max_value_or_null>"
+      },
+      "description": "<column_description>"
+    }
+  ],
+
+  "data_quality": {
+    "missing_values": "<none|allowed>",
+    "sensor_accuracy": "<optional>"
+  },
+
+  "device_specs": {
+    "edge_device": "<device_name>",
+    "cpu": "<cpu_description>",
+    "memory": "<memory_description>"
+  },
+
+  "resource_constraints": {
+    "max_cpu_percent": 80,
+    "max_memory_percent": 80,
+    "lightweight_execution_required": true
+  },
+
+  "storage": {
+    "type": "<csv|sqlite|timeseries_db>",
+    "sync_policy": "<local|periodic_cloud_sync>"
+  }
+}

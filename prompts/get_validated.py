@@ -28,7 +28,11 @@ Validation focus:
 - Output schema compliance
 
 Common failure patterns:
+<<<<<<< HEAD
 - Incorrect column names
+=======
+- Incorrect column names or column casing mismatch: Raw CSV files may have inconsistent column casing across different environments (e.g., 'Temperature' vs 'temperature'). To prevent KeyError exceptions, standardizing all CSV keys to lowercase (e.g. `row = {k.lower(): v for k, v in row.items()}`) and accessing columns using lowercase keys is required for generalized execution.
+>>>>>>> benchmark-v3.0
 - Invalid dataset path construction
 - Missing pd.to_datetime(..., errors="coerce")
 - Missing pd.to_numeric(..., errors="coerce")
@@ -63,7 +67,11 @@ Execution requirements:
   data/{DATA_TYPE}/raw_data.csv
 
 - Save results to:
+<<<<<<< HEAD
   output/{DATA_TYPE}/{TASK_NAME}_result.json
+=======
+  {OUTPUT_DIR}/{TASK_NAME}_result.json
+>>>>>>> benchmark-v3.0
 
 Required output JSON schema:
 {
