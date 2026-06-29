@@ -20,11 +20,8 @@ Task generation rules:
 - Avoid computationally expensive processing
 - Consider current CPU and memory availability
 - Generate only meaningful and practical tasks
-<<<<<<< HEAD
-=======
 - DO NOT write any Python code, scripts, or programming implementations. Only write the task name and description in the JSON structure. The actual implementation code will be generated in a separate step by another agent.
 - Do not output any markdown code fences or blocks containing Python code. Your response must contain ONLY the JSON structure.
->>>>>>> benchmark-v3.0
 
 You will NOT receive source code of existing tasks.
 Only task names and descriptions are available.

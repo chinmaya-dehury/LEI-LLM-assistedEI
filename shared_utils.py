@@ -18,13 +18,6 @@ IST = timezone(timedelta(hours=5, minutes=30))
 
 
 def sanitize_model_name(model: str) -> str:
-<<<<<<< HEAD
-    """Sanitize model name for use in filenames."""
-    return (
-        (model or "model")
-        .replace(" ", "_")
-        .replace(":", "_")
-=======
     """Sanitize model name for use in filenames using a shorter version."""
     if not model:
         return "model"
@@ -33,14 +26,11 @@ def sanitize_model_name(model: str) -> str:
     return (
         short_model
         .replace(" ", "_")
->>>>>>> benchmark-v3.0
         .replace("/", "_")
         .replace("\\", "_")
     )
 
 
-<<<<<<< HEAD
-=======
 def _repair_truncated_json(s: str) -> str:
     """Attempt to repair a truncated JSON string by closing strings, arrays, and objects."""
     stack = []
@@ -153,15 +143,11 @@ def _repair_json_structure(s: str) -> str:
     return "".join(repaired_chars)
 
 
->>>>>>> benchmark-v3.0
 def extract_first_json_object(text: str) -> dict:
     """
     Extract first JSON object from text that may contain extra content.
     Handles code fences (```json ... ```) and surrounding text.
-<<<<<<< HEAD
-=======
     Also handles unescaped newlines and special characters in code strings.
->>>>>>> benchmark-v3.0
     
     Args:
         text: Raw text from LLM that may contain JSON + other content
@@ -188,13 +174,6 @@ def extract_first_json_object(text: str) -> dict:
     if start == -1:
         raise ValueError("No JSON object start '{' found in text")
 
-<<<<<<< HEAD
-    decoder = json.JSONDecoder()
-    obj, _end = decoder.raw_decode(s[start:])
-    if not isinstance(obj, dict):
-        raise ValueError("Top-level JSON value is not an object")
-    return obj
-=======
     # Try standard JSON parsing first
     decoder = json.JSONDecoder()
     try:
@@ -279,7 +258,6 @@ def extract_first_json_object(text: str) -> dict:
 
         # If all else fails, raise the original error
         raise e
->>>>>>> benchmark-v3.0
 
 
 def extract_first_json_value(text: str):
@@ -403,8 +381,6 @@ def append_timing_rows_to_csv(csv_path: str, rows: list, fieldnames: list) -> No
             writer.writerow(row)
 
 
-<<<<<<< HEAD
-=======
 def validate_data_type_exists(data_type: str) -> bool:
     """
     Validate that a data type folder exists with required files.
@@ -472,7 +448,6 @@ def validate_data_type_exists(data_type: str) -> bool:
     return True
 
 
->>>>>>> benchmark-v3.0
 def load_context_for_data_type(data_type: str) -> Dict[str, Any]:
     """
     Load sample data, metadata, and context for a given data type.

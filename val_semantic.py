@@ -25,11 +25,7 @@ import json
 
 
 # Initialize LLM client for code-description validation
-<<<<<<< HEAD
-client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY)
-=======
 client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY, timeout=120)
->>>>>>> benchmark-v3.0
 
 # IST Timezone
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -39,16 +35,7 @@ IST = timezone(timedelta(hours=5, minutes=30))
 # PYDANTIC MODELS FOR SEMANTIC VALIDATION (STRICT MODE)
 # ============================================================================
 
-<<<<<<< HEAD
-class ResultValue(BaseModel):
-    """
-    Represents a result value (can be string, number, bool, nested object, etc.).
-    Strict mode enforces no type coercion: "123" stays string, not int.
-    """
-    model_config = ConfigDict(strict=True, extra="forbid")
-=======
 
->>>>>>> benchmark-v3.0
 
 
 class ResultItem(BaseModel):
@@ -216,10 +203,7 @@ def _validate_business_rules(
     expected_task_name: str,
     sample_data: str = "",
     min_results: int = 0,
-<<<<<<< HEAD
-=======
     skip_code_matching: bool = False,
->>>>>>> benchmark-v3.0
 ) -> List[str]:
     """
     Apply business-rule validation separate from schema validation.
@@ -233,10 +217,7 @@ def _validate_business_rules(
         expected_task_name: Expected task name to match against
         sample_data: Optional sample data used for code-description matching
         min_results: Minimum number of results required (default 0, allow blank)
-<<<<<<< HEAD
-=======
         skip_code_matching: If True, bypass LLM code correctness matching
->>>>>>> benchmark-v3.0
     
     Returns:
         List of error messages (empty list if all rules pass)
@@ -264,13 +245,8 @@ def _validate_business_rules(
             f"got {len(validated_output.result_summary)}"
         )
     
-<<<<<<< HEAD
-    # Rule 3: LLM-based code-description matching (if both provided)
-    if validated_output.generated_code and validated_output.task_description:
-=======
     # Rule 3: LLM-based code-description matching (if both provided and not skipped)
     if not skip_code_matching and validated_output.generated_code and validated_output.task_description:
->>>>>>> benchmark-v3.0
         matches, match_error = _check_code_matches_description(
             validated_output.generated_code,
             validated_output.task_description,
@@ -283,27 +259,13 @@ def _validate_business_rules(
     return errors
 
 
-<<<<<<< HEAD
-def _validate_output_semantically(
-=======
 def _validate_output_structure(
->>>>>>> benchmark-v3.0
     json_output: Dict[str, Any],
     task_name: str,
     task_description: str = "",
     generated_code: str = "",
     sample_data: str = "",
     min_results: int = 0,
-<<<<<<< HEAD
-) -> tuple[Optional[TaskOutput], Optional[str], Dict[str, Any]]:
-    """
-    Combined semantic validation: schema validation + business rules + LLM code matching.
-    
-    This is the primary validation function that should be used.
-    
-    IMPORTANT: Blank output is acceptable if code is correct.
-    Pass task_description and generated_code for LLM-based code-description matching.
-=======
     skip_code_matching: bool = False,
 ) -> tuple[Optional[TaskOutput], Optional[str], Dict[str, Any]]:
     """
@@ -311,7 +273,6 @@ def _validate_output_structure(
     Includes strict schema validation, business rules, and LLM-based code-description matching.
     
     IMPORTANT: Blank output is acceptable if code is correct and matches description.
->>>>>>> benchmark-v3.0
     
     Args:
         json_output: JSON dict to validate
@@ -319,29 +280,12 @@ def _validate_output_structure(
         task_description: Task description for LLM code matching (optional)
         generated_code: Generated code for LLM matching (optional)
         sample_data: Sample CSV text or example input used to judge code behavior
-<<<<<<< HEAD
-        min_results: Minimum required results in result_summary (default 0 - allow blank output)
-=======
         min_results: Minimum required results (default 0 - allow blank output)
         skip_code_matching: If True, bypass LLM code correctness matching
->>>>>>> benchmark-v3.0
     
     Returns:
         (validated_object: Optional[TaskOutput], error_message: Optional[str], semantic_details: Dict)
         - If valid: (TaskOutput instance, None, details_dict)
-<<<<<<< HEAD
-        - If invalid: (None, formatted_error_message, details_dict)
-        - semantic_details dict contains: {'performed': bool, 'passed': bool, 'reasoning': str}
-    
-    Examples:
-        >>> output, error, sem_details = _validate_output_semantically(json_data, "my_task", task_description=desc, generated_code=code, sample_data=data, min_results=0)
-        >>> if output:
-        ...     print(f"Valid: {output.task_name}, semantic check: {sem_details['passed']}")
-        ... else:
-        ...     print(f"Invalid: {error}")
-    """
-    # Initialize semantic details tracking
-=======
         - If invalid: (None, error_message, details_dict)
         - semantic_details dict contains: {'performed': bool, 'passed': bool, 'reasoning': str}
     """
@@ -355,31 +299,21 @@ def _validate_output_structure(
         return None, semantic_details["reasoning"], semantic_details
 
     # Stage 2: Initialize semantic details tracking
->>>>>>> benchmark-v3.0
     semantic_details = {
         "performed": False,
         "passed": False,
         "reasoning": "Semantic validation skipped: missing task description or generated code.",
     }
 
-<<<<<<< HEAD
-    has_semantic_inputs = bool((task_description or "").strip() and (generated_code or "").strip())
-    if sample_data:
-=======
     has_semantic_inputs = not skip_code_matching and bool((task_description or "").strip() and (generated_code or "").strip())
     if sample_data and not skip_code_matching:
->>>>>>> benchmark-v3.0
         has_semantic_inputs = has_semantic_inputs or bool(sample_data.strip())
 
     if has_semantic_inputs:
         semantic_details["performed"] = True
         semantic_details["reasoning"] = "Semantic validation executed."
     
-<<<<<<< HEAD
-    # Stage 1: Schema validation (strict Pydantic mode)
-=======
     # Stage 3: Schema validation (strict Pydantic mode)
->>>>>>> benchmark-v3.0
     validated, schema_errors = _validate_output_schema(json_output)
     if validated is None:
         error_msg = "Semantic validation failed (schema):\n" + "\n".join(schema_errors)
@@ -393,13 +327,8 @@ def _validate_output_structure(
     if task_description:
         validated.task_description = task_description
     
-<<<<<<< HEAD
-    # Stage 2: Business-rule validation (includes LLM code-description matching)
-    business_errors = _validate_business_rules(validated, task_name, sample_data, min_results)
-=======
     # Stage 4: Business-rule validation (includes LLM code-description matching)
     business_errors = _validate_business_rules(validated, task_name, sample_data, min_results, skip_code_matching)
->>>>>>> benchmark-v3.0
     if business_errors:
         error_msg = "Semantic validation failed (business rules):\n" + "\n".join(
             f"  • {e}" for e in business_errors
@@ -415,61 +344,3 @@ def _validate_output_structure(
         semantic_details["reasoning"] = "Code matches description, sample data, and output schema valid"
     
     return validated, None, semantic_details
-<<<<<<< HEAD
-
-
-def _validate_output_structure(
-    json_output: Dict[str, Any],
-    task_name: str,
-    task_description: str = "",
-    generated_code: str = "",
-    sample_data: str = "",
-    min_results: int = 0,
-) -> tuple[Optional[TaskOutput], Optional[str], Dict[str, Any]]:
-    """
-    Multi-stage validation with early type checks.
-    Includes LLM-based code-description matching with semantic validation tracking.
-    
-    IMPORTANT: Blank output is acceptable if code is correct and matches description.
-    
-    Args:
-        json_output: JSON dict to validate
-        task_name: Expected task name
-        task_description: Task description for LLM code matching (optional)
-        generated_code: Generated code for LLM matching (optional)
-        sample_data: Sample CSV text or example input used to judge code behavior
-        min_results: Minimum required results (default 0 - allow blank output)
-    
-    Returns:
-        (validated_object: Optional[TaskOutput], error_message: Optional[str], semantic_details: Dict)
-        - If valid: (TaskOutput instance, None, details_dict)
-        - If invalid: (None, error_message, details_dict)
-        - semantic_details dict contains: {'performed': bool, 'passed': bool, 'reasoning': str}
-    
-    Examples:
-        >>> output, error, sem_details = _validate_output_structure(json_data, "task_x", task_description=desc, generated_code=code, sample_data=data, min_results=0)
-        >>> if output is not None:
-        ...     print("All validations passed!")
-        ...     print(f"Semantic check performed: {sem_details['performed']}, passed: {sem_details['passed']}")
-    """
-    # Initialize semantic details
-    semantic_details = {"performed": False, "passed": False, "reasoning": ""}
-    
-    # Stage 1: Type check - must be dict
-    if not isinstance(json_output, dict):
-        semantic_details["reasoning"] = f"Output must be a JSON object (dict), got {type(json_output).__name__}"
-        return None, semantic_details["reasoning"], semantic_details
-    
-    # Stage 2: Semantic validation (schema + business rules + LLM matching)
-    validated, error_msg, semantic_details = _validate_output_semantically(
-        json_output,
-        task_name,
-        task_description,
-        generated_code,
-        sample_data,
-        min_results,
-    )
-    
-    return validated, error_msg, semantic_details
-=======
->>>>>>> benchmark-v3.0

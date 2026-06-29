@@ -16,25 +16,6 @@ Code generation rules:
 - Use modular and self-contained design
 - Optimize for Raspberry Pi and edge-device execution
 - Prefer lightweight computation and memory usage
-<<<<<<< HEAD
-- Use standard Python libraries only
-- Handle missing or invalid data safely
-- Avoid unnecessary dependencies
-- Print concise outputs
-
-Data access:
-- Read dataset from:
-  data/{DATA_TYPE}/raw_data.csv
-
-- Use portable file handling:
-  os.path.join() or pathlib.Path
-
-Execution output:
-- Save task results to:
-  output/{DATA_TYPE}/{task_name}_result.json
-
-Result schema:
-=======
 - Use standard Python libraries only (avoid heavy deps like pandas unless explicit)
 - Handle missing or invalid data safely and explicitly (see Data handling below)
 - Avoid unnecessary dependencies
@@ -92,7 +73,6 @@ Execution output (CRITICAL):
 - Do NOT hardcode `./output` or `./data` for output results. Always use the specified `{OUTPUT_DIR}` path.
 
 Result schema (must be valid JSON):
->>>>>>> benchmark-v3.0
 {
   "task_name": "",
   "description": "",
@@ -100,11 +80,7 @@ Result schema (must be valid JSON):
   "result_generated_at": ""
 }
 
-<<<<<<< HEAD
-Return ONLY valid JSON:
-=======
 Return ONLY valid JSON for the code-generation response, with the `code` field containing the full Python source (escaping as needed):
->>>>>>> benchmark-v3.0
 
 {
   "tasks": [

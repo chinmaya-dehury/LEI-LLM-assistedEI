@@ -73,12 +73,8 @@ def get_cpu_temperature() -> Optional[float]:
         # Silent return on Windows or systems without sensor support
         return None
     except Exception as e:
-<<<<<<< HEAD
-        print(f"[WARNING] Could not read CPU temperature: {e}")
-=======
         # Only warn on unexpected errors
         print(f"[WARNING] Unexpected error reading CPU temperature: {e}")
->>>>>>> benchmark-v3.0
         return None
 
 
