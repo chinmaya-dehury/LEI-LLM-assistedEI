@@ -1,0 +1,115 @@
+{
+  "domain": "Environmental Monitoring - Indoor Laboratory IoT Sensor Network",
+
+  "data_source": {
+    "source_type": "sensor",
+    "provider": "Laboratory Sensor Network - 54 Motes",
+    "sampling_interval": "Variable (epoch-based sequencing)",
+    "data_format": "csv"
+  },
+
+  "columns": [
+    {
+      "name": "date",
+      "type": "datetime",
+      "unit": "yyyy-mm-dd",
+      "range": {
+        "min": "2004-02-28",
+        "max": null
+      },
+      "description": "Calendar date of sensor reading"
+    },
+    {
+      "name": "time",
+      "type": "datetime",
+      "unit": "hh:mm:ss.microseconds",
+      "range": {
+        "min": "00:00:00",
+        "max": "23:59:59"
+      },
+      "description": "Time of day with microsecond precision"
+    },
+    {
+      "name": "epoch",
+      "type": "integer",
+      "unit": null,
+      "range": {
+        "min": "1",
+        "max": null
+      },
+      "description": "Monotonically increasing sequence number per mote; same epoch from different motes indicates simultaneous readings"
+    },
+    {
+      "name": "moteid",
+      "type": "integer",
+      "unit": null,
+      "range": {
+        "min": "1",
+        "max": "54"
+      },
+      "description": "Unique identifier for sensor mote (node) in the network"
+    },
+    {
+      "name": "temperature",
+      "type": "float",
+      "unit": "degrees Celsius",
+      "range": {
+        "min": "0",
+        "max": "50"
+      },
+      "description": "Ambient temperature measured by the sensor"
+    },
+    {
+      "name": "humidity",
+      "type": "float",
+      "unit": "percent (0-100%)",
+      "range": {
+        "min": "0",
+        "max": "100"
+      },
+      "description": "Temperature-corrected relative humidity"
+    },
+    {
+      "name": "light",
+      "type": "float",
+      "unit": "Lux",
+      "range": {
+        "min": "0",
+        "max": "100000"
+      },
+      "description": "Light intensity; reference values: 1 Lux=moonlight, 400 Lux=bright office, 100,000 Lux=full sunlight"
+    },
+    {
+      "name": "voltage",
+      "type": "float",
+      "unit": "volts",
+      "range": {
+        "min": "2.0",
+        "max": "3.0"
+      },
+      "description": "Battery voltage from lithium-ion cells; maintains fairly constant voltage with variations highly correlated to temperature"
+    }
+  ],
+
+  "data_quality": {
+    "missing_values": "allowed",
+    "sensor_accuracy": "Some motes may have missing or truncated data; some epochs may be missing in the sequence"
+  },
+
+  "device_specs": {
+    "edge_device": "IoT Sensor Motes",
+    "cpu": "Low-power embedded processor",
+    "memory": "Limited memory for local processing"
+  },
+
+  "resource_constraints": {
+    "max_cpu_percent": 80,
+    "max_memory_percent": 80,
+    "lightweight_execution_required": true
+  },
+
+  "storage": {
+    "type": "csv",
+    "sync_policy": "local"
+  }
+}

@@ -1,0 +1,4 @@
+folder_name,model_name,dataset,session_timestamp,validation_success_rate_median,validation_success_rate_iqr
+local_run,google_gemini-3.1-flash-lite,lab-data,20260730_102437,0.5,0.1
+local_run,qwen2.5-coder (Run 1),lab-data,20260730_102437,0.0,0.0
+local_run,qwen2.5-coder (Run 2),air-quality,20260730_113418,0.3333,0.0

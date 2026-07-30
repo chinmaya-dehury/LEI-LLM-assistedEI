@@ -1,0 +1,24 @@
+\begin{table*}[t]
+\centering
+\caption{CPU and Memory Footprint across Steps 1, 2, and 3 on edge devices (Median $\pm$ IQR)}
+\begin{tabular}{llcccccc}
+\hline
+ & & \multicolumn{2}{c}{Step 1 (Task Generator)} & \multicolumn{2}{c}{Step 2 (Code Generator)} & \multicolumn{2}{c}{Step 3 (Validator)} \\
+\cline{3-8}
+M & D & Avg CPU (\%) & Avg Mem (MB) & Avg CPU (\%) & Avg Mem (MB) & Avg CPU (\%) & Avg Mem (MB) \\
+\hline
+M1 & D1 & 0.00 \pm 0.00 & 0.00 \pm 0.00 & 0.00 \pm 0.00 & 0.00 \pm 0.00 & 0.00 \pm 0.00 & 0.00 \pm 0.00 \\
+ & D2 & 0.00 \pm 0.00 & 0.00 \pm 0.00 & 0.00 \pm 0.00 & 0.00 \pm 0.00 & 9.10 \pm 3.05 & 15927.19 \pm 283.98 \\
+M2 & D2 & 5.30 \pm 0.35 & 16438.36 \pm 454.37 & 10.65 \pm 4.05 & 16162.49 \pm 438.14 & 9.10 \pm 3.05 & 15927.19 \pm 283.98 \\
+\hline
+\end{tabular}
+\label{tab:cpu_mem_footprint}
+\end{table*}
+
+
+% Model Mapping Legend:
+% M1: google_gemini-3.1-flash-lite
+% M2: qwen2.5-coder
+% Dataset Mapping Legend:
+% D1: complex
+% D2: lab-data

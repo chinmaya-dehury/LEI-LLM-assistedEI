@@ -1,0 +1,17 @@
+folder_name,model_name,val_model,dataset,session_timestamp,step,latency_median,latency_iqr,prompt_tokens_median,prompt_tokens_iqr,completion_tokens_median,completion_tokens_iqr,total_tokens_median,total_tokens_iqr,prompt_tokens_per_sec_median,prompt_tokens_per_sec_iqr,completion_tokens_per_sec_median,completion_tokens_per_sec_iqr,total_tokens_per_sec_median,total_tokens_per_sec_iqr,avg_cpu_percent_median,avg_cpu_percent_iqr,peak_cpu_percent_median,peak_cpu_percent_iqr,avg_memory_mb_median,avg_memory_mb_iqr
+local_run,google_gemini-3.1-flash-lite,google/gemini-3.1-flash-lite:batch,lab-data,20260730_102437,task_generator,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+local_run,google_gemini-3.1-flash-lite,google/gemini-3.1-flash-lite:batch,lab-data,20260730_102437,code_generator,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+local_run,google_gemini-3.1-flash-lite,google/gemini-3.1-flash-lite:batch,lab-data,20260730_102437,validator,25.05,0.23,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,9.1,3.05,9.85,3.25,15927.19,283.98
+local_run,google_gemini-3.1-flash-lite,google/gemini-3.1-flash-lite:batch,lab-data,20260730_102437,scheduler,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+local_run,qwen2.5-coder (Run 1),,lab-data,20260730_102437,task_generator,81.62,1.98,2969.0,129.0,173.5,11.5,3142.5,117.5,36.44,2.46,2.12,0.09,38.56,2.37,5.3,0.35,6.0,0.0,16438.36,454.37
+local_run,qwen2.5-coder (Run 1),,lab-data,20260730_102437,code_generator,893.52,8.48,14369.0,3587.0,2605.5,565.5,16974.5,4152.5,16.12,4.17,2.92,0.66,19.04,4.83,10.65,4.05,13.4,4.4,16162.49,438.14
+local_run,qwen2.5-coder (Run 1),,lab-data,20260730_102437,validator,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,9.1,3.05,9.85,3.25,15927.19,283.98
+local_run,qwen2.5-coder (Run 1),,lab-data,20260730_102437,scheduler,37.45,3.08,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,7.75,0.65,12.35,0.35,15919.08,227.18
+local_run,qwen2.5-coder (Run 2),google/gemini-3.1-flash-lite,air-quality,20260730_113418,task_generator,79.07,0.0,3135.0,0.0,177.0,0.0,3312.0,0.0,39.65,0.0,2.24,0.0,41.88,0.0,6.4,0.0,6.6,0.0,15983.99,0.0
+local_run,qwen2.5-coder (Run 2),google/gemini-3.1-flash-lite,air-quality,20260730_113418,code_generator,901.91,0.0,10034.0,0.0,2584.0,0.0,12618.0,0.0,11.13,0.0,2.87,0.0,13.99,0.0,8.1,0.0,9.2,0.0,15951.53,0.0
+local_run,qwen2.5-coder (Run 2),google/gemini-3.1-flash-lite,air-quality,20260730_113418,validator,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+local_run,qwen2.5-coder (Run 2),google/gemini-3.1-flash-lite,air-quality,20260730_113418,scheduler,0.65,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,12.65,0.0,15.4,0.0,16032.67,0.0
+local_run,qwen2.5-coder (Run 2),,complex,20260730_113418,task_generator,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+local_run,qwen2.5-coder (Run 2),,complex,20260730_113418,code_generator,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+local_run,qwen2.5-coder (Run 2),,complex,20260730_113418,validator,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+local_run,qwen2.5-coder (Run 2),,complex,20260730_113418,scheduler,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0

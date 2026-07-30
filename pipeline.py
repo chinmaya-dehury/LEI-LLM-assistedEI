@@ -250,8 +250,8 @@ def run_complex_task_synthesis() -> None:
 		runner_module = importlib.util.module_from_spec(spec)
 		spec.loader.exec_module(runner_module)
 		
-		runner_module.run_complex_task_synthesis_workflow()
-		print("\n[OK] Complex task synthesis completed successfully")
+		#runner_module.run_complex_task_synthesis_workflow()
+		#print("\n[OK] Complex task synthesis completed successfully")
 	
 	except Exception as exc:
 		print(f"\n[ERROR] Complex task synthesis failed: {exc}")

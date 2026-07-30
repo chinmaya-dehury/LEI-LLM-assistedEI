@@ -1,0 +1,9 @@
+{
+  "pid": 17832,
+  "exit_code": 2,
+  "start_time": "2026-07-30T16:27:52.004257+05:30",
+  "duration_s": 1.067,
+  "avg_cpu_percent": 30.748,
+  "peak_rss_mb": 12.215,
+  "dataset": "meteo-data"
+}

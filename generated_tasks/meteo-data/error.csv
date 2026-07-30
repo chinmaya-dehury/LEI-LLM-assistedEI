@@ -1,0 +1,43 @@
+task_name,exit_code,error_message,count,last_timestamp
+Relative Humidity Monitoring,0,"Validation failed (exit 0).
+Stdout:
+Parsed 19859 rows, dropped 0 rows with missing/invalid data.
+Result saved to: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\meteo-data\relative_humidity_monitoring_result.json
+
+Stderr:
+
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: The code fails to implement the core requirement of the task: ""identify any correlations with other environmental factors, such as temperature and precipitation."" The provided script only calculates basic descriptive statistics (min, max, average) for relative humidity and ignores the columns for `A",1,2026-07-30T13:41:31.698309
+Solar Radiation Profiling,0,"Validation failed (exit 0).
+Stdout:
+Solar radiation profiling complete.
+
+Stderr:
+
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: The code fails to implement the core requirements of the task description. While it calculates basic statistics (min, max, average) for the `Solar_Radiation` column, it completely ignores the requirements to ""estimate daily and seasonal solar exposure cycles"" and ""evaluate the impact of cloud cover",1,2026-07-30T13:41:32.438815
+Ambient Temperature Trend Analysis,0,"Validation failed (exit 0).
+Stdout:
+Ambient temperature trend analysis complete.
+
+Stderr:
+
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: The code fails to implement the core requirements of the task description. While it calculates basic descriptive statistics (mean, min, max), it completely ignores the requirements to ""identify diurnal temperature patterns,"" ""detect anomalies,"" and ""track temperature fluctuations."" The code treats t",1,2026-07-30T13:41:32.569342
+Solar Radiation Profiling,0,,2,2026-07-30T13:41:38.881981
+Wind Vector Analysis,0,"Validation failed (exit 0).
+Stdout:
+Wind vector analysis complete. Results saved to output/meteo-data/wind_vector_analysis_result.json
+
+Stderr:
+
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: The code fails to handle the provided sample data correctly. In the sample data, the `Wind_Speed` column contains `NaN` values for every row. The code's `parse_float` function converts `NaN` to `float('nan')`, but the logic `if wind_speed is not None` evaluates to `True` for `NaN` values (since `NaN",1,2026-07-30T13:41:35.916290
+Ambient Temperature Trend Analysis,0,,2,2026-07-30T13:41:44.896972
+Relative Humidity Monitoring,0,Result saved to: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\meteo-data\relative_humidity_monitoring_result.json,1,2026-07-30T13:41:39.927980
+Relative Humidity Monitoring,0,,1,2026-07-30T13:41:43.330793
+Wind Vector Analysis,0,,2,2026-07-30T13:41:47.541876

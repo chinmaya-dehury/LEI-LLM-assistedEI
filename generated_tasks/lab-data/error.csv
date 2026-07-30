@@ -1,0 +1,18 @@
+task_name,exit_code,error_message,count,last_timestamp
+Temperature Humidity Correlation Analysis,1,"Syntax error at line 81, column 94: unmatched ')'",1,2026-07-30T17:46:19.930742
+Temperature Humidity Correlation Analysis,1,"Validation failed (exit 1).
+Stdout:
+
+Stderr:
+Syntax error at line 81, column 94: unmatched ')'
+Semantic Error:
+None",1,2026-07-30T17:46:25.367398
+Temperature Humidity Correlation Analysis,0,,2,2026-07-30T17:46:39.309778
+Light Intensity Anomaly Detection,-1,"Validation failed (exit -1).
+Stdout:
+
+Stderr:
+Script execution timed out after 60s
+Semantic Error:
+None",1,2026-07-30T17:47:25.220819
+Light Intensity Anomaly Detection,0,,2,2026-07-30T17:47:43.056580

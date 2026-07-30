@@ -1,1 +1,0 @@
-{"task_name": "soil_moisture_threshold_analysis", "description": "Determine optimal soil moisture thresholds for different crops at various growth stages for precise irrigation targets", "result_summary": [{"0-1cm": 0.10184946236559139, "1-3cm": 0.10541397849462365, "9-27cm": 0.14339784946236558}], "result_generated_at": "2026-05-28 11:40:23"}

@@ -1,0 +1,3 @@
+timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
+2026-07-30T17:32:00.691765+05:30,step2_code_generator,start,1,,granite4.1:8b,6.6,51.4,14831180,248597540,57138,262935,
+2026-07-30T17:46:18.620227+05:30,step2_code_generator,end,1,,granite4.1:8b,9.1,51.3,18553925,309881920,76668,341295,

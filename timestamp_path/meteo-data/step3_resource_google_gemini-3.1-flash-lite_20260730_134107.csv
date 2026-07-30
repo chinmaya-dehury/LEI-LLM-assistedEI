@@ -1,0 +1,3 @@
+timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
+2026-07-30T13:41:29.816607+05:30,step3_validator,start,1,,google/gemini-3.1-flash-lite,6.7,50.9,14307826,134748648,39555,139776,
+2026-07-30T13:41:47.546639+05:30,step3_validator,end,1,,google/gemini-3.1-flash-lite,7.5,51.6,14488198,134928707,40016,140646,

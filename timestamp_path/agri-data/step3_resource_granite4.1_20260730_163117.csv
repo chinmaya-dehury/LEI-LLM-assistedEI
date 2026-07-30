@@ -1,0 +1,3 @@
+timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
+2026-07-30T16:47:57.934411+05:30,step3_validator,start,1,,granite4.1:8b,19.4,54.0,62995937,33817459,72453,124928,
+2026-07-30T16:48:32.117486+05:30,step3_validator,end,1,,"anthropic/claude-3-haiku,google/gemini-3.1-flash-lite,openai/gpt-4o-mini",15.1,53.8,69495005,34712113,77838,128342,

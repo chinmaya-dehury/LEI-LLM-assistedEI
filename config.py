@@ -3,8 +3,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# later on change the default "air_quality" to use COMPLEX tasks
-DATA_TYPE = os.getenv("DATA_TYPE", "air_quality")
+DATA_TYPE = os.getenv("DATA_TYPE")
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "generic").strip().lower()
 
 # LLM API credentials and endpoint
@@ -12,6 +11,18 @@ LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")
 LLM_API_KEY = os.getenv("LLM_API_KEY")
 DEFAULT_MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
 LLM_VAL_MODEL = os.getenv("LLM_VAL_MODEL", DEFAULT_MODEL)  # Validation-specific model (defaults to DEFAULT_MODEL)
+# Optional: comma-separated list of validation models (majority voting will be applied)
+LLM_VAL_MODELS = os.getenv("LLM_VAL_MODELS", "").strip()
+if LLM_VAL_MODELS:
+	# Split comma-separated list and normalize
+	LLM_VAL_MODELS_LIST = [m.strip() for m in LLM_VAL_MODELS.split(",") if m.strip()]
+else:
+	# Fallback to single model variable for backward compatibility
+	LLM_VAL_MODELS_LIST = [LLM_VAL_MODEL]
+
+# Validation LLM API credentials and endpoint (falls back to generation endpoint if not set)
+LLM_VAL_BASE_URL = os.getenv("LLM_VAL_BASE_URL", LLM_BASE_URL)
+LLM_VAL_API_KEY = os.getenv("LLM_VAL_API_KEY", LLM_API_KEY)
 
 # Optional rate limit and provider-specific settings (safe defaults)
 MODEL_RATE_LIMITS = {}
@@ -26,6 +37,13 @@ if not LLM_API_KEY:
 
 if not LLM_BASE_URL:
 	raise RuntimeError("LLM_BASE_URL not configured in .env file")
+
+if not LLM_VAL_API_KEY:
+    raise RuntimeError("LLM_VAL_API_KEY not found in .env file")
+
+if not LLM_VAL_BASE_URL:
+	raise RuntimeError("LLM_VAL_BASE_URL not configured in .env file")
+
 
 if not DATA_TYPE:
 	raise RuntimeError("DATA_TYPE is not set. Please set it in config.py.")

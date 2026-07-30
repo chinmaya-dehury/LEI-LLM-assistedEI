@@ -1,0 +1,17 @@
+folder_name,model_name,dataset,session_timestamp,step,latency_median,latency_iqr
+local_run,google_gemini-3.1-flash-lite,lab-data,20260730_102437,task_generator,0.0,0.0
+local_run,google_gemini-3.1-flash-lite,lab-data,20260730_102437,code_generator,0.0,0.0
+local_run,google_gemini-3.1-flash-lite,lab-data,20260730_102437,validator,25.05,0.23
+local_run,google_gemini-3.1-flash-lite,lab-data,20260730_102437,scheduler,0.0,0.0
+local_run,qwen2.5-coder (Run 1),lab-data,20260730_102437,task_generator,81.62,1.98
+local_run,qwen2.5-coder (Run 1),lab-data,20260730_102437,code_generator,893.52,8.48
+local_run,qwen2.5-coder (Run 1),lab-data,20260730_102437,validator,0.0,0.0
+local_run,qwen2.5-coder (Run 1),lab-data,20260730_102437,scheduler,37.45,3.08
+local_run,qwen2.5-coder (Run 2),air-quality,20260730_113418,task_generator,79.07,0.0
+local_run,qwen2.5-coder (Run 2),air-quality,20260730_113418,code_generator,901.91,0.0
+local_run,qwen2.5-coder (Run 2),air-quality,20260730_113418,validator,0.0,0.0
+local_run,qwen2.5-coder (Run 2),air-quality,20260730_113418,scheduler,0.65,0.0
+local_run,qwen2.5-coder (Run 2),complex,20260730_113418,task_generator,0.0,0.0
+local_run,qwen2.5-coder (Run 2),complex,20260730_113418,code_generator,0.0,0.0
+local_run,qwen2.5-coder (Run 2),complex,20260730_113418,validator,0.0,0.0
+local_run,qwen2.5-coder (Run 2),complex,20260730_113418,scheduler,0.0,0.0

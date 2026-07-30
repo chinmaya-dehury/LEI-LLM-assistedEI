@@ -1,0 +1,254 @@
+run_number,model,use_case,error_details,count
+1,google_gemini-3.1-flash-lite,lab-data,"Validation failed (exit 0).
+Stdout:
+Error: Data file lab-data\sensor_readings.csv does not exist.
+
+Stderr:
+
+Semantic Error:
+None",1
+1,google_gemini-3.1-flash-lite,lab-data,"Syntax error at line 46, column 23: unterminated f-string literal (detected at line 46)",1
+1,google_gemini-3.1-flash-lite,lab-data,"Validation failed (exit 1).
+Stdout:
+
+Stderr:
+Syntax error at line 46, column 23: unterminated f-string literal (detected at line 46)
+Semantic Error:
+None",1
+1,google_gemini-3.1-flash-lite,lab-data,"Validation failed (exit 0).
+Stdout:
+Detected 430874 light intensity anomalies. Results saved to C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\data\lab-data\light_anomalies.json. Dropped 0 rows due to parsing errors.
+
+Stderr:
+
+Semantic Error:
+None",1
+1,google_gemini-3.1-flash-lite,lab-data,"Syntax error at line 45, column 43: unterminated string literal (detected at line 45)",2
+1,google_gemini-3.1-flash-lite,lab-data,"Validation failed (exit 1).
+Stdout:
+
+Stderr:
+Syntax error at line 45, column 43: unterminated string literal (detected at line 45)
+Semantic Error:
+None",2
+2,google_gemini-3.1-flash-lite,lab-data,"Validation failed (exit 1).
+Stdout:
+
+Stderr:
+Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\lab-data\Light Intensity Variation Detection.py"", line 79, in <module>
+    light_std_devs = {moteid: math.sqrt(sum((x - mean) ** 2 for x in values) / len(values)) if len(values) > 1 else None for moteid, values in light_variations.items()}
+                                        ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\lab-data\Light Intensity Variation Detection.py"", line 79, in <genexpr>
+    light_std_devs = {moteid: math.sqrt(sum((x - mean) ** 2 for x in values) / len(values)) if len(values) > 1 else None for moteid, values in light_variations.items()}
+                                                 ^^^^
+NameError: name 'mean' is not defined
+
+Semantic Error:
+None",1
+2,google_gemini-3.1-flash-lite,lab-data,"Validation failed (exit 0).
+Stdout:
+{
+    ""dropped_rows"": 92976,
+    ""stats"": {
+        ""temperature"": {
+            ""min"": -38.4,
+            ""max"": 385.568,
+            ""mean"": 39.2334908169779
+        },
+        ""humidity"": {
+            ""min"": -8983.13,
+            ""max"": 137.512,
+            ""mean"": 33.73195460216199
+        },
+        ""voltage"": {
+            ""min"": 0.00910083,
+            ""max"": 3.15915,
+            ""mean"": 2.490633832354371
+        }
+    }
+}
+
+Stderr:
+
+Semantic Error:
+Semantic validation failed (schema):
+  • task_name: Field required (got: {'dropped_rows': 92976, 'stats': {'temperature': {'min': -38.4, 'max': 385.568, 'mean': 39.2334908169779}, 'humidity': {'min': -8983.13, 'max': 137.512, 'mean': 33.73195460216199}, 'voltage': {'min': 0.00910083, 'max': 3.15915, 'mean': 2.490633832354371}}})
+  • result_summary: Field required (got: {'dropped_rows': 92976, 'stats': {'temperature': {'min': -38.4, 'max': 385.568, 'mean': 39.2334908169779}, 'humidity': {'min': -8983.13, 'max': 137.512, 'mean': 33.73195460216199}, 'voltage': {'min': 0.00910083, 'max': 3.15915, 'mean': 2.490633832354371}}})
+  • dropped_rows: Extra inputs are not permitted (got: 92976)
+  • stats: Extra inputs are not permitted (got: {'temperature': {'min': -38.4, 'max': 385.568, 'mean': 39.2334908169779}, 'humidity': {'min': -8983.13, 'max': 137.512, 'mean': 33.73195460216199}, 'voltage': {'min': 0.00910083, 'max': 3.15915, 'mean': 2.490633832354371}})",1
+1,google_gemini-3.1-flash-lite,air-quality,"Syntax error at line 28, column 9: invalid syntax",1
+1,google_gemini-3.1-flash-lite,air-quality,"Validation failed (exit 1).
+Stdout:
+
+Stderr:
+Syntax error at line 28, column 9: invalid syntax
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: The code contains a syntax error: `cimport csv` on line 23 is invalid Python syntax (likely a typo for `import csv`). Additionally, while the code parses the data, it fails to perform the actual ""analysis"" of cross-sensitivities (e.g., calculating correlations or trends between temperature/humidity",1
+1,google_gemini-3.1-flash-lite,air-quality,"Validation failed (exit 1).
+Stdout:
+
+Stderr:
+Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\air-quality\NOx and NO2 Comparison.py"", line 66, in <module>
+    nox_gt = safe_parse_float(row.get('nox(gt)'))
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\air-quality\NOx and NO2 Comparison.py"", line 36, in safe_parse_float
+    return float(value)
+TypeError: float() argument must be a string or a real number, not 'NoneType'
+
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: The code contains a case-sensitivity error and a runtime error:
+
+1. **Case Sensitivity:** The sample data uses headers `NOx(GT)` and `NO2(GT)`, but the code attempts to access them using `row.get('nox(gt)')` and `row.get('no2(gt)')`. Since `csv.DictReader` is case-sensitive, these lookups will retur",1
+1,google_gemini-3.1-flash-lite,air-quality,Analysis complete. Saved to C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\air-quality\Sensor_Cross_Sensitivity_Analysis_result.json,1
+1,google_gemini-3.1-flash-lite,air-quality,Error: Data file not found at C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\air-quality\data\air-quality\raw_data.csv,1
+1,google_gemini-3.1-flash-lite,air-quality,,2
+1,google_gemini-3.1-flash-lite,meteo-data,"Validation failed (exit 0).
+Stdout:
+Parsed 19859 rows, dropped 0 rows with missing/invalid data.
+Result saved to: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\meteo-data\relative_humidity_monitoring_result.json
+
+Stderr:
+
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: The code fails to implement the core requirement of the task: ""identify any correlations with other environmental factors, such as temperature and precipitation."" The provided script only calculates basic descriptive statistics (min, max, average) for relative humidity and ignores the columns for `A",1
+1,google_gemini-3.1-flash-lite,meteo-data,"Validation failed (exit 0).
+Stdout:
+Solar radiation profiling complete.
+
+Stderr:
+
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: The code fails to implement the core requirements of the task description. While it calculates basic statistics (min, max, average) for the `Solar_Radiation` column, it completely ignores the requirements to ""estimate daily and seasonal solar exposure cycles"" and ""evaluate the impact of cloud cover",1
+1,google_gemini-3.1-flash-lite,meteo-data,"Validation failed (exit 0).
+Stdout:
+Ambient temperature trend analysis complete.
+
+Stderr:
+
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: The code fails to implement the core requirements of the task description. While it calculates basic descriptive statistics (mean, min, max), it completely ignores the requirements to ""identify diurnal temperature patterns,"" ""detect anomalies,"" and ""track temperature fluctuations."" The code treats t",1
+1,google_gemini-3.1-flash-lite,meteo-data,,7
+1,google_gemini-3.1-flash-lite,meteo-data,"Validation failed (exit 0).
+Stdout:
+Wind vector analysis complete. Results saved to output/meteo-data/wind_vector_analysis_result.json
+
+Stderr:
+
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: The code fails to handle the provided sample data correctly. In the sample data, the `Wind_Speed` column contains `NaN` values for every row. The code's `parse_float` function converts `NaN` to `float('nan')`, but the logic `if wind_speed is not None` evaluates to `True` for `NaN` values (since `NaN",1
+1,google_gemini-3.1-flash-lite,meteo-data,Result saved to: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\meteo-data\relative_humidity_monitoring_result.json,1
+1,"anthropic_claude-3-haiku,google_gemini-3.1-flash-lite,openai_gpt-4o-mini",agri-data,"Validation failed (exit 0).
+Stdout:
+Loaded 2200 rows from data\agri-data\raw_data.csv.
+{""task_name"": ""Water Usage Efficiency Monitoring"", ""description"": ""Monitor water usage efficiency by calculating the ratio of crop yield to water consumption based on irrigation frequency and rainfall data."", ""total_yield"": 7733.0, ""total_water_consumed"": 227620.0419146903, ""water_usage_efficiency"": 0.03397328255873993, ""dropped_rows"": 0}
+
+Stderr:
+
+Semantic Error:
+Semantic validation failed (schema):
+  • result_summary: Field required (got: {'task_name': 'Water Usage Efficiency Monitoring', 'description': 'Monitor water usage efficiency by calculating the ratio of crop yield to water consumption based on irrigation frequency and rainfall data.', 'total_yield': 7733.0, 'total_water_consumed': 227620.0419146903, 'water_usage_efficiency': 0.03397328255873993, 'dropped_rows': 0})
+  • description: Extra inputs are not permitted (got: 'Monitor water usage efficiency by calculating the ratio of crop yield to water consumption based on irrigation frequency and rainfall data.')
+  • total_yield: Extra inputs are not permitted (got: 7733.0)
+  • total_water_consumed: Extra inputs are not permitted (got: 227620.0419146903)
+  • water_usage_efficiency: Extra inputs are not permitted (got: 0.03397328255873993)
+  • dropped_rows: Extra inputs are not permitted (got: 0)",2
+1,granite4.1,agri-data,"Validation failed (exit 1).
+Stdout:
+
+Stderr:
+Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Crop Growth Stage Prediction.py"", line 151, in <module>
+    main()
+    ~~~~^^
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Crop Growth Stage Prediction.py"", line 107, in main
+    raw_data = load_data(file_path)
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Crop Growth Stage Prediction.py"", line 100, in load_data
+    with open(file_path, newline='') as csvfile:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'agri-data.csv'
+
+Semantic Error:
+None",1
+1,granite4.1,agri-data,"Validation failed (exit 0).
+Stdout:
+
+Stderr:
+
+Semantic Error:
+None",2
+1,granite4.1,agri-data,"Validation failed (exit 1).
+Stdout:
+
+Stderr:
+Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Soil Fertility Assessment.py"", line 95, in <module>
+    results = assessor.compute_sfi()
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Soil Fertility Assessment.py"", line 52, in compute_sfi
+    with open(self.input_path, newline='') as csvfile:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '\\path\\to\\agri-data.csv'
+
+Semantic Error:
+None",1
+1,"anthropic_claude-3-haiku,google_gemini-3.1-flash-lite,openai_gpt-4o-mini",agri-data,"Validation failed (exit 1).
+Stdout:
+
+Stderr:
+Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Soil Fertility Assessment.py"", line 95, in <module>
+    results = assessor.compute_sfi()
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Soil Fertility Assessment.py"", line 52, in compute_sfi
+    with open(self.input_path, newline='') as csvfile:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '\\path\\to\\agri-data.csv'
+
+Semantic Error:
+None",1
+1,"anthropic_claude-3-haiku,google_gemini-3.1-flash-lite,openai_gpt-4o-mini",agri-data,"Syntax error at line 24, column 13: invalid syntax",1
+1,"anthropic_claude-3-haiku,google_gemini-3.1-flash-lite,openai_gpt-4o-mini",agri-data,"Validation failed (exit 1).
+Stdout:
+
+Stderr:
+Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Crop Growth Stage Prediction.py"", line 151, in <module>
+    main()
+    ~~~~^^
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Crop Growth Stage Prediction.py"", line 107, in main
+    raw_data = load_data(file_path)
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Crop Growth Stage Prediction.py"", line 100, in load_data
+    with open(file_path, newline='') as csvfile:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'agri-data.csv'
+
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: google/gemini-3.1-flash-lite: The code fails for several reasons:
+
+1.  **Logic Errors in `fit` method**: The recursive call in `self.left_tree.fit` contains a syntax error (`zip(*X)[0]`) and logic that attempts to access indices on a list of dictionaries incorrectly. Furthermore, the `right_counts` calculation (`Counter(y) - lef; openai/gpt-4o-mini: The code does not correctly implement the task as described. The task requires predicting the growth stage of rice based on soil moisture, temperature, and NPK levels using a lightweight decision tree model. However, the code attempts to fit a decision tree based on soil moisture alone and does not",1
+1,"anthropic_claude-3-haiku,google_gemini-3.1-flash-lite,openai_gpt-4o-mini",agri-data,"C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Soil Fertility Assessment.py.tmp:4: SyntaxWarning: ""\	"" is an invalid escape sequence. Such sequences will not work in the future. Did you mean ""\\	""? A raw string is also an option.
+  ""error_message"": ""FileNotFoundError: [Errno 2] No such file or directory: '\\path\	o\\agri-data.csv'"",",1
+1,"anthropic_claude-3-haiku,google_gemini-3.1-flash-lite,openai_gpt-4o-mini",agri-data,"Syntax error at line 3, column 13: invalid syntax",1
+1,"anthropic_claude-3-haiku,google_gemini-3.1-flash-lite,openai_gpt-4o-mini",agri-data,,3
+1,"anthropic_claude-3-haiku,google_gemini-3.1-flash-lite,openai_gpt-4o-mini",lab-data,"Syntax error at line 81, column 94: unmatched ')'",1
+1,"anthropic_claude-3-haiku,google_gemini-3.1-flash-lite,openai_gpt-4o-mini",lab-data,"Validation failed (exit 1).
+Stdout:
+
+Stderr:
+Syntax error at line 81, column 94: unmatched ')'
+Semantic Error:
+None",1
+1,"anthropic_claude-3-haiku,google_gemini-3.1-flash-lite,openai_gpt-4o-mini",lab-data,,4
+1,"anthropic_claude-3-haiku,google_gemini-3.1-flash-lite,openai_gpt-4o-mini",lab-data,"Validation failed (exit -1).
+Stdout:
+
+Stderr:
+Script execution timed out after 60s
+Semantic Error:
+None",1

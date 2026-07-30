@@ -1,3 +1,0 @@
-timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
-2026-05-26T10:59:34.405412+05:30,step3_validator,start,1,,llama-3.3-70b-versatile,1.7,43.1,69661497,273957998,174426,394535,
-2026-05-26T10:59:34.924329+05:30,step3_validator,end,1,,llama-3.3-70b-versatile,3.8,43.0,69664746,273958412,174431,394540,

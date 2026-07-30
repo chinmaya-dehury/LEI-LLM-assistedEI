@@ -1,0 +1,56 @@
+task_name,exit_code,error_message,count,last_timestamp
+Water Usage Efficiency Monitoring,0,"Validation failed (exit 0).
+Stdout:
+Loaded 2200 rows from data\agri-data\raw_data.csv.
+{""task_name"": ""Water Usage Efficiency Monitoring"", ""description"": ""Monitor water usage efficiency by calculating the ratio of crop yield to water consumption based on irrigation frequency and rainfall data."", ""total_yield"": 7733.0, ""total_water_consumed"": 227620.0419146903, ""water_usage_efficiency"": 0.03397328255873993, ""dropped_rows"": 0}
+
+Stderr:
+
+Semantic Error:
+Semantic validation failed (schema):
+  • result_summary: Field required (got: {'task_name': 'Water Usage Efficiency Monitoring', 'description': 'Monitor water usage efficiency by calculating the ratio of crop yield to water consumption based on irrigation frequency and rainfall data.', 'total_yield': 7733.0, 'total_water_consumed': 227620.0419146903, 'water_usage_efficiency': 0.03397328255873993, 'dropped_rows': 0})
+  • description: Extra inputs are not permitted (got: 'Monitor water usage efficiency by calculating the ratio of crop yield to water consumption based on irrigation frequency and rainfall data.')
+  • total_yield: Extra inputs are not permitted (got: 7733.0)
+  • total_water_consumed: Extra inputs are not permitted (got: 227620.0419146903)
+  • water_usage_efficiency: Extra inputs are not permitted (got: 0.03397328255873993)
+  • dropped_rows: Extra inputs are not permitted (got: 0)",1,2026-07-30T16:47:58.533534
+Soil Fertility Assessment,1,"Validation failed (exit 1).
+Stdout:
+
+Stderr:
+Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Soil Fertility Assessment.py"", line 95, in <module>
+    results = assessor.compute_sfi()
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Soil Fertility Assessment.py"", line 52, in compute_sfi
+    with open(self.input_path, newline='') as csvfile:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '\\path\\to\\agri-data.csv'
+
+Semantic Error:
+None",1,2026-07-30T16:48:04.919679
+Water Usage Efficiency Monitoring,1,"Syntax error at line 24, column 13: invalid syntax",1,2026-07-30T16:48:05.593039
+Crop Growth Stage Prediction,1,"Validation failed (exit 1).
+Stdout:
+
+Stderr:
+Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Crop Growth Stage Prediction.py"", line 151, in <module>
+    main()
+    ~~~~^^
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Crop Growth Stage Prediction.py"", line 107, in main
+    raw_data = load_data(file_path)
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Crop Growth Stage Prediction.py"", line 100, in load_data
+    with open(file_path, newline='') as csvfile:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'agri-data.csv'
+
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: google/gemini-3.1-flash-lite: The code fails for several reasons:
+
+1.  **Logic Errors in `fit` method**: The recursive call in `self.left_tree.fit` contains a syntax error (`zip(*X)[0]`) and logic that attempts to access indices on a list of dictionaries incorrectly. Furthermore, the `right_counts` calculation (`Counter(y) - lef; openai/gpt-4o-mini: The code does not correctly implement the task as described. The task requires predicting the growth stage of rice based on soil moisture, temperature, and NPK levels using a lightweight decision tree model. However, the code attempts to fit a decision tree based on soil moisture alone and does not",1,2026-07-30T16:48:08.959181
+Soil Fertility Assessment,0,"C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Soil Fertility Assessment.py.tmp:4: SyntaxWarning: ""\	"" is an invalid escape sequence. Such sequences will not work in the future. Did you mean ""\\	""? A raw string is also an option.
+  ""error_message"": ""FileNotFoundError: [Errno 2] No such file or directory: '\\path\	o\\agri-data.csv'"",",1,2026-07-30T16:48:11.600445
+Water Usage Efficiency Monitoring,1,"Syntax error at line 3, column 13: invalid syntax",1,2026-07-30T16:48:13.265086
+Soil Fertility Assessment,0,,1,2026-07-30T16:48:17.601940
+Crop Growth Stage Prediction,0,,2,2026-07-30T16:48:32.104579

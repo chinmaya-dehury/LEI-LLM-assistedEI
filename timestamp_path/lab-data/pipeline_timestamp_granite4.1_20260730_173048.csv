@@ -1,0 +1,4 @@
+run_id,model,run_count,step,script,start_time_ist,end_time_ist,duration_sec,status,return_code
+20260730_173048,granite4.1:8b,1,step1_task_generator,C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\task_generator.py,2026-07-30T17:30:48.368522+05:30,2026-07-30T17:32:00.394875+05:30,72.02633870000136,success,0
+20260730_173048,granite4.1:8b,1,step2_code_generator,C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\code_generator.py,2026-07-30T17:32:00.397131+05:30,2026-07-30T17:46:19.138817+05:30,858.7416741000052,success,0
+20260730_173048,granite4.1:8b,1,step3_validator,C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\validator.py,2026-07-30T17:46:19.144149+05:30,2026-07-30T17:47:43.575336+05:30,84.43117429999984,success,0

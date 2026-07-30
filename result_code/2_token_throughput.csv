@@ -1,0 +1,17 @@
+folder_name,model_name,dataset,session_timestamp,step,prompt_tokens_median,prompt_tokens_iqr,completion_tokens_median,completion_tokens_iqr,total_tokens_median,total_tokens_iqr,prompt_tokens_per_sec_median,prompt_tokens_per_sec_iqr,completion_tokens_per_sec_median,completion_tokens_per_sec_iqr,total_tokens_per_sec_median,total_tokens_per_sec_iqr
+local_run,google_gemini-3.1-flash-lite,lab-data,20260730_102437,task_generator,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+local_run,google_gemini-3.1-flash-lite,lab-data,20260730_102437,code_generator,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+local_run,google_gemini-3.1-flash-lite,lab-data,20260730_102437,validator,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+local_run,google_gemini-3.1-flash-lite,lab-data,20260730_102437,scheduler,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+local_run,qwen2.5-coder (Run 1),lab-data,20260730_102437,task_generator,2969.0,129.0,173.5,11.5,3142.5,117.5,36.44,2.46,2.12,0.09,38.56,2.37
+local_run,qwen2.5-coder (Run 1),lab-data,20260730_102437,code_generator,14369.0,3587.0,2605.5,565.5,16974.5,4152.5,16.12,4.17,2.92,0.66,19.04,4.83
+local_run,qwen2.5-coder (Run 1),lab-data,20260730_102437,validator,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+local_run,qwen2.5-coder (Run 1),lab-data,20260730_102437,scheduler,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+local_run,qwen2.5-coder (Run 2),air-quality,20260730_113418,task_generator,3135.0,0.0,177.0,0.0,3312.0,0.0,39.65,0.0,2.24,0.0,41.88,0.0
+local_run,qwen2.5-coder (Run 2),air-quality,20260730_113418,code_generator,10034.0,0.0,2584.0,0.0,12618.0,0.0,11.13,0.0,2.87,0.0,13.99,0.0
+local_run,qwen2.5-coder (Run 2),air-quality,20260730_113418,validator,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+local_run,qwen2.5-coder (Run 2),air-quality,20260730_113418,scheduler,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+local_run,qwen2.5-coder (Run 2),complex,20260730_113418,task_generator,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+local_run,qwen2.5-coder (Run 2),complex,20260730_113418,code_generator,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+local_run,qwen2.5-coder (Run 2),complex,20260730_113418,validator,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+local_run,qwen2.5-coder (Run 2),complex,20260730_113418,scheduler,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0

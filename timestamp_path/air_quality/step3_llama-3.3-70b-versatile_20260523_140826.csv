@@ -1,3 +1,0 @@
-step,model,run_count,task_name,status,attempt,script_start_time_ist,script_end_time_ist,script_duration_sec,llm_start_time_ist,llm_end_time_ist,llm_duration_sec,prompt_tokens,completion_tokens,total_tokens,prompt_tokens_per_sec,completion_tokens_per_sec
-validation,llama-3.3-70b-versatile,,pollutant_source_apportionment,passed,0,,,,,,,,,,,
-validation,llama-3.3-70b-versatile,,air_quality_index_spatial_clustering,passed,0,,,,,,,,,,,

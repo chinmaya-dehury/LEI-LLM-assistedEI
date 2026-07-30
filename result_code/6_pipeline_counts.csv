@@ -1,0 +1,4 @@
+folder_name,model_name,dataset,session_timestamp,tasks_generated_total,tasks_generated_median,tasks_generated_iqr,code_generated_total,code_generated_median,code_generated_iqr,validated_code_total,validated_code_median,validated_code_iqr,executed_code_total,executed_code_median,executed_code_iqr
+local_run,google_gemini-3.1-flash-lite,lab-data,20260730_102437,14,7.0,2.0,10,5.0,0.0,5,2.5,0.5,0,0.0,0.0
+local_run,qwen2.5-coder (Run 1),lab-data,20260730_102437,0,0.0,0.0,0,0.0,0.0,0,0.0,0.0,0,0.0,0.0
+local_run,qwen2.5-coder (Run 2),air-quality,20260730_113418,4,4.0,0.0,3,3.0,0.0,1,1.0,0.0,0,0.0,0.0

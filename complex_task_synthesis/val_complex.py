@@ -51,7 +51,7 @@ def run_complex_validation() -> Dict[str, Any]:
     # Initialize OpenAI client in validator
     from openai import OpenAI
     import config as cfg
-    validator.client = OpenAI(base_url=cfg.LLM_BASE_URL, api_key=cfg.LLM_API_KEY, timeout=120)
+    validator.client = OpenAI(base_url=cfg.LLM_VAL_BASE_URL, api_key=cfg.LLM_VAL_API_KEY, timeout=120)
     
     return validate_complex_generated_tasks(COMPLEX_TASKS_FILE, COMPLEX_SCRIPTS_DIR)
 
@@ -86,7 +86,7 @@ def validate_complex_generated_tasks_entry() -> Dict[str, object]:
     # Initialize OpenAI client in validator
     from openai import OpenAI
     import config as cfg
-    validator.client = OpenAI(base_url=cfg.LLM_BASE_URL, api_key=cfg.LLM_API_KEY, timeout=120)
+    validator.client = OpenAI(base_url=cfg.LLM_VAL_BASE_URL, api_key=cfg.LLM_VAL_API_KEY, timeout=120)
 
     targets = build_complex_validation_targets()
     results: list[Dict[str, object]] = []

@@ -1,0 +1,34 @@
+{
+  "tasks": [
+    {
+      "task_name": "Temperature Humidity Correlation Analysis",
+      "description": "Compute Pearson correlation coefficient between temperature and humidity readings across all motes to assess their relationship.",
+      "data_type": "lab-data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Light Intensity Anomaly Detection",
+      "description": "Identify outliers in light intensity measurements that deviate more than 3 standard deviations from the mean for each time window.",
+      "data_type": "lab-data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Battery Voltage Trend Monitoring",
+      "description": "Track voltage changes over time and flag motes where voltage drops below a predefined threshold indicating potential battery depletion.",
+      "data_type": "lab-data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Epoch Synchronization Gaps Identification",
+      "description": "Detect missing epochs in the sequence across different motes to identify synchronization issues or sensor failures.",
+      "data_type": "lab-data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Mote Temperature Calibration Comparison",
+      "description": "Compare temperature readings from multiple motes at overlapping epochs to evaluate calibration consistency and suggest recalibration if discrepancies exceed a tolerance level.",
+      "data_type": "lab-data",
+      "status": "code_generated"
+    }
+  ]
+}

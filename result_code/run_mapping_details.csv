@@ -1,0 +1,6 @@
+reported_model,model_run,dataset,folder_name,session_timestamp,run_idx_in_session,step1_file,step2_file,step3_file,step4_file,validator_file,scheduler_log
+google_gemini-3.1-flash-lite,google_gemini-3.1-flash-lite,lab-data,local_run,20260730_102437,1,,,step3_google_gemini-3.1-flash-lite_20260730_102437.csv,,val_sum_google_gemini-3.1-flash-lite_20260730_102437_all_runs.json,
+google_gemini-3.1-flash-lite,google_gemini-3.1-flash-lite,lab-data,local_run,20260730_102437,2,,,step3_google_gemini-3.1-flash-lite_20260730_102437.csv,,val_sum_google_gemini-3.1-flash-lite_20260730_102437_all_runs.json,
+qwen2.5-coder,qwen2.5-coder (Run 1),lab-data,local_run,20260730_102437,1,step1_qwen2.5-coder_20260730_102437.csv,step2_qwen2.5-coder_20260730_102437.csv,,step4_resource_qwen2.5-coder_20260730_102437.csv,,
+qwen2.5-coder,qwen2.5-coder (Run 1),lab-data,local_run,20260730_102437,2,step1_qwen2.5-coder_20260730_102437.csv,step2_qwen2.5-coder_20260730_102437.csv,,step4_resource_qwen2.5-coder_20260730_102437.csv,,
+qwen2.5-coder,qwen2.5-coder (Run 2),air-quality,local_run,20260730_113418,1,step1_qwen2.5-coder_20260730_113418.csv,step2_qwen2.5-coder_20260730_113418.csv,,step4_resource_qwen2.5-coder_20260730_113418.csv,val_sum_qwen2.5-coder_20260730_113418_all_runs.json,

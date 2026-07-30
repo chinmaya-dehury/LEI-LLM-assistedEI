@@ -1,0 +1,34 @@
+{
+  "tasks": [
+    {
+      "task_name": "Crop Growth Stage Prediction",
+      "description": "Predict the growth stage of rice based on soil moisture, temperature, and NPK levels using a lightweight decision tree model.",
+      "data_type": "agri-data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Environmental Stress Index Calculation",
+      "description": "Compute the Temperature-Humidity Index (THI) from ambient temperature and humidity to assess crop stress conditions.",
+      "data_type": "agri-data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Soil Fertility Assessment",
+      "description": "Evaluate soil fertility using the Soil Fertility Index (SFI) derived from organic matter percentage and NPK levels.",
+      "data_type": "agri-data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Water Usage Efficiency Monitoring",
+      "description": "Monitor water usage efficiency by calculating the ratio of crop yield to water consumption based on irrigation frequency and rainfall data.",
+      "data_type": "agri-data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Pest Pressure Early Warning",
+      "description": "Detect early signs of pest pressure using a threshold-based alert system for the Pest_Pressure index.",
+      "data_type": "agri-data",
+      "status": "code_generated"
+    }
+  ]
+}

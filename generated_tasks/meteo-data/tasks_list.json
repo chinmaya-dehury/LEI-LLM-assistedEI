@@ -1,0 +1,40 @@
+{
+  "tasks": [
+    {
+      "task_name": "Ambient Temperature Trend Analysis",
+      "description": "Analyze the ambient temperature measurements over time to identify diurnal temperature patterns, detect anomalies, and track temperature fluctuations.",
+      "data_type": "meteo-data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Surface Temperature Correlation",
+      "description": "Examine the relationship between ambient temperature and surface temperature to understand the thermal dynamics of the local environment.",
+      "data_type": "meteo-data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Solar Radiation Profiling",
+      "description": "Analyze the solar radiation data to estimate daily and seasonal solar exposure cycles, and evaluate the impact of cloud cover on radiation levels.",
+      "data_type": "meteo-data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Relative Humidity Monitoring",
+      "description": "Track the relative humidity levels over time and identify any correlations with other environmental factors, such as temperature and precipitation.",
+      "data_type": "meteo-data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Soil Moisture Hydrology",
+      "description": "Examine the soil moisture and watermark data to understand the local hydrology, monitor soil drying trends, and identify potential water stress events.",
+      "data_type": "meteo-data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Wind Vector Analysis",
+      "description": "Calculate the wind speed and direction to profile the local wind patterns, detect wind gusts, and identify potential wind-related hazards.",
+      "data_type": "meteo-data",
+      "status": "code_generated"
+    }
+  ]
+}

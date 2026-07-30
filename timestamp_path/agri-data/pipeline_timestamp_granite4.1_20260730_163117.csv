@@ -1,0 +1,5 @@
+run_id,model,run_count,step,script,start_time_ist,end_time_ist,duration_sec,status,return_code
+20260730_163117,granite4.1:8b,1,step1_task_generator,C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\task_generator.py,2026-07-30T16:31:17.898323+05:30,2026-07-30T16:32:57.601758+05:30,99.70342259999597,success,0
+20260730_163117,granite4.1:8b,1,step2_code_generator,C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\code_generator.py,2026-07-30T16:32:57.603653+05:30,2026-07-30T16:47:57.675488+05:30,900.0718229000049,success,0
+20260730_163117,granite4.1:8b,1,step3_validator,C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\validator.py,2026-07-30T16:47:57.680894+05:30,2026-07-30T16:48:32.639422+05:30,34.958508800002164,success,0
+20260730_163117,granite4.1:8b,1,step4_scheduler,C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\scheduler\edge_scheduler_sequential.py,2026-07-30T16:48:32.642563+05:30,2026-07-30T16:48:33.836987+05:30,1.1944044999981998,success,0

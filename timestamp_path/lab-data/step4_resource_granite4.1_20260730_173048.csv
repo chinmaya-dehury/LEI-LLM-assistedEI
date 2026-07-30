@@ -1,0 +1,2 @@
+timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
+2026-07-30T17:47:43.580098+05:30,step4_scheduler,start,1,,granite4.1:8b,14.4,51.4,19073461,317689365,78767,350548,

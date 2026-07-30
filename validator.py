@@ -26,7 +26,7 @@ from pathlib import Path
 import threading
 import concurrent.futures
 
-from config import DATA_TYPE, LLM_BASE_URL, LLM_API_KEY, DEFAULT_MODEL, LLM_VAL_MODEL
+from config import DATA_TYPE, LLM_BASE_URL, LLM_API_KEY, DEFAULT_MODEL, LLM_VAL_MODEL, LLM_VAL_BASE_URL, LLM_VAL_API_KEY, LLM_VAL_MODELS_LIST
 from prompts.get_validated import SYSTEM_PROMPT
 from resource_monitor import log_resource_metrics
 from shared_utils import (
@@ -50,6 +50,8 @@ TIMESTAMP_PATH = None
 STEP3_CSV = None
 RESOURCE_CSV = None
 SANITIZED_MODEL = sanitize_model_name(LLM_VAL_MODEL)
+SANITIZED_GEN_MODEL = sanitize_model_name(DEFAULT_MODEL)
+VALIDATOR_MODELS_DISPLAY = ",".join(LLM_VAL_MODELS_LIST) if isinstance(LLM_VAL_MODELS_LIST, list) else str(LLM_VAL_MODELS_LIST)
 SCRIPT_START_TIME = None
 SCRIPT_START_PERF = None
 
@@ -63,10 +65,10 @@ DEFAULT_TASKS_FILE = os.path.join(DEFAULT_SCRIPTS_DIR, "tasks_list.json")
 FALLBACK_TASKS_FILE = os.path.join(DEFAULT_SCRIPTS_DIR, "new_tasks.json")
 ERROR_LOG_PATH = os.path.join(DEFAULT_SCRIPTS_DIR, "error.csv")
 DEFAULT_VALIDATOR_LOG = os.path.join("validator", DATA_TYPE)
-COMPLEX_TASKS_FILE = os.path.join("generated_tasks", "complex", "complex_tasks_list.json")
-COMPLEX_SCRIPTS_DIR = os.path.join("generated_tasks", "complex")
-COMPLEX_MISSING_DIR = os.path.join(COMPLEX_SCRIPTS_DIR, "missing")
-COMPLEX_VALIDATOR_LOG = os.path.join("validator", "complex")
+# COMPLEX_TASKS_FILE = os.path.join("generated_tasks", "complex", "complex_tasks_list.json")
+# COMPLEX_SCRIPTS_DIR = os.path.join("generated_tasks", "complex")
+# COMPLEX_MISSING_DIR = os.path.join(COMPLEX_SCRIPTS_DIR, "missing")
+# COMPLEX_VALIDATOR_LOG = os.path.join("validator", "complex")
 
 
 def _append_central_error_log(run_number: str, model: str, use_case: str, error_details: str) -> None:
@@ -126,7 +128,7 @@ def _append_error_log(task_name: str, exit_code: int, stderr: str, log_path: str
         log_path = ERROR_LOG_PATH
         
     try:
-        _append_central_error_log(RUN_COUNT, LLM_VAL_MODEL, DATA_TYPE, stderr)
+        _append_central_error_log(RUN_COUNT, VALIDATOR_MODELS_DISPLAY, DATA_TYPE, stderr)
     except Exception as e:
         print(f"[WARNING] Failed to append error to central CSV: {e}")
     
@@ -759,9 +761,11 @@ def _call_llm_chat(system_prompt: str, user_prompt: str) -> dict:
     global client
     if client is None:
         from openai import OpenAI
-        client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY, timeout=CLIENT_TIMEOUT)
+        client = OpenAI(base_url=LLM_VAL_BASE_URL, api_key=LLM_VAL_API_KEY, timeout=CLIENT_TIMEOUT)
+    # Use the first validation model in LLM_VAL_MODELS_LIST if available, otherwise LLM_VAL_MODEL
+    target_model = LLM_VAL_MODELS_LIST[0] if isinstance(LLM_VAL_MODELS_LIST, list) and LLM_VAL_MODELS_LIST else LLM_VAL_MODEL
     response = client.chat.completions.create(
-        model=LLM_VAL_MODEL,
+        model=target_model,
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
@@ -785,7 +789,7 @@ def _call_llm_chat(system_prompt: str, user_prompt: str) -> dict:
         "content": content,
         "prompt_tokens": prompt_tokens,
         "completion_tokens": completion_tokens,
-        "model": getattr(response, "model", LLM_VAL_MODEL),
+        "model": getattr(response, "model", target_model),
         "raw": response,
     }
 
@@ -1056,7 +1060,7 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
         script_duration = time.perf_counter() - start_perf
         with csv_lock:
             write_validator_detailed_row(
-                STEP3_CSV, "llm_call_failed", LLM_VAL_MODEL, RUN_COUNT,
+                STEP3_CSV, "llm_call_failed", VALIDATOR_MODELS_DISPLAY, RUN_COUNT,
                 task.get("task_name", ""), "llm_error", str(attempt),
                 start_time, script_end_time, script_duration,
                 llm_start_time, llm_end_time, llm_duration, 0, 0, 0
@@ -1081,7 +1085,7 @@ def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, ass
 
     with csv_lock:
         write_validator_detailed_row(
-            STEP3_CSV, "llm_call", native.get("model") or LLM_VAL_MODEL, RUN_COUNT,
+            STEP3_CSV, "llm_call", native.get("model") or VALIDATOR_MODELS_DISPLAY, RUN_COUNT,
             task.get("task_name", ""), "correction_attempt", str(attempt),
             start_time, datetime.now(IST).isoformat(), time.perf_counter() - start_perf,
             llm_start_time, llm_end_time, llm_duration, prompt_tokens, completion_tokens, total_tokens
@@ -1271,13 +1275,34 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
                 _append_error_log(task_name, 0, complex_failure, error_log_path)
                 has_error = True
 
-    validator_passed = exec_result["exit_code"] == 0 and not has_error
+    # Determine validator pass using semantic_details majority voting when available
+    per_validator = semantic_details.get("validator_results", []) if isinstance(semantic_details, dict) else []
+    majority_flag = semantic_details.get("majority_passed") if isinstance(semantic_details, dict) else None
+
+    if majority_flag is not None:
+        # Use majority result along with runtime success
+        validator_passed = bool(majority_flag) and exec_result["exit_code"] == 0 and not has_error
+    else:
+        # Fallback behavior: require runtime no error
+        validator_passed = exec_result["exit_code"] == 0 and not has_error
+
+    # Prepare per-validator booleans for logging and JSON
+    v1 = per_validator[0]["passed"] if len(per_validator) > 0 else None
+    v2 = per_validator[1]["passed"] if len(per_validator) > 1 else None
+    v3 = per_validator[2]["passed"] if len(per_validator) > 2 else None
 
     if validator_passed:
         print(f"[OK] {task_name} passed validation (runtime & semantic check)")
+        try:
+            persistent_dir = os.path.join("validated_code", str(datatype), SANITIZED_GEN_MODEL)
+            os.makedirs(persistent_dir, exist_ok=True)
+            shutil.copy2(script_path, os.path.join(persistent_dir, os.path.basename(script_path)))
+            print(f"[Validator] Copied validated script to persistent directory: {persistent_dir}")
+        except Exception as e:
+            print(f"[WARNING] Could not copy validated script to persistent folder: {e}")
         with csv_lock:
             write_validator_detailed_row(
-                STEP3_CSV, "validation", LLM_VAL_MODEL, RUN_COUNT, task_name, "passed", "0",
+                STEP3_CSV, "validation", VALIDATOR_MODELS_DISPLAY, RUN_COUNT, task_name, "passed", "0",
                 task_start_time, datetime.now(IST).isoformat(), time.perf_counter() - task_start_perf,
                 semantic_performed=semantic_details.get("performed", False),
                 semantic_passed=semantic_details.get("passed", False),
@@ -1288,7 +1313,11 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
             "status": "passed",
             "message": "Executed and validated successfully",
             "code_passed": code_passed,
-            "validator_passed": True,
+            "validator1_passed": v1,
+            "validator2_passed": v2,
+            "validator3_passed": v3,
+            "validator_passed": validator_passed,
+            "validator_details": per_validator,
         }
 
     # If it fails, log the failure details
@@ -1304,7 +1333,7 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
     if not ENABLE_LLM_CORRECTION:
         with csv_lock:
             write_validator_detailed_row(
-                STEP3_CSV, "validation", LLM_VAL_MODEL, RUN_COUNT, task_name, "failed", "0",
+                STEP3_CSV, "validation", VALIDATOR_MODELS_DISPLAY, RUN_COUNT, task_name, "failed", "0",
                 task_start_time, datetime.now(IST).isoformat(), time.perf_counter() - task_start_perf,
                 semantic_performed=semantic_details.get("performed", False),
                 semantic_passed=semantic_details.get("passed", False),
@@ -1326,7 +1355,11 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
             "status": "failed",
             "message": "Execution failed (self-correction disabled for comparison)",
             "code_passed": code_passed,
+            "validator1_passed": v1,
+            "validator2_passed": v2,
+            "validator3_passed": v3,
             "validator_passed": False,
+            "validator_details": per_validator,
         }
 
     # Retry/correction logic (only reached if task failed validation above and ENABLE_LLM_CORRECTION is True)
@@ -1342,7 +1375,7 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
     # Log initial attempt (attempt 0) with no LLM interaction
     with csv_lock:
         write_validator_detailed_row(
-            STEP3_CSV, "initial_run", LLM_VAL_MODEL, RUN_COUNT, task_name, "initial_validation", "0",
+            STEP3_CSV, "initial_run", VALIDATOR_MODELS_DISPLAY, RUN_COUNT, task_name, "initial_validation", "0",
             task_start_time, datetime.now(IST).isoformat(), time.perf_counter() - task_start_perf
         )
 
@@ -1424,17 +1457,34 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
                 if validated_output is not None:
                     # Both JSON and semantic validation passed
                     shutil.move(temp_path, script_path)
+                    try:
+                        persistent_dir = os.path.join("validated_code", str(datatype), SANITIZED_GEN_MODEL)
+                        os.makedirs(persistent_dir, exist_ok=True)
+                        shutil.copy2(script_path, os.path.join(persistent_dir, os.path.basename(script_path)))
+                        print(f"[Validator] Copied validated script to persistent directory: {persistent_dir}")
+                    except Exception as e:
+                        print(f"[WARNING] Could not copy validated script to persistent folder: {e}")
                     # Log a 'passed' status timing row for this attempt
                     with csv_lock:
                         write_validator_detailed_row(
-                            STEP3_CSV, "validation", LLM_VAL_MODEL, RUN_COUNT, task_name, "passed", str(attempt),
+                            STEP3_CSV, "validation", VALIDATOR_MODELS_DISPLAY, RUN_COUNT, task_name, "passed", str(attempt),
                             task_start_time, datetime.now(IST).isoformat(), time.perf_counter() - task_start_perf,
                             semantic_performed=semantic_details.get("performed", False),
                             semantic_passed=semantic_details.get("passed", False),
                             semantic_reasoning=semantic_details.get("reasoning", "")
                         )
                     print(f"[OK] {task_name} corrected and validated successfully")
-                    return {"task_name": task_name, "status": "passed", "message": f"Fixed after {attempt} attempt(s)"}
+                    return {
+                        "task_name": task_name,
+                        "status": "passed",
+                        "message": f"Fixed after {attempt} attempt(s)",
+                        "code_passed": True,
+                        "validator1_passed": semantic_details.get("validator_results", [])[0]["passed"] if semantic_details.get("validator_results") and len(semantic_details.get("validator_results"))>0 else None,
+                        "validator2_passed": semantic_details.get("validator_results", [])[1]["passed"] if semantic_details.get("validator_results") and len(semantic_details.get("validator_results"))>1 else None,
+                        "validator3_passed": semantic_details.get("validator_results", [])[2]["passed"] if semantic_details.get("validator_results") and len(semantic_details.get("validator_results"))>2 else None,
+                        "validator_passed": bool(semantic_details.get("majority_passed", True)),
+                        "validator_details": semantic_details.get("validator_results", []),
+                    }
                 else:
                     # Semantic validation failed - log and continue to next retry
                     print(f"[WARNING] Corrected code has valid JSON but failed semantic validation: {validation_error}")
@@ -1460,12 +1510,21 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
     except Exception as e:
         print(f"[ERROR] {task_name} failed and could not move to failed/: {e}")
 
+    # Prepare per-validator booleans for logging and JSON
+    v1 = per_validator[0]["passed"] if len(per_validator) > 0 else None
+    v2 = per_validator[1]["passed"] if len(per_validator) > 1 else None
+    v3 = per_validator[2]["passed"] if len(per_validator) > 2 else None
+
     return {
         "task_name": task_name,
         "status": "failed",
         "message": f"Failed after {MAX_RETRIES} correction attempts",
         "code_passed": code_passed,
+        "validator1_passed": v1,
+        "validator2_passed": v2,
+        "validator3_passed": v3,
         "validator_passed": False,
+        "validator_details": per_validator,
     }
 
 
@@ -1543,7 +1602,8 @@ def validate_complex_generated_tasks(complex_tasks_file: str, scripts_dir: str) 
 
     summary = {
         "run_count": RUN_COUNT,
-        "model": LLM_VAL_MODEL,
+        "model": DEFAULT_MODEL,
+        "val_model": VALIDATOR_MODELS_DISPLAY,
         "tasks": results,
         "summary": {
             "total": len(results),
@@ -1568,7 +1628,7 @@ def validate_complex_generated_tasks(complex_tasks_file: str, scripts_dir: str) 
     timestamp_str = RUN_ID.replace("lei_v3_bench_", "") if RUN_ID else ""
     individual_summary_path = os.path.join(
         COMPLEX_VALIDATOR_LOG,
-        f"val_sum_{SANITIZED_MODEL}_{timestamp_str}_complex_run{RUN_COUNT}.json",
+        f"val_sum_{SANITIZED_GEN_MODEL}_{timestamp_str}_complex_run{RUN_COUNT}.json",
     )
     with open(individual_summary_path, "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=2)
@@ -1599,13 +1659,13 @@ def validate_all_generated_tasks(tasks_file: str, scripts_dir: str) -> Dict[str,
                     actual_tasks_file = FALLBACK_TASKS_FILE
             except Exception as e2:
                 print(f"[ERROR] Failed to load fallback tasks file: {e2}")
-                return {"tasks": [], "run_count": RUN_COUNT, "model": LLM_VAL_MODEL}
+                return {"tasks": [], "run_count": RUN_COUNT, "model": DEFAULT_MODEL, "val_model": VALIDATOR_MODELS_DISPLAY}
         else:
-            return {"tasks": [], "run_count": RUN_COUNT, "model": LLM_VAL_MODEL}
+            return {"tasks": [], "run_count": RUN_COUNT, "model": DEFAULT_MODEL, "val_model": VALIDATOR_MODELS_DISPLAY}
     
     if tasks_data is None:
         print(f"[ERROR] No tasks data loaded")
-        return {"tasks": [], "run_count": RUN_COUNT, "model": LLM_VAL_MODEL}
+        return {"tasks": [], "run_count": RUN_COUNT, "model": DEFAULT_MODEL, "val_model": VALIDATOR_MODELS_DISPLAY}
     
     print(f"[INFO] Using tasks file: {actual_tasks_file}")
 
@@ -1639,6 +1699,11 @@ def validate_all_generated_tasks(tasks_file: str, scripts_dir: str) -> Dict[str,
                 "task_name": task_name,
                 "status": "failed",
                 "message": "Script file not found",
+                "code_passed": False,
+                "validator1_passed": False,
+                "validator2_passed": False,
+                "validator3_passed": False,
+                "validator_passed": False,
             })
             continue
 
@@ -1663,7 +1728,12 @@ def validate_all_generated_tasks(tasks_file: str, scripts_dir: str) -> Dict[str,
                     results.append({
                         "task_name": task_name,
                         "status": "failed",
-                        "message": f"Validation execution error: {e}"
+                        "message": f"Validation execution error: {e}",
+                        "code_passed": False,
+                        "validator1_passed": False,
+                        "validator2_passed": False,
+                        "validator3_passed": False,
+                        "validator_passed": False,
                     })
 
     passed = sum(1 for r in results if r.get("validator_passed"))
@@ -1675,10 +1745,10 @@ def validate_all_generated_tasks(tasks_file: str, scripts_dir: str) -> Dict[str,
     print("\n" + "=" * 60)
     print(f"VALIDATION COMPLETE: {passed} passed, {failed} failed")
     print("=" * 60 + "\n")
-
     return {
         "run_count": RUN_COUNT,
-        "model": LLM_VAL_MODEL,
+        "model": DEFAULT_MODEL,
+        "val_model": VALIDATOR_MODELS_DISPLAY,
         "tasks": results,
         "summary": {
             "total": len(results),
@@ -1695,6 +1765,7 @@ def main() -> int:
     global client, RUN_ID, RUN_COUNT, TIMESTAMP_PATH, STEP3_CSV, RESOURCE_CSV, SANITIZED_MODEL, SCRIPT_START_TIME, SCRIPT_START_PERF
     global DEFAULT_TASKS_FILE, FALLBACK_TASKS_FILE, DEFAULT_SCRIPTS_DIR, ERROR_LOG_PATH, DEFAULT_VALIDATOR_LOG
     global COMPLEX_TASKS_FILE, COMPLEX_SCRIPTS_DIR, COMPLEX_MISSING_DIR, COMPLEX_VALIDATOR_LOG
+    global SANITIZED_GEN_MODEL
 
     # Windows-safe stdout/stderr
     if hasattr(sys.stdout, "reconfigure"):
@@ -1703,7 +1774,7 @@ def main() -> int:
         sys.stderr.reconfigure(encoding="utf-8")
 
     from openai import OpenAI
-    client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY, timeout=CLIENT_TIMEOUT)
+    client = OpenAI(base_url=LLM_VAL_BASE_URL, api_key=LLM_VAL_API_KEY, timeout=CLIENT_TIMEOUT)
 
     # Validate that the DATA_TYPE folder exists with required files
     validate_data_type_exists(DATA_TYPE)
@@ -1717,6 +1788,7 @@ def main() -> int:
     STEP3_CSV = timing_paths["STEP_CSV"]
     RESOURCE_CSV = timing_paths["RESOURCE_CSV"]
     SANITIZED_MODEL = sanitize_model_name(LLM_VAL_MODEL)
+    SANITIZED_GEN_MODEL = sanitize_model_name(DEFAULT_MODEL)
 
     DEFAULT_SCRIPTS_DIR = os.environ.get("LEI_TASKS_DIR", os.path.join("generated_tasks", DATA_TYPE))
     DEFAULT_TASKS_FILE = os.path.join(DEFAULT_SCRIPTS_DIR, "tasks_list.json")
@@ -1747,13 +1819,13 @@ def main() -> int:
     
     # Save individual run summary with model name and RUN_COUNT in filename
     timestamp_str = RUN_ID.replace("lei_v3_bench_", "") if RUN_ID else ""
-    individual_summary_path = os.path.join(DEFAULT_VALIDATOR_LOG, f"val_sum_{SANITIZED_MODEL}_{timestamp_str}_run{RUN_COUNT}.json")
+    individual_summary_path = os.path.join(DEFAULT_VALIDATOR_LOG, f"val_sum_{SANITIZED_GEN_MODEL}_{timestamp_str}_run{RUN_COUNT}.json")
     with open(individual_summary_path, "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=2)
     print(f"[Validator] Individual run summary saved to {individual_summary_path}")
     
     # Accumulate results in master summary file (appends across all runs)
-    master_summary_path = os.path.join(DEFAULT_VALIDATOR_LOG, f"val_sum_{SANITIZED_MODEL}_{timestamp_str}_all_runs.json")
+    master_summary_path = os.path.join(DEFAULT_VALIDATOR_LOG, f"val_sum_{SANITIZED_GEN_MODEL}_{timestamp_str}_all_runs.json")
     all_runs_data = {}
     
     # Load existing master summary if it exists
@@ -1762,13 +1834,14 @@ def main() -> int:
             with open(master_summary_path, "r", encoding="utf-8") as f:
                 all_runs_data = json.load(f)
         except Exception:
-            all_runs_data = {"run_count": RUN_COUNT, "model": LLM_VAL_MODEL, "runs": {}}
+            all_runs_data = {"run_count": RUN_COUNT, "model": DEFAULT_MODEL, "val_model": VALIDATOR_MODELS_DISPLAY, "runs": {}}
     else:
-        all_runs_data = {"run_count": RUN_COUNT, "model": LLM_VAL_MODEL, "runs": {}}
+        all_runs_data = {"run_count": RUN_COUNT, "model": DEFAULT_MODEL, "val_model": VALIDATOR_MODELS_DISPLAY, "runs": {}}
     
     # Add current run's results
     all_runs_data["run_count"] = RUN_COUNT  # Update to latest run count
-    all_runs_data["model"] = LLM_VAL_MODEL
+    all_runs_data["model"] = DEFAULT_MODEL
+    all_runs_data["val_model"] = VALIDATOR_MODELS_DISPLAY
     if "runs" not in all_runs_data:
         all_runs_data["runs"] = {}
     all_runs_data["runs"][str(RUN_COUNT)] = summary.get("tasks", [])
@@ -1797,12 +1870,12 @@ def main() -> int:
     # Always add a run-level record for this validator execution
     with csv_lock:
         write_validator_detailed_row(
-            STEP3_CSV, "validator_run", LLM_VAL_MODEL, RUN_COUNT, "", "execution_complete", "",
+            STEP3_CSV, "validator_run", VALIDATOR_MODELS_DISPLAY, RUN_COUNT, "", "execution_complete", "",
             SCRIPT_START_TIME, datetime.now(IST).isoformat(), time.perf_counter() - SCRIPT_START_PERF
         )
 
     # Log resource metrics at end
-    log_resource_metrics(RESOURCE_CSV, "step3_validator", "end", model_name=LLM_VAL_MODEL, run_count=RUN_COUNT)
+    log_resource_metrics(RESOURCE_CSV, "step3_validator", "end", model_name=VALIDATOR_MODELS_DISPLAY, run_count=RUN_COUNT)
     return 0
 
 

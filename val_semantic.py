@@ -19,13 +19,12 @@ Modified on: 25-05-2026
 from typing import Dict, List, Any, Optional
 from pydantic import BaseModel, Field, ValidationError, ConfigDict
 from openai import OpenAI
-from config import LLM_BASE_URL, LLM_API_KEY, DEFAULT_MODEL, LLM_VAL_MODEL
+from config import LLM_BASE_URL, LLM_API_KEY, DEFAULT_MODEL, LLM_VAL_MODEL, LLM_VAL_BASE_URL, LLM_VAL_API_KEY, LLM_VAL_MODELS_LIST
 from datetime import datetime, timezone, timedelta
 import json
 
 
-# Initialize LLM client for code-description validation
-client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY, timeout=120)
+# Note: We instantiate clients per-call to allow using different validator models.
 
 # IST Timezone
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -138,24 +137,42 @@ Does this code implement the task as described and behave consistently with the 
 Response:
 """.strip()
 
-    try:
-        response = client.chat.completions.create(
-            model=LLM_VAL_MODEL,
-            messages=[{"role": "user", "content": validation_prompt}],
-            temperature=0.0,
-            timeout=60,
-        )
+    per_model_results = []
+    aggregated_reasons = []
+    passes = 0
+    models = LLM_VAL_MODELS_LIST if isinstance(LLM_VAL_MODELS_LIST, list) and LLM_VAL_MODELS_LIST else [LLM_VAL_MODEL]
 
-        result = (response.choices[0].message.content or "").strip()
+    for model in models:
+        try:
+            client = OpenAI(base_url=LLM_VAL_BASE_URL, api_key=LLM_VAL_API_KEY, timeout=120)
+            response = client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": validation_prompt}],
+                temperature=0.0,
+                timeout=60,
+            )
 
-        if result.startswith("YES"):
-            return True, None
+            result = (response.choices[0].message.content or "").strip()
+            if result.upper().startswith("YES"):
+                passed = True
+                reason = ""
+                passes += 1
+            else:
+                passed = False
+                reason = result[3:].strip() if len(result) > 3 else "Code does not match description"
 
-        reasoning = result[3:].strip() if len(result) > 3 else "Code does not match description"
-        return False, reasoning[:300]
+            per_model_results.append({"model": model, "passed": passed, "reason": reason[:500]})
+            if reason:
+                aggregated_reasons.append(f"{model}: {reason[:300]}")
+        except Exception as e:
+            # On LLM call failure, record as failed and note the exception
+            per_model_results.append({"model": model, "passed": False, "reason": f"validator_call_error: {e}"})
 
-    except Exception:
-        return True, None
+    # Majority voting
+    majority_required = (len(models) // 2) + 1
+    majority_passed = passes >= majority_required
+    aggregated_reason_text = "; ".join(aggregated_reasons) if aggregated_reasons else ""
+    return majority_passed, aggregated_reason_text or None, per_model_results
 
 
 def _validate_output_schema(json_output: Dict[str, Any]) -> tuple[Optional[TaskOutput], List[str]]:
@@ -247,7 +264,7 @@ def _validate_business_rules(
     
     # Rule 3: LLM-based code-description matching (if both provided and not skipped)
     if not skip_code_matching and validated_output.generated_code and validated_output.task_description:
-        matches, match_error = _check_code_matches_description(
+        matches, match_error, per_model = _check_code_matches_description(
             validated_output.generated_code,
             validated_output.task_description,
             validated_output.task_name,
@@ -255,6 +272,10 @@ def _validate_business_rules(
         )
         if not matches and match_error:
             errors.append(f"Code-description mismatch: {match_error}")
+        # attach per-model validator details to the validated object via semantic details
+        validated_output.__dict__.setdefault("_validator_details", {})
+        validated_output.__dict__["_validator_details"]["per_model"] = per_model
+        validated_output.__dict__["_validator_details"]["majority_passed"] = bool(matches)
     
     return errors
 
@@ -336,11 +357,19 @@ def _validate_output_structure(
         if semantic_details["performed"]:
             semantic_details["passed"] = False
             semantic_details["reasoning"] = "; ".join(business_errors[:2])[:200]  # First 200 chars
+        # If validator details were attached, surface them in semantic_details
+        if hasattr(validated, "_validator_details"):
+            semantic_details["validator_results"] = validated.__dict__.get("_validator_details", {}).get("per_model", [])
+            semantic_details["majority_passed"] = validated.__dict__.get("_validator_details", {}).get("majority_passed", False)
         return None, error_msg, semantic_details
     
     # All validations passed
     if semantic_details["performed"]:
         semantic_details["passed"] = True
         semantic_details["reasoning"] = "Code matches description, sample data, and output schema valid"
+        # Include validator details if available
+        if hasattr(validated, "_validator_details"):
+            semantic_details["validator_results"] = validated.__dict__.get("_validator_details", {}).get("per_model", [])
+            semantic_details["majority_passed"] = validated.__dict__.get("_validator_details", {}).get("majority_passed", False)
     
     return validated, None, semantic_details
