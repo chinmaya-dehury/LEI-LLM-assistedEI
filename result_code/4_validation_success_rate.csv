@@ -1,4 +1,14 @@
-folder_name,model_name,dataset,session_timestamp,validation_success_rate_median,validation_success_rate_iqr
-local_run,google_gemini-3.1-flash-lite,lab-data,20260730_102437,0.5,0.1
-local_run,qwen2.5-coder (Run 1),lab-data,20260730_102437,0.0,0.0
-local_run,qwen2.5-coder (Run 2),air-quality,20260730_113418,0.3333,0.0
+folder_name,model_name,dataset,session_timestamp,validation_success_rate_median,validation_success_rate_q1,validation_success_rate_q3
+local_run,moonshotai_kimi-k2.7-code_lei_v3_cloud (Run 1),agri-data,20260731_161341,0.0,0.0,0.0
+local_run,moonshotai_kimi-k2.7-code_lei_v3_cloud (Run 1),air-quality,20260731_161341,0.0,0.0,0.0
+local_run,moonshotai_kimi-k2.7-code_lei_v3_cloud (Run 1),lab-data,20260731_161341,0.0,0.0,0.0
+local_run,moonshotai_kimi-k2.7-code_lei_v3_cloud (Run 1),meteo-data,20260731_161341,0.0,0.0,0.0
+local_run,moonshotai_kimi-k2.7-code_lei_v3_cloud (Run 2),meteo-data,20260731_204159,0.0,0.0,0.0
+local_run,openai_gpt-4o-mini_lei_v3_cloud (Run 1),agri-data,20260731_161341,0.0,0.0,0.0
+local_run,openai_gpt-4o-mini_lei_v3_cloud (Run 1),air-quality,20260731_161341,0.0,0.0,0.0
+local_run,openai_gpt-4o-mini_lei_v3_cloud (Run 1),lab-data,20260731_161341,0.0,0.0,0.0
+local_run,openai_gpt-4o-mini_lei_v3_cloud (Run 2),meteo-data,20260731_204159,0.0,0.0,0.0
+local_run,qwen_qwen3.7-flash_lei_v3_cloud (Run 1),agri-data,20260731_161341,0.0,0.0,0.0
+local_run,qwen_qwen3.7-flash_lei_v3_cloud (Run 1),air-quality,20260731_161341,0.0,0.0,0.0
+local_run,qwen_qwen3.7-flash_lei_v3_cloud (Run 1),lab-data,20260731_161341,0.0,0.0,0.0
+local_run,qwen_qwen3.7-flash_lei_v3_cloud (Run 2),meteo-data,20260731_204159,0.0,0.0,0.0

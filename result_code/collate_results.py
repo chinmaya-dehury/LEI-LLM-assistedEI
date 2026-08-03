@@ -6,12 +6,17 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 
-# Configurable paths
-out_dir = r"C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\result_code"
+import argparse
+
+parser = argparse.ArgumentParser(description="Collate LEI benchmark results.")
+parser.add_argument("--input_dir", type=str, required=True, help="Path to the result directory containing runs.")
+parser.add_argument("--output_dir", type=str, required=True, help="Path to write aggregated CSVs.")
+args = parser.parse_args()
+
+out_dir = args.output_dir
 os.makedirs(out_dir, exist_ok=True)
 
-# Scan only the local project folders
-local_base = r"C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI"
+local_base = args.input_dir
 
 def find_matching_session(row_time_str, session_timestamps):
     if not session_timestamps:
@@ -40,14 +45,13 @@ def find_matching_session(row_time_str, session_timestamps):
 def get_median_iqr(values):
     vals = [v for v in values if v is not None and not np.isnan(v)]
     if not vals:
-        return 0.0, 0.0
+        return 0.0, 0.0, 0.0
     median = float(np.median(vals))
     if len(vals) > 1:
         q75, q25 = np.percentile(vals, [75, 25])
-        iqr = float(q75 - q25)
+        return median, float(q25), float(q75)
     else:
-        iqr = 0.0
-    return median, iqr
+        return median, 0.0, 0.0
 
 def get_scheduler_success_count(folder_path, filename_model, run_count, scheduler_start_time_iso):
     if not scheduler_start_time_iso:
@@ -232,11 +236,11 @@ def main():
         if dfs:
             df_all_bench = pd.concat(dfs, ignore_index=True)
             fm_clean = filename_model.lower().replace('-', '')
-            matching_models = [m for m in df_all_bench['model'].dropna().unique() if fm_clean in m.lower().replace('-', '')]
+            matching_models = [m for m in (df_all_bench['gen_model'] if 'gen_model' in df_all_bench else df_all_bench['model']).dropna().unique() if fm_clean in m.lower().replace('-', '')]
             if matching_models:
-                df_bench = df_all_bench[df_all_bench['model'] == matching_models[0]]
+                df_bench = df_all_bench[(df_all_bench['gen_model'] if 'gen_model' in df_all_bench else df_all_bench['model']) == matching_models[0]]
             else:
-                df_bench = df_all_bench
+                df_bench = pd.DataFrame()
                 
         model_name_display = f"{reported_model} (Run {run_idx})" if total_runs > 1 else reported_model
         datasets = group['dataset'].unique()
@@ -550,14 +554,14 @@ def main():
                         step_data[step_name]['peak_mem'].append(c_m['peak_memory_mb'])
             
             for step_name, metrics in step_data.items():
-                lat_med, lat_iqr = get_median_iqr(metrics['latency'])
-                p_tok_med, p_tok_iqr = get_median_iqr(metrics['prompt_tokens'])
-                c_tok_med, c_tok_iqr = get_median_iqr(metrics['completion_tokens'])
+                lat_med, lat_q1, lat_q3 = get_median_iqr(metrics['latency'])
+                p_tok_med, p_tok_q1, p_tok_q3 = get_median_iqr(metrics['prompt_tokens'])
+                c_tok_med, c_tok_q1, c_tok_q3 = get_median_iqr(metrics['completion_tokens'])
                 
                 tot_tok_runs = []
                 for i in range(min(len(metrics['prompt_tokens']), len(metrics['completion_tokens']))):
                     tot_tok_runs.append(metrics['prompt_tokens'][i] + metrics['completion_tokens'][i])
-                tot_tok_med, tot_tok_iqr = get_median_iqr(tot_tok_runs)
+                tot_tok_med, tot_tok_q1, tot_tok_q3 = get_median_iqr(tot_tok_runs)
                 
                 p_tps_runs = []
                 c_tps_runs = []
@@ -569,13 +573,13 @@ def main():
                         c_tps_runs.append(metrics['completion_tokens'][i] / lat)
                         tot_tps_runs.append((metrics['prompt_tokens'][i] + metrics['completion_tokens'][i]) / lat)
                 
-                p_tps_med, p_tps_iqr = get_median_iqr(p_tps_runs)
-                c_tps_med, c_tps_iqr = get_median_iqr(c_tps_runs)
-                tot_tps_med, tot_tps_iqr = get_median_iqr(tot_tps_runs)
+                p_tps_med, p_tps_q1, p_tps_q3 = get_median_iqr(p_tps_runs)
+                c_tps_med, c_tps_q1, c_tps_q3 = get_median_iqr(c_tps_runs)
+                tot_tps_med, tot_tps_q1, tot_tps_q3 = get_median_iqr(tot_tps_runs)
                 
-                avg_cpu_med, avg_cpu_iqr = get_median_iqr(metrics['avg_cpu'])
-                peak_cpu_med, peak_cpu_iqr = get_median_iqr(metrics['peak_cpu'])
-                avg_mem_med, avg_mem_iqr = get_median_iqr(metrics['avg_mem'])
+                avg_cpu_med, avg_cpu_q1, avg_cpu_q3 = get_median_iqr(metrics['avg_cpu'])
+                peak_cpu_med, peak_cpu_q1, peak_cpu_q3 = get_median_iqr(metrics['peak_cpu'])
+                avg_mem_med, avg_mem_q1, avg_mem_q3 = get_median_iqr(metrics['avg_mem'])
                 
                 master_step_rows.append({
                     'folder_name': folder,
@@ -585,25 +589,35 @@ def main():
                     'session_timestamp': sess,
                     'step': step_name,
                     'latency_median': lat_med,
-                    'latency_iqr': lat_iqr,
+                    'latency_q1': lat_q1,
+                    'latency_q3': lat_q3,
                     'prompt_tokens_median': p_tok_med,
-                    'prompt_tokens_iqr': p_tok_iqr,
+                    'prompt_tokens_q1': p_tok_q1,
+                    'prompt_tokens_q3': p_tok_q3,
                     'completion_tokens_median': c_tok_med,
-                    'completion_tokens_iqr': c_tok_iqr,
+                    'completion_tokens_q1': c_tok_q1,
+                    'completion_tokens_q3': c_tok_q3,
                     'total_tokens_median': tot_tok_med,
-                    'total_tokens_iqr': tot_tok_iqr,
+                    'total_tokens_q1': tot_tok_q1,
+                    'total_tokens_q3': tot_tok_q3,
                     'prompt_tokens_per_sec_median': p_tps_med,
-                    'prompt_tokens_per_sec_iqr': p_tps_iqr,
+                    'prompt_tokens_per_sec_q1': p_tps_q1,
+                    'prompt_tokens_per_sec_q3': p_tps_q3,
                     'completion_tokens_per_sec_median': c_tps_med,
-                    'completion_tokens_per_sec_iqr': c_tps_iqr,
+                    'completion_tokens_per_sec_q1': c_tps_q1,
+                    'completion_tokens_per_sec_q3': c_tps_q3,
                     'total_tokens_per_sec_median': tot_tps_med,
-                    'total_tokens_per_sec_iqr': tot_tps_iqr,
+                    'total_tokens_per_sec_q1': tot_tps_q1,
+                    'total_tokens_per_sec_q3': tot_tps_q3,
                     'avg_cpu_percent_median': avg_cpu_med,
-                    'avg_cpu_percent_iqr': avg_cpu_iqr,
+                    'avg_cpu_percent_q1': avg_cpu_q1,
+                    'avg_cpu_percent_q3': avg_cpu_q3,
                     'peak_cpu_percent_median': peak_cpu_med,
-                    'peak_cpu_percent_iqr': peak_cpu_iqr,
+                    'peak_cpu_percent_q1': peak_cpu_q1,
+                    'peak_cpu_percent_q3': peak_cpu_q3,
                     'avg_memory_mb_median': avg_mem_med,
-                    'avg_memory_mb_iqr': avg_mem_iqr
+                    'avg_memory_mb_q1': avg_mem_q1,
+                    'avg_memory_mb_q3': avg_mem_q3
                 })
 
             run_latencies = []
@@ -659,18 +673,18 @@ def main():
                 run_exec_succ_rate.append(exec_rate)
                 
             if run_latencies:
-                lat_med, lat_iqr = get_median_iqr(run_latencies)
-                p_tok_med, p_tok_iqr = get_median_iqr(run_prompt_tokens)
-                c_tok_med, c_tok_iqr = get_median_iqr(run_completion_tokens)
-                tot_tok_med, tot_tok_iqr = get_median_iqr(run_total_tokens)
+                lat_med, lat_q1, lat_q3 = get_median_iqr(run_latencies)
+                p_tok_med, p_tok_q1, p_tok_q3 = get_median_iqr(run_prompt_tokens)
+                c_tok_med, c_tok_q1, c_tok_q3 = get_median_iqr(run_completion_tokens)
+                tot_tok_med, tot_tok_q1, tot_tok_q3 = get_median_iqr(run_total_tokens)
                 
-                tasks_med, tasks_iqr = get_median_iqr(run_tasks_gen)
-                code_med, code_iqr = get_median_iqr(run_code_gen)
-                val_med, val_iqr = get_median_iqr(run_val_code)
-                exec_med, exec_iqr = get_median_iqr(run_exec_code)
+                tasks_med, tasks_q1, tasks_q3 = get_median_iqr(run_tasks_gen)
+                code_med, code_q1, code_q3 = get_median_iqr(run_code_gen)
+                val_med, val_q1, val_q3 = get_median_iqr(run_val_code)
+                exec_med, exec_q1, exec_q3 = get_median_iqr(run_exec_code)
                 
-                val_rate_med, val_rate_iqr = get_median_iqr(run_val_succ_rate)
-                exec_rate_med, exec_rate_iqr = get_median_iqr(run_exec_succ_rate)
+                val_rate_med, val_rate_q1, val_rate_q3 = get_median_iqr(run_val_succ_rate)
+                exec_rate_med, exec_rate_q1, exec_rate_q3 = get_median_iqr(run_exec_succ_rate)
                 
                 master_run_rows.append({
                     'folder_name': folder,
@@ -679,29 +693,39 @@ def main():
                     'dataset': ds,
                     'session_timestamp': sess,
                     'total_latency_sec_median': lat_med,
-                    'total_latency_sec_iqr': lat_iqr,
+                    'total_latency_sec_q1': lat_q1,
+                    'total_latency_sec_q3': lat_q3,
                     'total_prompt_tokens_median': p_tok_med,
-                    'total_prompt_tokens_iqr': p_tok_iqr,
+                    'total_prompt_tokens_q1': p_tok_q1,
+                    'total_prompt_tokens_q3': p_tok_q3,
                     'total_completion_tokens_median': c_tok_med,
-                    'total_completion_tokens_iqr': c_tok_iqr,
+                    'total_completion_tokens_q1': c_tok_q1,
+                    'total_completion_tokens_q3': c_tok_q3,
                     'total_tokens_median': tot_tok_med,
-                    'total_tokens_iqr': tot_tok_iqr,
+                    'total_tokens_q1': tot_tok_q1,
+                    'total_tokens_q3': tot_tok_q3,
                     'tasks_generated_total': sum(run_tasks_gen),
                     'tasks_generated_median': tasks_med,
-                    'tasks_generated_iqr': tasks_iqr,
+                    'tasks_generated_q1': tasks_q1,
+                    'tasks_generated_q3': tasks_q3,
                     'code_generated_total': sum(run_code_gen),
                     'code_generated_median': code_med,
-                    'code_generated_iqr': code_iqr,
+                    'code_generated_q1': code_q1,
+                    'code_generated_q3': code_q3,
                     'validated_code_total': sum(run_val_code),
                     'validated_code_median': val_med,
-                    'validated_code_iqr': val_iqr,
+                    'validated_code_q1': val_q1,
+                    'validated_code_q3': val_q3,
                     'executed_code_total': sum(run_exec_code),
                     'executed_code_median': exec_med,
-                    'executed_code_iqr': exec_iqr,
+                    'executed_code_q1': exec_q1,
+                    'executed_code_q3': exec_q3,
                     'validation_success_rate_median': val_rate_med,
-                    'validation_success_rate_iqr': val_rate_iqr,
+                    'validation_success_rate_q1': val_rate_q1,
+                    'validation_success_rate_q3': val_rate_q3,
                     'execution_success_rate_median': exec_rate_med,
-                    'execution_success_rate_iqr': exec_rate_iqr
+                    'execution_success_rate_q1': exec_rate_q1,
+                    'execution_success_rate_q3': exec_rate_q3
                 })
 
     if not master_step_rows:
@@ -724,52 +748,52 @@ def main():
     # Generate CPU & Memory usage Median & IQR
     cpu_mem_cols = [
         'folder_name', 'model_name', 'dataset', 'session_timestamp', 'step',
-        'avg_cpu_percent_median', 'avg_cpu_percent_iqr',
-        'peak_cpu_percent_median', 'peak_cpu_percent_iqr',
-        'avg_memory_mb_median', 'avg_memory_mb_iqr'
+        'avg_cpu_percent_median', 'avg_cpu_percent_q1', 'avg_cpu_percent_q3',
+        'peak_cpu_percent_median', 'peak_cpu_percent_q1', 'peak_cpu_percent_q3',
+        'avg_memory_mb_median', 'avg_memory_mb_q1', 'avg_memory_mb_q3'
     ]
     df_master_step[cpu_mem_cols].to_csv(os.path.join(out_dir, "1_cpu_memory_usage.csv"), index=False)
 
     # Token throughput
     token_cols = [
         'folder_name', 'model_name', 'dataset', 'session_timestamp', 'step',
-        'prompt_tokens_median', 'prompt_tokens_iqr',
-        'completion_tokens_median', 'completion_tokens_iqr',
-        'total_tokens_median', 'total_tokens_iqr',
-        'prompt_tokens_per_sec_median', 'prompt_tokens_per_sec_iqr',
-        'completion_tokens_per_sec_median', 'completion_tokens_per_sec_iqr',
-        'total_tokens_per_sec_median', 'total_tokens_per_sec_iqr'
+        'prompt_tokens_median', 'prompt_tokens_q1', 'prompt_tokens_q3',
+        'completion_tokens_median', 'completion_tokens_q1', 'completion_tokens_q3',
+        'total_tokens_median', 'total_tokens_q1', 'total_tokens_q3',
+        'prompt_tokens_per_sec_median', 'prompt_tokens_per_sec_q1', 'prompt_tokens_per_sec_q3',
+        'completion_tokens_per_sec_median', 'completion_tokens_per_sec_q1', 'completion_tokens_per_sec_q3',
+        'total_tokens_per_sec_median', 'total_tokens_per_sec_q1', 'total_tokens_per_sec_q3'
     ]
     df_master_step[token_cols].to_csv(os.path.join(out_dir, "2_token_throughput.csv"), index=False)
 
     # End-to-end step latency
     latency_cols = [
         'folder_name', 'model_name', 'dataset', 'session_timestamp', 'step',
-        'latency_median', 'latency_iqr'
+        'latency_median', 'latency_q1', 'latency_q3'
     ]
     df_master_step[latency_cols].to_csv(os.path.join(out_dir, "3_step_latency.csv"), index=False)
 
     # Validation success rate
     val_succ_cols = [
         'folder_name', 'model_name', 'dataset', 'session_timestamp',
-        'validation_success_rate_median', 'validation_success_rate_iqr'
+        'validation_success_rate_median', 'validation_success_rate_q1', 'validation_success_rate_q3'
     ]
     df_master_run[val_succ_cols].to_csv(os.path.join(out_dir, "4_validation_success_rate.csv"), index=False)
 
     # Execution success rate
     exec_succ_cols = [
         'folder_name', 'model_name', 'dataset', 'session_timestamp',
-        'execution_success_rate_median', 'execution_success_rate_iqr'
+        'execution_success_rate_median', 'execution_success_rate_q1', 'execution_success_rate_q3'
     ]
     df_master_run[exec_succ_cols].to_csv(os.path.join(out_dir, "5_execution_success_rate.csv"), index=False)
 
     # Pipeline counts
     pipeline_cols = [
         'folder_name', 'model_name', 'dataset', 'session_timestamp',
-        'tasks_generated_total', 'tasks_generated_median', 'tasks_generated_iqr',
-        'code_generated_total', 'code_generated_median', 'code_generated_iqr',
-        'validated_code_total', 'validated_code_median', 'validated_code_iqr',
-        'executed_code_total', 'executed_code_median', 'executed_code_iqr'
+        'tasks_generated_total', 'tasks_generated_median', 'tasks_generated_q1', 'tasks_generated_q3',
+        'code_generated_total', 'code_generated_median', 'code_generated_q1', 'code_generated_q3',
+        'validated_code_total', 'validated_code_median', 'validated_code_q1', 'validated_code_q3',
+        'executed_code_total', 'executed_code_median', 'executed_code_q1', 'executed_code_q3'
     ]
     df_master_run[pipeline_cols].to_csv(os.path.join(out_dir, "6_pipeline_counts.csv"), index=False)
 

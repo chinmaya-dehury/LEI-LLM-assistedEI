@@ -1,0 +1,13 @@
+model,dataset,Total_Valid_Tasks,P0,P1,P2,F,R_sys_baseline,R_sys_harsh,R_sys_more,R_sys_equal,R_sys_steep_decay,R_sys_moderate
+moonshotai/kimi-k2.7-code,agri-data,18,7,2,0,9,0.488888889,0.5,0.5,0.5,0.5,0.5
+moonshotai/kimi-k2.7-code,air-quality,19,10,1,4,4,0.742105263,0.789473684,0.789473684,0.789473684,0.789473684,0.789473684
+moonshotai/kimi-k2.7-code,lab-data,17,12,0,1,4,0.752941176,0.764705882,0.764705882,0.764705882,0.764705882,0.764705882
+moonshotai/kimi-k2.7-code,meteo-data,10,5,1,0,4,0.59,0.6,0.6,0.6,0.6,0.6
+openai/gpt-4o-mini,agri-data,14,4,0,0,10,0.285714286,0.285714286,0.285714286,0.285714286,0.285714286,0.285714286
+openai/gpt-4o-mini,air-quality,17,10,2,2,3,0.788235294,0.823529412,0.823529412,0.823529412,0.823529412,0.823529412
+openai/gpt-4o-mini,lab-data,12,2,0,0,10,0.166666667,0.166666667,0.166666667,0.166666667,0.166666667,0.166666667
+openai/gpt-4o-mini,meteo-data,12,3,1,2,6,0.458333333,0.5,0.5,0.5,0.5,0.5
+qwen/qwen3.7-flash,agri-data,8,3,2,2,1,0.8,0.875,0.875,0.875,0.875,0.875
+qwen/qwen3.7-flash,air-quality,10,2,4,3,1,0.8,0.9,0.9,0.9,0.9,0.9
+qwen/qwen3.7-flash,lab-data,12,0,4,4,4,0.566666667,0.666666667,0.666666667,0.666666667,0.666666667,0.666666667
+qwen/qwen3.7-flash,meteo-data,10,5,4,0,1,0.86,0.9,0.9,0.9,0.9,0.9

@@ -44,8 +44,8 @@ def generate_latex_table(csv_path, output_tex_path):
             }
         
         step_lbl = row['step_label']
-        cpu_val = f"{row['avg_cpu_percent_median']:.2f} \\pm {row['avg_cpu_percent_iqr']:.2f}"
-        mem_val = f"{row['avg_memory_mb_median']:.2f} \\pm {row['avg_memory_mb_iqr']:.2f}"
+        cpu_val = f"{row['avg_cpu_percent_median']:.2f}({row['avg_cpu_percent_q1']:.2f}, {row['avg_cpu_percent_q3']:.2f})"
+        mem_val = f"{row['avg_memory_mb_median']:.2f}({row['avg_memory_mb_q1']:.2f}, {row['avg_memory_mb_q3']:.2f})"
         
         pivot_data[key][f"{step_lbl}_cpu"] = cpu_val
         pivot_data[key][f"{step_lbl}_mem"] = mem_val
@@ -67,7 +67,7 @@ def generate_latex_table(csv_path, output_tex_path):
     tex = []
     tex.append(r"\begin{table*}[t]")
     tex.append(r"\centering")
-    tex.append(r"\caption{CPU and Memory Footprint across Steps 1, 2, and 3 on edge devices (Median $\pm$ IQR)}")
+    tex.append(r"\caption{CPU and Memory Footprint across Steps 1, 2, and 3 on edge devices (Median($Q_1$, $Q_3$))}")
     tex.append(r"\begin{tabular}{llcccccc}")
     tex.append(r"\hline")
     tex.append(r" & & \multicolumn{2}{c}{Step 1 (Task Generator)} & \multicolumn{2}{c}{Step 2 (Code Generator)} & \multicolumn{2}{c}{Step 3 (Validator)} \\")
@@ -102,6 +102,9 @@ def generate_latex_table(csv_path, output_tex_path):
     print(f"LaTeX Table successfully written to {output_tex_path}")
 
 if __name__ == "__main__":
-    csv_file = os.path.join(os.path.dirname(__file__), "1_cpu_memory_usage.csv")
-    output_tex = os.path.join(os.path.dirname(__file__), "table_cpu_mem_iqr.tex")
-    generate_latex_table(csv_file, output_tex)
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate LaTeX table from CPU/Memory CSV.")
+    parser.add_argument("--csv_path", type=str, required=True, help="Path to the CSV file (e.g., 1_cpu_memory_usage.csv).")
+    parser.add_argument("--output_tex", type=str, required=True, help="Path to write the LaTeX .tex file.")
+    args = parser.parse_args()
+    generate_latex_table(args.csv_path, args.output_tex)
