@@ -52,15 +52,23 @@ def main():
         
     df_all = pd.concat(all_data, ignore_index=True)
     
-    # Check required columns
-    required_cols = {'dataset', 'framework', 'code_passed'}
-    if not required_cols.issubset(df_all.columns):
-        # check if 'validator_passed' exists
-        if 'validator_passed' in df_all.columns:
-            df_all['code_passed'] = df_all['validator_passed']
-        else:
-            print(f"[ERROR] Missing required columns. Found columns: {list(df_all.columns)}")
-            return 1
+    # Ensure validation_success_rate exists or compute it
+    if 'validation_success_rate' in df_all.columns:
+        metric_col = 'validation_success_rate'
+    elif 'validator_passed' in df_all.columns and 'code_generated' in df_all.columns:
+        df_all['validation_success_rate'] = df_all.apply(
+            lambda r: r['validator_passed'] / r['code_generated'] if r['code_generated'] > 0 else 0.0, axis=1
+        )
+        metric_col = 'validation_success_rate'
+    elif 'validator_passed' in df_all.columns:
+        metric_col = 'validator_passed'
+    elif 'code_passed' in df_all.columns:
+        metric_col = 'code_passed'
+    else:
+        print(f"[ERROR] Missing required columns for analysis. Found columns: {list(df_all.columns)}")
+        return 1
+
+    print(f"Using metric column for Friedman test: '{metric_col}'")
             
     # Clean framework names
     df_all['framework'] = df_all['framework'].str.strip()
@@ -80,7 +88,7 @@ def main():
     pivot_df = df_filtered.pivot_table(
         index=['dataset', 'run_idx'],
         columns='framework',
-        values='code_passed',
+        values=metric_col,
         aggfunc='first'
     )
     

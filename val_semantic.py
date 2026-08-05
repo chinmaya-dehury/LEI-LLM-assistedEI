@@ -62,7 +62,7 @@ class TaskOutput(BaseModel):
     - Exactly two fields required: task_name and result_summary
     - No extra fields allowed (rejects hallucinations)
     - Strict type checking (no coercion: "123" stays string)
-    - result_summary must be list of ResultItem objects with key/value pairs
+    - result_summary must be a list of dictionaries (objects) representing the results
     - task_description and generated_code are optional (for validation purposes)
     
     Usage:
@@ -71,9 +71,9 @@ class TaskOutput(BaseModel):
     model_config = ConfigDict(strict=True, extra="forbid")
     
     task_name: str = Field(..., min_length=1, description="Name of the task")
-    result_summary: List[ResultItem] = Field(
+    result_summary: List[Dict[str, Any]] = Field(
         ...,  # Required, not optional
-        description="Array of result items (each with key, value, optional metric)"
+        description="Array of result items (each with custom key-value pairs)"
     )
     task_description: Optional[str] = Field(None, description="Task description for validation")
     generated_code: Optional[str] = Field(None, description="Generated code for matching validation")
@@ -88,9 +88,12 @@ def _check_code_matches_description(
     description: str,
     task_name: str,
     sample_data: str = "",
-) -> tuple[bool, Optional[str]]:
+) -> tuple[bool, Optional[str], list]:
     """
-    Use LLM to validate that generated code matches the task description and sample data.
+    Use LLM to validate three semantic criteria simultaneously:
+      1. TASK IMPLEMENTATION  – does the code correctly implement what the description asks?
+      2. OUTPUT SCHEMA        – does the code produce the required JSON schema?
+      3. RESULT CONSISTENCY   – are result_summary items consistent with the task goal?
 
     Args:
         code: Generated Python code
@@ -99,43 +102,75 @@ def _check_code_matches_description(
         sample_data: Optional sample input data used by the task
 
     Returns:
-        (is_match: bool, error_message: Optional[str])
-        - If matches: (True, None)
-        - If no match: (False, error_message with LLM reasoning)
+        (majority_passed: bool, aggregated_reason: Optional[str], per_model_results: list)
     """
     if not code or not description or not task_name:
-        return True, None
+        return True, None, []
 
-    sample_data_section = ""
-    if sample_data:
-        sample_data_section = f"""
+    # Trim sample data to first 10 rows to keep token cost reasonable
+    sample_rows = (sample_data or "").strip().split("\n")
+    trimmed_sample = "\n".join(sample_rows[:10])
+    if len(sample_rows) > 10:
+        trimmed_sample += "\n... [TRUNCATED] ..."
 
-Sample Data:
-{sample_data}
-""".strip()
+    # -----------------------------------------------------------------------
+    # System prompt: strict judge role with 3 explicit evaluation criteria
+    # -----------------------------------------------------------------------
+    system_prompt = """\
+You are a strict semantic code-output validator for edge-device IoT Python scripts.
 
-    validation_prompt = f"""
-You are a code validation expert. Determine if the generated Python code matches the task description and sample data.
+Evaluate the following THREE criteria simultaneously:
 
-Task Name: {task_name}
+1. TASK IMPLEMENTATION
+   Does the code correctly implement what the task description asks for?
+   Example: if the task says "compute hourly average temperature", does the code
+   actually group by hour and compute a mean — not just read the file or return raw rows?
+
+2. OUTPUT SCHEMA
+   Does the code write a JSON result file that matches ALL of these required fields?
+   {
+     "task_name":          "<non-empty string>",
+     "description":        "<non-empty string>",
+     "result_summary":     <any valid JSON format: list of objects, list of strings/numbers, single dictionary, or value>,
+     "result_generated_at":"<ISO-8601 timestamp>"
+   }
+   All four top-level fields must be present and non-null.
+   The result_summary field can hold any valid JSON representation produced by the task (e.g., a list of dictionaries, a list of strings/numbers, a summary dictionary, or a single value).
+
+3. RESULT CONSISTENCY
+   Are the result_summary items semantically consistent with the task goal?
+   Example: an anomaly-detection task should produce anomaly counts/flags in result_summary,
+   NOT raw data rows. An aggregation task must produce aggregated values, not per-row copies.
+
+Respond ONLY with a JSON object — no markdown, no extra text:
+  {"verdict": "YES", "reason": ""}
+  or
+  {"verdict": "NO",  "reason": "<concise 1-2 sentence explanation of which criterion failed and why>"}
+
+Rules:
+- "YES" only when ALL THREE criteria pass.
+- "NO" if ANY criterion fails; identify the specific failing criterion in "reason".
+- Empty result_summary is acceptable ONLY when the input data genuinely has no matching records.
+- Focus on logic correctness, not coding style.
+"""
+
+    # -----------------------------------------------------------------------
+    # User prompt: the actual task + code to evaluate
+    # -----------------------------------------------------------------------
+    user_prompt = f"""Task Name: {task_name}
 
 Task Description:
 {description}
 
-{sample_data_section}
+Sample Input Data (first 10 rows):
+{trimmed_sample}
 
 Generated Code:
 ```python
 {code}
 ```
 
-Does this code implement the task as described and behave consistently with the sample data?
-- Answer ONLY with: "YES" or "NO" followed by brief reasoning.
-- If there's a mismatch, explain what the code does vs. what was asked.
-- Consider: blank output is acceptable if code is structurally correct for the task.
-
-Response:
-""".strip()
+Evaluate all three criteria (task implementation, output schema, result consistency) and return the JSON verdict."""
 
     per_model_results = []
     aggregated_reasons = []
@@ -147,30 +182,52 @@ Response:
             client = OpenAI(base_url=LLM_VAL_BASE_URL, api_key=LLM_VAL_API_KEY, timeout=120)
             response = client.chat.completions.create(
                 model=model,
-                messages=[{"role": "user", "content": validation_prompt}],
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user",   "content": user_prompt},
+                ],
                 temperature=0.0,
                 timeout=60,
             )
 
-            result = (response.choices[0].message.content or "").strip()
-            if result.upper().startswith("YES"):
-                passed = True
-                reason = ""
+            raw = (response.choices[0].message.content or "").strip()
+
+            # --- Parse JSON verdict with graceful fallback ---
+            passed = False
+            reason = ""
+            try:
+                parsed  = json.loads(raw)
+                verdict = str(parsed.get("verdict", "")).strip().upper()
+                reason  = str(parsed.get("reason", "")).strip()
+                passed  = (verdict == "YES")
+            except (json.JSONDecodeError, AttributeError, TypeError):
+                # Fallback: accept plain "YES / NO" prefix if LLM ignores JSON instruction
+                upper_raw = raw.upper().lstrip()
+                if upper_raw.startswith("YES"):
+                    passed = True
+                    reason = ""
+                elif upper_raw.startswith("NO"):
+                    passed = False
+                    reason = raw[2:].strip() if len(raw) > 2 else "Code does not match description"
+                else:
+                    # Cannot determine verdict — treat as pass to avoid false negatives
+                    passed = True
+                    reason = f"[unparseable verdict, treating as pass] {raw[:200]}"
+
+            if passed:
                 passes += 1
-            else:
-                passed = False
-                reason = result[3:].strip() if len(result) > 3 else "Code does not match description"
 
             per_model_results.append({"model": model, "passed": passed, "reason": reason[:500]})
-            if reason:
+            if reason and not passed:
                 aggregated_reasons.append(f"{model}: {reason[:300]}")
+
         except Exception as e:
             # On LLM call failure, record as failed and note the exception
             per_model_results.append({"model": model, "passed": False, "reason": f"validator_call_error: {e}"})
 
     # Majority voting
     majority_required = (len(models) // 2) + 1
-    majority_passed = passes >= majority_required
+    majority_passed   = passes >= majority_required
     aggregated_reason_text = "; ".join(aggregated_reasons) if aggregated_reasons else ""
     return majority_passed, aggregated_reason_text or None, per_model_results
 

@@ -384,16 +384,16 @@ def run_lei_benchmark(dataset_name: str, run_id: str, run_num: int, results_dir:
     validator_passed = 0
     
     try:
-        from shared_utils import sanitize_model_name
-        # Fetch directly from config or defaults
-        sys.path.insert(0, str(LEI_DIR))
-        import config
-        val_model = getattr(config, "LLM_VAL_MODEL", "gemma3:4b")
-        sanitized_model = sanitize_model_name(val_model)
-        
-        summary_file = LEI_DIR / "validator" / dataset_name / f"val_sum_{sanitized_model}_{run_id}_run{run_num}.json"
-        if summary_file.exists():
-            with open(summary_file, "r", encoding="utf-8") as sf:
+        import glob
+        val_dir = LEI_DIR / "validator" / dataset_name
+        matches = glob.glob(str(val_dir / f"val_sum_*_{run_id}_run{run_num}.json"))
+        if not matches:
+            matches = glob.glob(str(val_dir / f"val_sum_*_run{run_num}.json"))
+            
+        if matches:
+            # Sort by modification time to get the newest
+            matches.sort(key=os.path.getmtime)
+            with open(matches[-1], "r", encoding="utf-8") as sf:
                 summary_data = json.load(sf)
                 sum_info = summary_data.get("summary", {})
                 code_generated = sum_info.get("code_generated", tasks_generated)
@@ -525,6 +525,7 @@ def save_benchmark_row(results_csv_path: Path, dataset_name: str, stats: dict):
             "code_generated",
             "code_passed",
             "validator_passed",
+            "validation_success_rate",
             "elapsed_time_sec",
             "lei_time_up_to_codegen",
             "lei_time_val",
@@ -535,6 +536,10 @@ def save_benchmark_row(results_csv_path: Path, dataset_name: str, stats: dict):
             "total_tokens"
         ]
         
+        code_gen = stats.get("code_generated", 0)
+        val_pass = stats.get("validator_passed", 0)
+        val_succ_rate = round(val_pass / code_gen, 4) if code_gen > 0 else 0.0
+
         with open(results_csv_path, "a", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             if not file_exists:
@@ -548,6 +553,7 @@ def save_benchmark_row(results_csv_path: Path, dataset_name: str, stats: dict):
                 "code_generated": stats["code_generated"],
                 "code_passed": stats["code_passed"],
                 "validator_passed": stats["validator_passed"],
+                "validation_success_rate": val_succ_rate,
                 "elapsed_time_sec": stats["elapsed_time_sec"],
                 "lei_time_up_to_codegen": stats.get("lei_time_up_to_codegen", 0.0),
                 "lei_time_val": stats.get("lei_time_val", 0.0),
@@ -716,6 +722,12 @@ def main():
         default=5,
         help="Number of iterations to execute for each framework (default: 5)"
     )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default=None,
+        help="Specific dataset name to process (e.g. agri-data)"
+    )
     args = parser.parse_args()
     
     num_runs = args.runs
@@ -723,7 +735,7 @@ def main():
     # Pre-load dotenv from LEI directory
     try:
         from dotenv import load_dotenv
-        load_dotenv(LEI_DIR / ".env")
+        load_dotenv(LEI_DIR / ".env", override=True)
     except ImportError:
         pass
         
@@ -732,13 +744,21 @@ def main():
         print(f"[ERROR] Datasets directory '{DATA_DIR}' not found.")
         sys.exit(1)
         
-    datasets = sorted([d.name for d in DATA_DIR.iterdir() if d.is_dir()])
+    if args.dataset:
+        target_ds_dir = DATA_DIR / args.dataset
+        if not target_ds_dir.exists():
+            print(f"[ERROR] Specified dataset '{args.dataset}' not found inside '{DATA_DIR}'.")
+            sys.exit(1)
+        datasets = [args.dataset]
+    else:
+        datasets = sorted([d.name for d in DATA_DIR.iterdir() if d.is_dir()])
+
     if not datasets:
         print(f"[ERROR] No datasets found inside '{DATA_DIR}'.")
         sys.exit(1)
         
     print(f"\n================ STARTING UNIFIED BENCHMARK ================")
-    print(f"Detected datasets: {datasets}")
+    print(f"Target datasets: {datasets}")
     print(f"Number of runs per framework: {num_runs}\n")
 
     for dataset_name in datasets:

@@ -1,32 +1,32 @@
 {
   "tasks": [
     {
-      "task_name": "Crop Growth Stage Prediction",
-      "description": "Predict the growth stage of rice based on soil moisture, temperature, and NPK levels using a lightweight decision tree model.",
+      "task_name": "Irrigation_Efficiency_Alert",
+      "description": "Monitor the Water Usage Efficiency (WAI) and trigger a flag if the current value deviates significantly from the historical mean, indicating potential irrigation system leaks or over-watering.",
       "data_type": "agri-data",
       "status": "code_generated"
     },
     {
-      "task_name": "Environmental Stress Index Calculation",
-      "description": "Compute the Temperature-Humidity Index (THI) from ambient temperature and humidity to assess crop stress conditions.",
+      "task_name": "Crop_Stress_Threshold_Monitor",
+      "description": "Evaluate the Temperature-Humidity Index (THI) against predefined crop-specific stress thresholds to provide real-time alerts for environmental heat stress.",
       "data_type": "agri-data",
       "status": "code_generated"
     },
     {
-      "task_name": "Soil Fertility Assessment",
-      "description": "Evaluate soil fertility using the Soil Fertility Index (SFI) derived from organic matter percentage and NPK levels.",
+      "task_name": "Soil_Nutrient_Depletion_Tracker",
+      "description": "Calculate the moving average of the Nutrient Balance Ratio (NBR) to detect long-term soil nutrient depletion trends and suggest optimal fertilizer application timing.",
       "data_type": "agri-data",
       "status": "code_generated"
     },
     {
-      "task_name": "Water Usage Efficiency Monitoring",
-      "description": "Monitor water usage efficiency by calculating the ratio of crop yield to water consumption based on irrigation frequency and rainfall data.",
+      "task_name": "Photosynthesis_Potential_Optimization",
+      "description": "Analyze the Photosynthesis Potential (PP) index relative to current growth stages to determine if sunlight exposure is sufficient for the current crop development phase.",
       "data_type": "agri-data",
       "status": "code_generated"
     },
     {
-      "task_name": "Pest Pressure Early Warning",
-      "description": "Detect early signs of pest pressure using a threshold-based alert system for the Pest_Pressure index.",
+      "task_name": "Frost_Risk_Early_Warning",
+      "description": "Monitor the Frost_Risk index and ambient temperature to generate an immediate alert when conditions reach a critical threshold for the current growth stage.",
       "data_type": "agri-data",
       "status": "code_generated"
     }

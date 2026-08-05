@@ -31,6 +31,17 @@ def get_memory_percent() -> float:
     """Get memory usage percentage."""
     return psutil.virtual_memory().percent
 
+def get_system_memory_mb() -> float:
+    """Get system-wide memory used in MB."""
+    return psutil.virtual_memory().used / (1024 * 1024)
+
+def get_process_memory_mb() -> float:
+    """Get the memory (RSS) used by this process in MB."""
+    try:
+        return psutil.Process(os.getpid()).memory_info().rss / (1024 * 1024)
+    except Exception:
+        return 0.0
+
 
 def get_network_io() -> Dict[str, int]:
     """Get cumulative network I/O stats."""
@@ -84,6 +95,8 @@ def capture_resource_snapshot() -> Dict:
         "timestamp_ist": datetime.now(IST).isoformat(),
         "cpu_percent": get_cpu_percent(interval=0.5),
         "memory_percent": get_memory_percent(),
+        "system_memory_mb": get_system_memory_mb(),
+        "process_memory_mb": get_process_memory_mb(),
         "network_io": get_network_io(),
         "cpu_temperature_celsius": get_cpu_temperature(),
     }
@@ -115,6 +128,8 @@ def log_resource_metrics(
         "model_name",
         "cpu_percent",
         "memory_percent",
+        "system_memory_mb",
+        "process_memory_mb",
         "bytes_sent",
         "bytes_recv",
         "packets_sent",
@@ -138,6 +153,8 @@ def log_resource_metrics(
             "model_name": model_name,
             "cpu_percent": snapshot["cpu_percent"],
             "memory_percent": snapshot["memory_percent"],
+            "system_memory_mb": snapshot["system_memory_mb"],
+            "process_memory_mb": snapshot["process_memory_mb"],
             "bytes_sent": snapshot["network_io"]["bytes_sent"],
             "bytes_recv": snapshot["network_io"]["bytes_recv"],
             "packets_sent": snapshot["network_io"]["packets_sent"],

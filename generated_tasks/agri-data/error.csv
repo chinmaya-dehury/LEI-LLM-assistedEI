@@ -1,56 +1,40 @@
 task_name,exit_code,error_message,count,last_timestamp
-Water Usage Efficiency Monitoring,0,"Validation failed (exit 0).
+Soil_Nutrient_Depletion_Tracker,0,"Validation failed (exit 0).
 Stdout:
-Loaded 2200 rows from data\agri-data\raw_data.csv.
-{""task_name"": ""Water Usage Efficiency Monitoring"", ""description"": ""Monitor water usage efficiency by calculating the ratio of crop yield to water consumption based on irrigation frequency and rainfall data."", ""total_yield"": 7733.0, ""total_water_consumed"": 227620.0419146903, ""water_usage_efficiency"": 0.03397328255873993, ""dropped_rows"": 0}
+Task complete. Average NBR: 0.5069
 
 Stderr:
-
-Semantic Error:
-Semantic validation failed (schema):
-  • result_summary: Field required (got: {'task_name': 'Water Usage Efficiency Monitoring', 'description': 'Monitor water usage efficiency by calculating the ratio of crop yield to water consumption based on irrigation frequency and rainfall data.', 'total_yield': 7733.0, 'total_water_consumed': 227620.0419146903, 'water_usage_efficiency': 0.03397328255873993, 'dropped_rows': 0})
-  • description: Extra inputs are not permitted (got: 'Monitor water usage efficiency by calculating the ratio of crop yield to water consumption based on irrigation frequency and rainfall data.')
-  • total_yield: Extra inputs are not permitted (got: 7733.0)
-  • total_water_consumed: Extra inputs are not permitted (got: 227620.0419146903)
-  • water_usage_efficiency: Extra inputs are not permitted (got: 0.03397328255873993)
-  • dropped_rows: Extra inputs are not permitted (got: 0)",1,2026-07-30T16:47:58.533534
-Soil Fertility Assessment,1,"Validation failed (exit 1).
-Stdout:
-
-Stderr:
-Traceback (most recent call last):
-  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Soil Fertility Assessment.py"", line 95, in <module>
-    results = assessor.compute_sfi()
-  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Soil Fertility Assessment.py"", line 52, in compute_sfi
-    with open(self.input_path, newline='') as csvfile:
-         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-FileNotFoundError: [Errno 2] No such file or directory: '\\path\\to\\agri-data.csv'
-
-Semantic Error:
-None",1,2026-07-30T16:48:04.919679
-Water Usage Efficiency Monitoring,1,"Syntax error at line 24, column 13: invalid syntax",1,2026-07-30T16:48:05.593039
-Crop Growth Stage Prediction,1,"Validation failed (exit 1).
-Stdout:
-
-Stderr:
-Traceback (most recent call last):
-  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Crop Growth Stage Prediction.py"", line 151, in <module>
-    main()
-    ~~~~^^
-  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Crop Growth Stage Prediction.py"", line 107, in main
-    raw_data = load_data(file_path)
-  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Crop Growth Stage Prediction.py"", line 100, in load_data
-    with open(file_path, newline='') as csvfile:
-         ~~~~^^^^^^^^^^^^^^^^^^^^^^^
-FileNotFoundError: [Errno 2] No such file or directory: 'agri-data.csv'
 
 Semantic Error:
 Semantic validation failed (business rules):
-  • Code-description mismatch: google/gemini-3.1-flash-lite: The code fails for several reasons:
+  • Code-description mismatch: cohere/north-mini-code:free: The code computes a simple average of NBR rather than a moving average and does not provide fertilizer timing suggestions, failing task implementation and result consistency.; google/gemma-4-26b-a4b-it:free: TASK IMPLEMENTATION failed: The code calculates a simple global average of NBR instead of the requested moving average to detect trends.",1,2026-08-01T16:24:52.241217
+Soil_Nutrient_Depletion_Tracker,0,,2,2026-08-01T16:24:59.206647
+Photosynthesis_Potential_Optimization,0,"Validation failed (exit 0).
+Stdout:
+Task complete. Results saved to C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\agri-data\Photosynthesis_Potential_Optimization_result.json
 
-1.  **Logic Errors in `fit` method**: The recursive call in `self.left_tree.fit` contains a syntax error (`zip(*X)[0]`) and logic that attempts to access indices on a list of dictionaries incorrectly. Furthermore, the `right_counts` calculation (`Counter(y) - lef; openai/gpt-4o-mini: The code does not correctly implement the task as described. The task requires predicting the growth stage of rice based on soil moisture, temperature, and NPK levels using a lightweight decision tree model. However, the code attempts to fit a decision tree based on soil moisture alone and does not",1,2026-07-30T16:48:08.959181
-Soil Fertility Assessment,0,"C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Soil Fertility Assessment.py.tmp:4: SyntaxWarning: ""\	"" is an invalid escape sequence. Such sequences will not work in the future. Did you mean ""\\	""? A raw string is also an option.
-  ""error_message"": ""FileNotFoundError: [Errno 2] No such file or directory: '\\path\	o\\agri-data.csv'"",",1,2026-07-30T16:48:11.600445
-Water Usage Efficiency Monitoring,1,"Syntax error at line 3, column 13: invalid syntax",1,2026-07-30T16:48:13.265086
-Soil Fertility Assessment,0,,1,2026-07-30T16:48:17.601940
-Crop Growth Stage Prediction,0,,2,2026-07-30T16:48:32.104579
+Stderr:
+
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: cohere/north-mini-code:free: The code only computes a simplistic PP per row and does not analyze sufficiency relative to growth stages, failing task implementation and result consistency.; inclusionai/ling-3.0-flash:free: The code fails on task implementation and result consistency. The task requires analyzing PP relative to growth stages to determine if sunlight exposure is sufficient, but the code only calculates per-row PP values (sun * temp / 100) and lists them individually. It does not aggregate PP by growth st; google/gemma-4-26b-a4b-it:free: The code fails the TASK IMPLEMENTATION criterion; it calculates a proxy PP value but fails to perform the required analysis to determine if sunlight exposure is sufficient for the current growth stage.",1,2026-08-01T16:25:11.630565
+Crop_Stress_Threshold_Monitor,0,"Validation failed (exit 0).
+Stdout:
+
+Stderr:
+
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: cohere/north-mini-code:free: The code uses a single THI threshold (72.0) for all crops, ignoring the requirement for crop-specific stress thresholds.; inclusionai/ling-3.0-flash:free: Task Implementation fails: the task requires 'crop-specific stress thresholds' but the code uses a single hardcoded THI_THRESHOLD = 72.0 for all crops, ignoring the crop type (Label column) in the data. Crop-specific thresholds (e.g., different values for rice vs. wheat) are not defined or applied.; google/gemma-4-26b-a4b-it:free: The result_summary contains per-row status records instead of an aggregated summary of stress alerts as required by the task goal.",1,2026-08-01T16:25:13.650614
+Photosynthesis_Potential_Optimization,0,,2,2026-08-01T16:25:18.295945
+Crop_Stress_Threshold_Monitor,0,,2,2026-08-01T16:25:19.435347
+Frost_Risk_Early_Warning,0,"Validation failed (exit 0).
+Stdout:
+Task complete. Alerts generated: 2195. Dropped: 0
+
+Stderr:
+
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: cohere/north-mini-code:free: The code does not consider the growth stage when generating alerts, which is required by the task description.; inclusionai/ling-3.0-flash:free: Task implementation fails because the code applies a single global threshold (risk > 0.15 or temp < 5.0) without considering the Growth_Stage column, which the task explicitly requires ('critical threshold for the current growth stage'). Additionally, the output JSON includes an extra 'dropped_rows'; google/gemma-4-26b-a4b-it:free: The output schema is invalid because the 'esult_summary' field contains extra top-level keys ('dropped_rows') which violates the strict schema requirement.",1,2026-08-01T16:26:22.787183
+Frost_Risk_Early_Warning,0,,2,2026-08-01T16:26:28.638803

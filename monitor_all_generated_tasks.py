@@ -77,7 +77,7 @@ def main(argv: List[str] | None = None) -> int:
 
     parser = argparse.ArgumentParser(description="Run and monitor all generated task scripts under generated_tasks/*")
     parser.add_argument("--interval", type=float, default=0.1, help="Sampling interval seconds")
-    parser.add_argument("--timeout", type=float, default=1.0, help="Per-script timeout seconds (optional)")
+    parser.add_argument("--timeout", type=float, default=300.0, help="Per-script timeout seconds (default: 300.0)")
     parser.add_argument("--root", default="generated_tasks", help="generated_tasks root folder")
     args = parser.parse_args(argv)
 
@@ -87,14 +87,14 @@ def main(argv: List[str] | None = None) -> int:
         return 1
 
     for dataset, script in scripts:
-        print(f"[monitor_all] Running {script} (dataset={dataset}) for {args.timeout}s at {args.interval}s interval")
+        print(f"[monitor_all] Running {script} (dataset={dataset}) to completion (timeout={args.timeout}s, interval={args.interval}s, 1 run only)")
         cmd = [sys.executable, script]
         p = subprocess.Popen(cmd, cwd=os.path.dirname(script) or None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         # use the monitor to collect a per-script CSV and summary
         tmp_csv = os.path.splitext(script)[0] + "_resmon.csv"
         try:
-            summary = monitor_process(p, tmp_csv, interval=args.interval, timeout=args.timeout, extra_info={"dataset": dataset})
+            summary = monitor_process(p, tmp_csv, interval=args.interval, timeout=args.timeout, extra_info={"dataset": dataset}, relaunch=False)
         except Exception as e:
             print(f"[monitor_all] Error monitoring {script}: {e}")
             continue

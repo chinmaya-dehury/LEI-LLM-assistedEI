@@ -32,16 +32,20 @@ RUN_DURATION_SECONDS = int(os.environ.get("RUN_DURATION_SECONDS", "0"))
 
 
 def summarize(samples, window_td):
-    """Return summary dict (avg_cpu, avg_mem) for samples within window_td."""
+    """Return summary dict (avg_cpu, avg_mem, avg_sys_mem_mb, avg_proc_mem_mb) for samples within window_td."""
     cutoff = datetime.now() - window_td
     recent = [s for s in samples if s[0] >= cutoff]
     if not recent:
-        return {"avg_cpu": None, "avg_mem": None}
+        return {"avg_cpu": None, "avg_mem": None, "avg_sys_mem_mb": None, "avg_proc_mem_mb": None}
     cpu_vals = [s[1] for s in recent]
     mem_vals = [s[2] for s in recent]
+    sys_mem_vals = [s[3] for s in recent]
+    proc_mem_vals = [s[4] for s in recent]
     return {
         "avg_cpu": round(sum(cpu_vals) / len(cpu_vals), 2),
         "avg_mem": round(sum(mem_vals) / len(mem_vals), 2),
+        "avg_sys_mem_mb": round(sum(sys_mem_vals) / len(sys_mem_vals), 2),
+        "avg_proc_mem_mb": round(sum(proc_mem_vals) / len(proc_mem_vals), 2),
     }
 
 
@@ -59,15 +63,21 @@ def save_summary(out_file, payload):
 
 def monitor_loop():
     """Main monitoring loop. Keeps samples in-memory and writes summary periodically."""
-    samples = []  # each sample: (timestamp, cpu_percent, mem_percent)
+    samples = []  # each sample: (timestamp, cpu_percent, mem_percent, sys_mem_mb, proc_mem_mb)
     start = datetime.now()
     last_save = datetime.min
 
     import psutil
     cores = psutil.cpu_count(logical=True)
     memory_gb = round(psutil.virtual_memory().total / (1024 ** 3), 2)
+    
+    target_pid = int(os.environ.get("LEI_PID", os.getppid()))
+    try:
+        target_process = psutil.Process(target_pid)
+    except Exception:
+        target_process = None
 
-    print(f"Monitor started (pid={os.getpid()}). Interval {MONITORING_INTERVAL_SECONDS}s")
+    print(f"Monitor started (pid={os.getpid()}). Target process {target_pid}. Interval {MONITORING_INTERVAL_SECONDS}s")
     write_pid_file(PID_FILE)
 
     try:
@@ -76,10 +86,19 @@ def monitor_loop():
             # Retrieve cpu and mem using imported helper functions
             cpu = get_cpu_percent(interval=MONITORING_INTERVAL_SECONDS)
             mem = get_memory_percent()
-            samples.append((now, cpu, mem))
+            
+            sys_mem_mb = psutil.virtual_memory().used / (1024 * 1024)
+            proc_mem_mb = 0.0
+            if target_process:
+                try:
+                    proc_mem_mb = target_process.memory_info().rss / (1024 * 1024)
+                except Exception:
+                    pass
+                    
+            samples.append((now, cpu, mem, sys_mem_mb, proc_mem_mb))
             
             # Print sample to stdout
-            print(f"Checked at {now.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]}: CPU {cpu}%, Mem {mem}%")
+            print(f"Checked at {now.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]}: CPU {cpu}%, Mem {mem}%, SysMem {sys_mem_mb:.1f}MB, ProcMem {proc_mem_mb:.1f}MB")
 
             # discard samples older than MAX_RETENTION
             cutoff = datetime.now() - MAX_RETENTION

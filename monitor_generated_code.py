@@ -62,7 +62,7 @@ def iso_ts() -> str:
     return datetime.now(timezone.utc).astimezone().isoformat()
 
 
-def monitor_process(p: subprocess.Popen, csv_path: str, interval: float = 1.0, timeout: float | None = None, extra_info: dict | None = None) -> dict:
+def monitor_process(p: subprocess.Popen, csv_path: str, interval: float = 1.0, timeout: float | None = None, extra_info: dict | None = None, relaunch: bool = True) -> dict:
     os.makedirs(os.path.dirname(csv_path) or ".", exist_ok=True)
     fieldnames = [
         "timestamp",
@@ -146,7 +146,7 @@ def monitor_process(p: subprocess.Popen, csv_path: str, interval: float = 1.0, t
                     except Exception:
                         pass
 
-                if timeout is not None and (time.perf_counter() - start_perf) < timeout:
+                if relaunch and timeout is not None and (time.perf_counter() - start_perf) < timeout:
                     try:
                         p = subprocess.Popen(
                             p.args,

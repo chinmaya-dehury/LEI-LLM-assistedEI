@@ -1,0 +1,2 @@
+timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
+2026-08-01T15:27:17.659285+05:30,step3_validator,start,1,,cohere/north-mini-code:free,27.2,61.5,2006153771,5524445166,4771849,9211181,

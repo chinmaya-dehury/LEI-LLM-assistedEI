@@ -26,6 +26,7 @@ Data handling (REQUIRED):
 - Use portable file handling (`os.path.join()` or `pathlib.Path`) and check file existence.
 - Read CSV-style data using `csv.DictReader` (comma-separated). If file extension is `.txt`, still attempt CSV parsing.
 - Standardize column names to lowercase: Raw CSV files may have inconsistent column casing across different environments (e.g., 'Temperature' vs 'temperature'). To make code robust for all datasets, always normalize CSV row keys to lowercase during parsing (e.g., using `row = {k.lower(): v for k, v in row.items()}` if using `csv.DictReader`, or `df.columns = df.columns.str.lower()` if using `pandas`), and access columns using their lowercase names (e.g., `row['temperature']` or `row.get('temperature')`).
+- Derived columns / Calculated features: Some columns listed in metadata.json (such as THI, PP, SFI, NBR, WAI) are derived/calculated features and are NOT present in the raw CSV raw_data.csv. Do NOT try to read them directly from the CSV; instead, verify if the column exists in the CSV, and if not, compute it programmatically using the other raw columns based on metadata descriptions.
 - Treat empty strings, `''`, and common placeholders (`NA`, `N/A`, `null`) as missing values.
 - For numeric fields, attempt safe conversion with a helper function, e.g.:
   - Try `float()` inside `try/except`.

@@ -27,7 +27,8 @@ import threading
 import concurrent.futures
 
 from config import DATA_TYPE, LLM_BASE_URL, LLM_API_KEY, DEFAULT_MODEL, LLM_VAL_MODEL, LLM_VAL_BASE_URL, LLM_VAL_API_KEY, LLM_VAL_MODELS_LIST
-from prompts.get_validated import SYSTEM_PROMPT
+from prompts.get_validated import SEMANTIC_VALIDATION_PROMPT
+from prompts.get_validated_correction import CODE_CORRECTION_PROMPT
 from resource_monitor import log_resource_metrics
 from shared_utils import (
     sanitize_model_name,
@@ -694,62 +695,69 @@ def _output_is_only_warning(text: str) -> bool:
 
 
 def _build_correction_prompt(task: Dict, runtime_error: str, exit_code: int, assets: Dict, validation_error: str = "") -> str:
+    # Optional semantic-validation section (only present when the code ran but output was wrong)
     validation_section = ""
     if validation_error:
-        validation_section = f"""
-SEMANTIC VALIDATION ERROR:
-{validation_error}
+        validation_section = (
+            "\nSEMANTIC VALIDATION ERROR:\n"
+            f"{validation_error}\n\n"
+            "The script ran but its JSON output failed schema validation. "
+            "Fix the code so that the output matches the required schema.\n"
+        )
 
-The output was valid JSON but failed semantic validation. Fix the code to produce output matching the expected schema.
-"""
-    
-    # 1. Trim Sample Data: Keep only first 5 lines (or ~400 chars)
+    # 1. Sample Data: keep first 10 rows so LLM can see column names / types
     sample_data = assets.get('sample_data', '')
     sample_data_lines = sample_data.strip().split('\n')
-    trimmed_sample = "\n".join(sample_data_lines[:5])
-    if len(sample_data_lines) > 5:
+    trimmed_sample = "\n".join(sample_data_lines[:10])
+    if len(sample_data_lines) > 10:
         trimmed_sample += "\n... [TRUNCATED] ..."
 
-    # 2. Trim Metadata: Only keep the first 500 characters
-    trimmed_metadata = json.dumps(assets.get('metadata', {}), indent=2, ensure_ascii=False)[:500]
-    if len(json.dumps(assets.get('metadata', {}))) > 500:
-        trimmed_metadata += "\n... [TRUNCATED] ..."
+    # 2. Metadata: kept WHOLE – column names and types are critical for repair
+    full_metadata = json.dumps(assets.get('metadata', {}), indent=2, ensure_ascii=False)
 
-    # 3. Trim Context: Keep only first 500 characters
-    trimmed_context = assets.get('context', '')[:500]
-    if len(assets.get('context', '')) > 500:
+    # 3. Context: first 800 characters
+    context_raw = assets.get('context', '')
+    trimmed_context = context_raw[:800]
+    if len(context_raw) > 800:
         trimmed_context += "\n... [TRUNCATED] ..."
 
-    # 4. Trim Runtime Error: Keep first 2 lines and last 15 lines of traceback
+    # 4. Runtime Error: keep first 5 lines + last 30 lines so the root cause
+    #    AND the full traceback are both visible to the repair LLM.
     trimmed_error = ""
     if runtime_error:
         err_lines = runtime_error.strip().split('\n')
-        if len(err_lines) > 20:
-            trimmed_error = "\n".join(err_lines[:2]) + "\n... [TRUNCATED] ...\n" + "\n".join(err_lines[-15:])
+        if len(err_lines) > 40:
+            trimmed_error = (
+                "\n".join(err_lines[:5])
+                + "\n... [MIDDLE TRUNCATED] ...\n"
+                + "\n".join(err_lines[-30:])
+            )
         else:
             trimmed_error = runtime_error
 
-    return f"""
-Sample Data:
-{trimmed_sample}
+    # 5. Task-level metadata (full, not truncated)
+    task_metadata_str = json.dumps(task.get('metadata', {}), indent=2, ensure_ascii=False)
 
-Metadata:
-{trimmed_metadata}
+    return f"""
+Task Name       : {task.get('task_name', 'UNKNOWN')}
+Task Description: {task.get('description', 'N/A')}
+Data Type       : {task.get('data_type', DATA_TYPE)}
+
+Task Metadata (full):
+{task_metadata_str}
+
+Dataset Metadata (full):
+{full_metadata}
 
 Context:
 {trimmed_context}
 
-Task Name: {task.get('task_name', 'UNKNOWN')}
-Task Description: {task.get('description', 'N/A')}
-Data Type: {task.get('data_type', DATA_TYPE)}
-
-Metadata:
-{json.dumps(task.get('metadata', {}), indent=2, ensure_ascii=False)[:500]}
+Sample Data (first 10 rows):
+{trimmed_sample}
 
 RUNTIME ERROR (exit code {exit_code}):
 {trimmed_error}
 {validation_section}
-
 ORIGINAL CODE THAT FAILED:
 {task.get('code', '')}
 
@@ -757,20 +765,23 @@ Provide corrected code following the response format specified in the system pro
 """.strip()
 
 
+gen_client = None
+
 def _call_llm_chat(system_prompt: str, user_prompt: str) -> dict:
-    global client
-    if client is None:
+    global gen_client
+    if gen_client is None:
         from openai import OpenAI
-        client = OpenAI(base_url=LLM_VAL_BASE_URL, api_key=LLM_VAL_API_KEY, timeout=CLIENT_TIMEOUT)
-    # Use the first validation model in LLM_VAL_MODELS_LIST if available, otherwise LLM_VAL_MODEL
-    target_model = LLM_VAL_MODELS_LIST[0] if isinstance(LLM_VAL_MODELS_LIST, list) and LLM_VAL_MODELS_LIST else LLM_VAL_MODEL
-    response = client.chat.completions.create(
+        gen_client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY, timeout=CLIENT_TIMEOUT)
+    
+    target_model = DEFAULT_MODEL
+    response = gen_client.chat.completions.create(
         model=target_model,
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
         temperature=0.0,
+        timeout=60,
     )
 
     usage = getattr(response, "usage", None) or {}
@@ -792,6 +803,7 @@ def _call_llm_chat(system_prompt: str, user_prompt: str) -> dict:
         "model": getattr(response, "model", target_model),
         "raw": response,
     }
+
 
 
 def _extract_json_from_text(text: str) -> dict | list | None:
@@ -1040,7 +1052,7 @@ def _extract_code_from_llm_response(raw: str) -> str:
 def _call_llm_for_correction(task: Dict, runtime_error: str, exit_code: int, assets: Dict, attempt: int, validation_error: str = "", task_start_time = None, task_start_perf = None) -> Dict:
     datatype = task.get("data_type", DATA_TYPE)
     output_dir_str = os.environ.get("LEI_OUTPUT_DIR", os.path.join("output", datatype)).replace("\\", "/")
-    system_prompt = SYSTEM_PROMPT.replace("{DATA_TYPE}", datatype).replace("{OUTPUT_DIR}", output_dir_str)
+    system_prompt = CODE_CORRECTION_PROMPT.replace("{DATA_TYPE}", datatype).replace("{OUTPUT_DIR}", output_dir_str)
     user_prompt = _build_correction_prompt(task, runtime_error, exit_code, assets, validation_error)
 
     llm_start_time = datetime.now(IST).isoformat()
@@ -1419,7 +1431,7 @@ def validate_and_fix_task(script_path: str, task_info: Dict, scripts_dir: str) -
             print(f"[ERROR] LLM could not provide correction: {correction.get('error_message')}")
             continue
 
-        corrected_code = _normalize_code_string(correction["corrected_code"])
+        corrected_code = _normalize_code_string(correction["corrected_code"], data_type=datatype)
         temp_path = script_path + ".tmp"
 
         try:

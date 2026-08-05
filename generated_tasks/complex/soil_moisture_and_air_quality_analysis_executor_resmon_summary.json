@@ -1,9 +1,9 @@
 {
-  "pid": 23780,
+  "pid": 7512,
   "exit_code": 2,
-  "start_time": "2026-07-30T16:27:45.519659+05:30",
-  "duration_s": 1.071,
-  "avg_cpu_percent": 26.264,
-  "peak_rss_mb": 12.215,
+  "start_time": "2026-07-31T15:14:12.215668+05:30",
+  "duration_s": 0.101,
+  "avg_cpu_percent": 30.823,
+  "peak_rss_mb": 11.453,
   "dataset": "complex"
 }

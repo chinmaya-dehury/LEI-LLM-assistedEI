@@ -1,9 +1,9 @@
 {
-  "pid": 17832,
+  "pid": 18812,
   "exit_code": 2,
-  "start_time": "2026-07-30T16:27:52.004257+05:30",
-  "duration_s": 1.067,
-  "avg_cpu_percent": 30.748,
-  "peak_rss_mb": 12.215,
+  "start_time": "2026-07-31T15:14:12.880016+05:30",
+  "duration_s": 0.101,
+  "avg_cpu_percent": 61.914,
+  "peak_rss_mb": 11.43,
   "dataset": "meteo-data"
 }

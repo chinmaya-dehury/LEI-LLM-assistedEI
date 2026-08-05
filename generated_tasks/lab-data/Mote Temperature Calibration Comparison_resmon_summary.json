@@ -1,0 +1,9 @@
+{
+  "pid": 25836,
+  "exit_code": 2,
+  "start_time": "2026-07-31T15:14:12.653895+05:30",
+  "duration_s": 0.101,
+  "avg_cpu_percent": 30.966,
+  "peak_rss_mb": 11.43,
+  "dataset": "lab-data"
+}
