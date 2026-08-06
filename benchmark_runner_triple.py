@@ -774,7 +774,7 @@ def main():
         # Clean existing results inside this dataset's results dir
         if results_dir.exists():
             try:
-                shutil.rmtree(results_dir)
+                pass # shutil.rmtree(results_dir)
             except Exception:
                 pass
         results_dir.mkdir(parents=True, exist_ok=True)

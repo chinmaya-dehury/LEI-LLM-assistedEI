@@ -1,0 +1,2 @@
+step,model,run_count,task_name,script_start_time_ist,script_end_time_ist,script_duration_sec,status,return_code
+task_run,openai/gpt-4o-mini,1,Daily_Solar_Radiation_Average,2026-08-06T08:48:47.081767+00:00,2026-08-06T08:48:47.211749+00:00,0.12997959996573627,success,0

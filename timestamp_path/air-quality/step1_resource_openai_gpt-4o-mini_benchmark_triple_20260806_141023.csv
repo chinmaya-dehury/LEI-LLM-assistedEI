@@ -1,0 +1,3 @@
+timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,system_memory_mb,process_memory_mb,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
+2026-08-06T14:10:23.968337+05:30,step1_task_generator,start,1,,openai/gpt-4o-mini,5.3,49.5,16052.9921875,62.765625,554059463,3057362099,1177240,2989817,
+2026-08-06T14:10:31.545199+05:30,step1_task_generator,end,1,,openai/gpt-4o-mini,3.9,49.5,16080.44921875,84.5859375,554107653,3057820382,1177404,2990374,

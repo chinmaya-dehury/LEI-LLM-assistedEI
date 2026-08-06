@@ -1,32 +1,38 @@
 {
   "tasks": [
     {
-      "task_name": "Temperature Humidity Correlation Analysis",
-      "description": "Compute Pearson correlation coefficient between temperature and humidity readings across all motes to assess their relationship.",
+      "task_name": "Temperature Trend Analysis",
+      "description": "Analyze the temperature readings over time from different motes to identify trends and patterns in the indoor laboratory environment.",
+      "data_type": "lab-data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Humidity Variation Detection",
+      "description": "Monitor and detect variations in humidity levels across different motes to assess environmental stability and identify potential anomalies.",
       "data_type": "lab-data",
       "status": "code_generated"
     },
     {
       "task_name": "Light Intensity Anomaly Detection",
-      "description": "Identify outliers in light intensity measurements that deviate more than 3 standard deviations from the mean for each time window.",
+      "description": "Identify unusual spikes or drops in light intensity readings from the sensors to detect potential issues in the laboratory environment.",
       "data_type": "lab-data",
       "status": "code_generated"
     },
     {
-      "task_name": "Battery Voltage Trend Monitoring",
-      "description": "Track voltage changes over time and flag motes where voltage drops below a predefined threshold indicating potential battery depletion.",
+      "task_name": "Voltage Health Monitoring",
+      "description": "Evaluate the battery voltage readings to assess the health of the sensor motes and correlate voltage levels with temperature changes.",
       "data_type": "lab-data",
       "status": "code_generated"
     },
     {
-      "task_name": "Epoch Synchronization Gaps Identification",
-      "description": "Detect missing epochs in the sequence across different motes to identify synchronization issues or sensor failures.",
+      "task_name": "Epoch Synchronization Check",
+      "description": "Analyze the epoch sequences to identify any missing or delayed readings across the motes, ensuring data integrity and synchronization.",
       "data_type": "lab-data",
       "status": "code_generated"
     },
     {
-      "task_name": "Mote Temperature Calibration Comparison",
-      "description": "Compare temperature readings from multiple motes at overlapping epochs to evaluate calibration consistency and suggest recalibration if discrepancies exceed a tolerance level.",
+      "task_name": "Comparative Mote Calibration",
+      "description": "Perform a comparative analysis of readings from multiple motes to validate sensor accuracy and ensure consistent environmental monitoring.",
       "data_type": "lab-data",
       "status": "code_generated"
     }

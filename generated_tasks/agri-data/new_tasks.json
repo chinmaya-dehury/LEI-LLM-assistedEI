@@ -1,32 +1,62 @@
 {
   "tasks": [
     {
-      "task_name": "Irrigation_Efficiency_Alert",
-      "description": "Monitor the Water Usage Efficiency (WAI) and trigger a flag if the current value deviates significantly from the historical mean, indicating potential irrigation system leaks or over-watering.",
+      "task_name": "Calculate Soil Fertility Index",
+      "description": "Compute the Soil Fertility Index (SFI) based on organic matter and NPK levels to assess soil fertility.",
       "data_type": "agri-data",
       "status": "code_generated"
     },
     {
-      "task_name": "Crop_Stress_Threshold_Monitor",
-      "description": "Evaluate the Temperature-Humidity Index (THI) against predefined crop-specific stress thresholds to provide real-time alerts for environmental heat stress.",
+      "task_name": "Evaluate Temperature-Humidity Index",
+      "description": "Calculate the Temperature-Humidity Index (THI) to evaluate crop stress due to heat and moisture.",
       "data_type": "agri-data",
       "status": "code_generated"
     },
     {
-      "task_name": "Soil_Nutrient_Depletion_Tracker",
-      "description": "Calculate the moving average of the Nutrient Balance Ratio (NBR) to detect long-term soil nutrient depletion trends and suggest optimal fertilizer application timing.",
+      "task_name": "Assess Nutrient Balance Ratio",
+      "description": "Determine the Nutrient Balance Ratio (NBR) to analyze the balance between nitrogen, phosphorus, and potassium in the soil.",
       "data_type": "agri-data",
       "status": "code_generated"
     },
     {
-      "task_name": "Photosynthesis_Potential_Optimization",
-      "description": "Analyze the Photosynthesis Potential (PP) index relative to current growth stages to determine if sunlight exposure is sufficient for the current crop development phase.",
+      "task_name": "Monitor Water Availability Index",
+      "description": "Calculate the Water Availability Index (WAI) to assess the composite availability of soil moisture and rainfall.",
       "data_type": "agri-data",
       "status": "code_generated"
     },
     {
-      "task_name": "Frost_Risk_Early_Warning",
-      "description": "Monitor the Frost_Risk index and ambient temperature to generate an immediate alert when conditions reach a critical threshold for the current growth stage.",
+      "task_name": "Analyze Photosynthesis Potential",
+      "description": "Estimate the Photosynthesis Potential (PP) based on sunlight exposure, CO2 concentration, and temperature.",
+      "data_type": "agri-data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Classify Crop Growth Stage",
+      "description": "Classify the current growth stage of the crop based on environmental parameters and soil conditions.",
+      "data_type": "agri-data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Evaluate Pest Pressure Level",
+      "description": "Assess the level of pest infestation pressure using the pest pressure index from sensor data.",
+      "data_type": "agri-data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Optimize Fertilizer Usage",
+      "description": "Analyze fertilizer usage patterns to optimize application rates based on soil nutrient levels.",
+      "data_type": "agri-data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Monitor Soil Moisture Levels",
+      "description": "Continuously monitor and report soil moisture levels to ensure optimal irrigation practices.",
+      "data_type": "agri-data",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Analyze Irrigation Frequency",
+      "description": "Evaluate the frequency of irrigation to optimize water usage based on crop needs and soil moisture.",
       "data_type": "agri-data",
       "status": "code_generated"
     }

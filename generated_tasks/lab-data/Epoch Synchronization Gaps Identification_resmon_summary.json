@@ -1,9 +1,0 @@
-{
-  "pid": 8216,
-  "exit_code": 2,
-  "start_time": "2026-07-31T15:14:12.548229+05:30",
-  "duration_s": 0.101,
-  "avg_cpu_percent": 30.936,
-  "peak_rss_mb": 11.371,
-  "dataset": "lab-data"
-}

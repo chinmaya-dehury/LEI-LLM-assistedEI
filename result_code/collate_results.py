@@ -99,6 +99,25 @@ def get_scheduler_success_count(folder_path, filename_model, run_count, schedule
             
     return 0, None
 
+def get_validation_counts(payload):
+    summary = payload.get('summary') or {}
+    tasks_list = payload.get('tasks', []) or []
+
+    tasks_generated = summary.get('total', len(tasks_list))
+    code_generated = summary.get('code_generated', tasks_generated)
+    validated_code = summary.get('passed', summary.get('validator_passed'))
+
+    if validated_code is None:
+        validated_code = sum(
+            1
+            for t in tasks_list
+            if t.get('validator_passed', False)
+            or t.get('status') == 'passed'
+            or t.get('code_passed', False)
+        )
+
+    return int(tasks_generated or 0), int(code_generated or 0), int(validated_code or 0)
+
 def round_dataframe(df):
     for col in df.columns:
         if df[col].dtype == object:
@@ -456,15 +475,13 @@ def main():
                     try:
                         with open(all_runs_files[0], "r") as f:
                             all_data = json.load(f)
-                        runs_dict = all_data.get('runs', {})
-                        for rc in run_keys:
-                            if rc in runs_dict:
-                                tasks_list = runs_dict[rc]
-                                val_metrics[rc]['tasks_generated'] = len(tasks_list)
-                                not_gen = sum(1 for t in tasks_list if "script file not found" in t.get("message", "").lower() or "script not found" in t.get("message", "").lower())
-                                val_metrics[rc]['code_generated'] = len(tasks_list) - not_gen
-                                val_metrics[rc]['validated_code'] = sum(1 for t in tasks_list if t.get('validator_passed', False) or t.get('status') == 'passed')
-                                run_files[rc]['validator'] = os.path.basename(all_runs_files[0])
+                        rc = str(all_data.get('run_count', ''))
+                        if rc in run_keys:
+                            tasks_generated, code_generated, validated_code = get_validation_counts(all_data)
+                            val_metrics[rc]['tasks_generated'] = tasks_generated
+                            val_metrics[rc]['code_generated'] = code_generated
+                            val_metrics[rc]['validated_code'] = validated_code
+                            run_files[rc]['validator'] = os.path.basename(all_runs_files[0])
                     except Exception as e:
                         print(f"      Error reading all_runs.json: {e}")
                     else:
@@ -482,11 +499,10 @@ def main():
                             try:
                                 with open(r_files[0], "r") as f:
                                     r_data = json.load(f)
-                                tasks_list = r_data.get('tasks', [])
-                                val_metrics[rc]['tasks_generated'] = len(tasks_list)
-                                not_gen = sum(1 for t in tasks_list if "script file not found" in t.get("message", "").lower() or "script not found" in t.get("message", "").lower())
-                                val_metrics[rc]['code_generated'] = len(tasks_list) - not_gen
-                                val_metrics[rc]['validated_code'] = sum(1 for t in tasks_list if t.get('validator_passed', False) or t.get('status') == 'passed')
+                                tasks_generated, code_generated, validated_code = get_validation_counts(r_data)
+                                val_metrics[rc]['tasks_generated'] = tasks_generated
+                                val_metrics[rc]['code_generated'] = code_generated
+                                val_metrics[rc]['validated_code'] = validated_code
                                 run_files[rc]['validator'] = os.path.basename(r_files[0])
                             except Exception as e:
                                 print(f"      Error reading run{rc}.json: {e}")

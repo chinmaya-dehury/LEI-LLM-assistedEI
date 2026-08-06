@@ -1,0 +1,58 @@
+{
+  "tasks": [
+    {
+      "task_name": "Estimate_CO_Concentration",
+      "description": "Calculate the average CO concentration from the CO(GT) readings over the last 24 hours to assess air quality trends.",
+      "data_type": "air-quality",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Estimate_NMHC_Concentration",
+      "description": "Calculate the average NMHC concentration from the NMHC(GT) readings over the last 24 hours to monitor pollution levels.",
+      "data_type": "air-quality",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Estimate_Benzene_Concentration",
+      "description": "Calculate the average Benzene concentration from the C6H6(GT) readings over the last 24 hours to evaluate air quality.",
+      "data_type": "air-quality",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Estimate_NOx_Concentration",
+      "description": "Calculate the average NOx concentration from the NOx(GT) readings over the last 24 hours to understand pollution dynamics.",
+      "data_type": "air-quality",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Estimate_NO2_Concentration",
+      "description": "Calculate the average NO2 concentration from the NO2(GT) readings over the last 24 hours to assess air quality.",
+      "data_type": "air-quality",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Analyze_Temperature_Impact",
+      "description": "Correlate temperature readings with CO(GT) concentrations to identify potential temperature effects on sensor readings.",
+      "data_type": "air-quality",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Analyze_Humidity_Impact",
+      "description": "Correlate relative humidity readings with NMHC(GT) concentrations to understand the influence of humidity on air quality.",
+      "data_type": "air-quality",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Detect_Sensor_Drift",
+      "description": "Monitor the variance in sensor readings over time to detect potential sensor drift and ensure accuracy.",
+      "data_type": "air-quality",
+      "status": "code_generated"
+    },
+    {
+      "task_name": "Identify_Cross_Sensitivity",
+      "description": "Analyze the correlation between different gas concentrations (e.g., CO and NOx) to identify potential cross-sensitivity of sensors.",
+      "data_type": "air-quality",
+      "status": "code_generated"
+    }
+  ]
+}

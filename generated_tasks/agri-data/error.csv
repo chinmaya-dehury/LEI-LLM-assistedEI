@@ -1,40 +1,170 @@
 task_name,exit_code,error_message,count,last_timestamp
-Soil_Nutrient_Depletion_Tracker,0,"Validation failed (exit 0).
+Calculate Soil Fertility Index,1,"Syntax error at line 89, column 6: '(' was never closed",1,2026-08-06T15:36:29.730446
+Monitor Water Availability Index,0,"Validation failed (exit 0).
 Stdout:
-Task complete. Average NBR: 0.5069
+Results saved to C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\agri-data\monitor_water_availability_index_result.json
 
 Stderr:
 
 Semantic Error:
 Semantic validation failed (business rules):
-  • Code-description mismatch: cohere/north-mini-code:free: The code computes a simple average of NBR rather than a moving average and does not provide fertilizer timing suggestions, failing task implementation and result consistency.; google/gemma-4-26b-a4b-it:free: TASK IMPLEMENTATION failed: The code calculates a simple global average of NBR instead of the requested moving average to detect trends.",1,2026-08-01T16:24:52.241217
-Soil_Nutrient_Depletion_Tracker,0,,2,2026-08-01T16:24:59.206647
-Photosynthesis_Potential_Optimization,0,"Validation failed (exit 0).
+  • Code-description mismatch: cohere/north-mini-code:free: The code fails the output schema requirement: it does not include the required top‑level fields ""result_summary"" and ""result_generated_at"" (the latter is a file path, not an ISO‑8601 timestamp), and instead writes separate fields like ""wai_values"" and ""cleaned_rows_count"".; inclusionai/ling-3.0-flash:free: The output JSON schema is incorrect: (1) there is no 'result_summary' top-level field — the WAI values and counts are placed directly at the root instead of nested under 'result_summary'; (2) 'result_generated_at' contains a file path string (Path(__file__).resolve()) rather than an ISO-8601 timesta; google/gemma-4-26b-a4b-it:free: The output schema fails because 'esult_generated_at' must be an ISO-8601 timestamp, but the code provides a file path string instead.",1,2026-08-06T15:37:11.462555
+Monitor Water Availability Index,0,Results saved to C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\agri-data\agri-data\monitor_water_availability_index_result.json,2,2026-08-06T15:37:31.789477
+Calculate Soil Fertility Index,1,"Validation failed (exit 1).
 Stdout:
-Task complete. Results saved to C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\agri-data\Photosynthesis_Potential_Optimization_result.json
+
+Stderr:
+Syntax error at line 89, column 6: '(' was never closed
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: cohere/north-mini-code:free: The output JSON uses a date string '2023-10-01' for result_generated_at, which is not a proper ISO‑8601 timestamp.; inclusionai/ling-3.0-flash:free: The code has a syntax error (missing closing parenthesis on the last print statement), preventing it from running at all, which fails task implementation. Additionally, the result_generated_at field '2023-10-01' is not a valid ISO-8601 timestamp (missing time component), failing the output schema re; google/gemma-4-26b-a4b-it:free: The result_summary field contains a list of individual SFI values per row instead of an aggregated summary, violating the requirement for semantic consistency in an aggregation task.",1,2026-08-06T15:38:09.608600
+Calculate Soil Fertility Index,1,"Syntax error at line 1, column 168: unterminated string literal (detected at line 1)",1,2026-08-06T15:38:19.448163
+Calculate Soil Fertility Index,1,"Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Calculate Soil Fertility Index.py.tmp"", line 70, in <module>
+    main()
+    ^^^^
+NameError: name 'main' is not defined. Did you mean: 'min'?",1,2026-08-06T15:38:31.162048
+Assess Nutrient Balance Ratio,0,"Validation failed (exit 0).
+Stdout:
+Results saved to C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\agri-data\assess_nutrient_balance_ratio_result.json
 
 Stderr:
 
 Semantic Error:
 Semantic validation failed (business rules):
-  • Code-description mismatch: cohere/north-mini-code:free: The code only computes a simplistic PP per row and does not analyze sufficiency relative to growth stages, failing task implementation and result consistency.; inclusionai/ling-3.0-flash:free: The code fails on task implementation and result consistency. The task requires analyzing PP relative to growth stages to determine if sunlight exposure is sufficient, but the code only calculates per-row PP values (sun * temp / 100) and lists them individually. It does not aggregate PP by growth st; google/gemma-4-26b-a4b-it:free: The code fails the TASK IMPLEMENTATION criterion; it calculates a proxy PP value but fails to perform the required analysis to determine if sunlight exposure is sufficient for the current growth stage.",1,2026-08-01T16:25:11.630565
-Crop_Stress_Threshold_Monitor,0,"Validation failed (exit 0).
+  • Code-description mismatch: google/gemma-4-26b-a4b-it:free: The result_summary field contains raw per-row data (n, p, k, nbr) instead of an aggregated summary, violating the consistency requirement for an aggregation task.",1,2026-08-06T15:38:47.256115
+Analyze Photosynthesis Potential,1,"Validation failed (exit 1).
 Stdout:
+
+Stderr:
+Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Analyze Photosynthesis Potential.py"", line 72, in <module>
+    'result_generated_at': str(Path().now())
+                               ^^^^^^^^^^
+AttributeError: 'WindowsPath' object has no attribute 'now'
+
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: cohere/north-mini-code:free: Output schema fails because result_generated_at uses an invalid timestamp format (str(Path().now())) rather than an ISO-8601 string.; inclusionai/ling-3.0-flash:free: The code uses `Path().now()` which is invalid — `pathlib.Path` has no `now()` method, causing an AttributeError crash before any output file is written. The `result_generated_at` field requires a valid ISO-8601 timestamp, which should be generated via `datetime.datetime.now().isoformat()` instead.; google/gemma-4-26b-a4b-it:free: The output schema fails because 'esult_generated_at' uses 'Path().now()' which is invalid (Path objects do not have a now() method; it should be datetime.now()) and the resulting value is not a valid ISO-8601 timestamp.",1,2026-08-06T15:38:54.220002
+Assess Nutrient Balance Ratio,0,Results saved to C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\agri-data\agri-data\assess_nutrient_balance_ratio_result.json,1,2026-08-06T15:38:58.238633
+Analyze Photosynthesis Potential,1,"Syntax error at line 1, column 163: unterminated string literal (detected at line 1)",1,2026-08-06T15:39:05.177915
+Assess Nutrient Balance Ratio,1,"Syntax error at line 21, column 189: unterminated string literal (detected at line 21)",1,2026-08-06T15:39:11.657420
+Analyze Photosynthesis Potential,1,"Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Analyze Photosynthesis Potential.py.tmp"", line 59, in <module>
+    main()
+    ^^^^
+NameError: name 'main' is not defined. Did you mean: 'min'?",1,2026-08-06T15:39:13.073538
+Classify Crop Growth Stage,0,"Validation failed (exit 0).
+Stdout:
+Results saved to C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\agri-data\classify_crop_growth_stage_result.json
 
 Stderr:
 
 Semantic Error:
 Semantic validation failed (business rules):
-  • Code-description mismatch: cohere/north-mini-code:free: The code uses a single THI threshold (72.0) for all crops, ignoring the requirement for crop-specific stress thresholds.; inclusionai/ling-3.0-flash:free: Task Implementation fails: the task requires 'crop-specific stress thresholds' but the code uses a single hardcoded THI_THRESHOLD = 72.0 for all crops, ignoring the crop type (Label column) in the data. Crop-specific thresholds (e.g., different values for rice vs. wheat) are not defined or applied.; google/gemma-4-26b-a4b-it:free: The result_summary contains per-row status records instead of an aggregated summary of stress alerts as required by the task goal.",1,2026-08-01T16:25:13.650614
-Photosynthesis_Potential_Optimization,0,,2,2026-08-01T16:25:18.295945
-Crop_Stress_Threshold_Monitor,0,,2,2026-08-01T16:25:19.435347
-Frost_Risk_Early_Warning,0,"Validation failed (exit 0).
+  • Code-description mismatch: cohere/north-mini-code:free: The code only classifies growth stage using temperature thresholds, ignoring other environmental parameters and soil conditions (e.g., humidity, soil moisture, pH, rainfall) that the task description specifies should be used.; inclusionai/ling-3.0-flash:free: Two criteria fail: (1) Task Implementation — the classification uses only temperature thresholds and ignores soil conditions and other environmental parameters (humidity, pH, rainfall, soil_moisture, etc.) despite the task requiring classification based on both environmental parameters AND soil cond; google/gemma-4-26b-a4b-it:free: The result_summary field contains raw per-row classification data instead of an aggregated summary, violating the consistency requirement for an aggregation/classification task.",1,2026-08-06T15:39:39.012342
+Optimize Fertilizer Usage,0,"Validation failed (exit 0).
 Stdout:
-Task complete. Alerts generated: 2195. Dropped: 0
+Results saved to C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\agri-data\optimize_fertilizer_usage_result.json
 
 Stderr:
 
 Semantic Error:
 Semantic validation failed (business rules):
-  • Code-description mismatch: cohere/north-mini-code:free: The code does not consider the growth stage when generating alerts, which is required by the task description.; inclusionai/ling-3.0-flash:free: Task implementation fails because the code applies a single global threshold (risk > 0.15 or temp < 5.0) without considering the Growth_Stage column, which the task explicitly requires ('critical threshold for the current growth stage'). Additionally, the output JSON includes an extra 'dropped_rows'; google/gemma-4-26b-a4b-it:free: The output schema is invalid because the 'esult_summary' field contains extra top-level keys ('dropped_rows') which violates the strict schema requirement.",1,2026-08-01T16:26:22.787183
-Frost_Risk_Early_Warning,0,,2,2026-08-01T16:26:28.638803
+  • Code-description mismatch: inclusionai/ling-3.0-flash:free: All three criteria fail: (1) Task Implementation — the code merely collects raw N/P/K/fertilizer_usage rows without any analysis or optimization logic; (2) Output Schema — result_generated_at is a hardcoded date string '2023-10-01' instead of a valid ISO-8601 timestamp with time component; (3) Resul; google/gemma-4-26b-a4b-it:free: TASK IMPLEMENTATION failed: The code merely extracts and returns raw rows of N, P, K, and fertilizer usage instead of performing any analysis or optimization logic as required by the task description.",1,2026-08-06T15:39:45.690793
+Classify Crop Growth Stage,0,Results saved to C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\agri-data\agri-data\classify_crop_growth_stage_result.json,1,2026-08-06T15:39:51.315764
+Optimize Fertilizer Usage,0,Results saved to C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\agri-data\agri-data\optimize_fertilizer_usage_result.json,1,2026-08-06T15:39:54.304972
+Evaluate Pest Pressure Level,0,"Validation failed (exit 0).
+Stdout:
+Results saved to C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\agri-data\evaluate_pest_pressure_level_result.json
+
+Stderr:
+
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: cohere/north-mini-code:free: The code only extracts raw pest pressure values without assessing the level (e.g., computing a summary or classification), failing task implementation and result consistency.; inclusionai/ling-3.0-flash:free: The code fails task implementation (criterion 1) and result consistency (criterion 3). It merely collects raw pest_pressure values into a list without actually assessing or evaluating the pest pressure level (e.g., computing statistics, classifying into categories like low/medium/high, or deriving a; google/gemma-4-26b-a4b-it:free: The code fails the TASK IMPLEMENTATION criterion; it merely extracts the raw 'pest_pressure' values into a list instead of assessing the 'level of pest infestation pressure' (e.g., categorizing them into Low, Medium, High).",1,2026-08-06T15:40:02.533134
+Optimize Fertilizer Usage,0,Results saved to output\agri-data\optimize_fertilizer_usage_result.json,1,2026-08-06T15:40:03.035146
+Classify Crop Growth Stage,1,"Syntax error at line 101, column 42: f-string: unmatched ')'",1,2026-08-06T15:40:03.173564
+Evaluate Pest Pressure Level,1,"Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Evaluate Pest Pressure Level.py.tmp"", line 85, in <module>
+    main()
+    ~~~~^^
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Evaluate Pest Pressure Level.py.tmp"", line 46, in main
+    df = pd.read_csv(DATA_FILE_PATH)
+  File ""C:\Users\DELL\AppData\Roaming\Python\Python314\site-packages\pandas\io\parsers\readers.py"", line 873, in read_csv
+    return _read(filepath_or_buffer, kwds)
+  File ""C:\Users\DELL\AppData\Roaming\Python\Python314\site-packages\pandas\io\parsers\readers.py"", line 300, in _read
+    parser = TextFileReader(filepath_or_buffer, **kwds)
+  File ""C:\Users\DELL\AppData\Roaming\Python\Python314\site-packages\pandas\io\parsers\readers.py"", line 1645, in __init__
+    self._engine = self._make_engine(f, self.engine)
+                   ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File ""C:\Users\DELL\AppData\Roaming\Python\Python314\site-packages\pandas\io\parsers\readers.py"", line 1904, in _make_engine
+    self.handles = get_handle(
+                   ~~~~~~~~~~^
+        f,
+        ^^
+    ...<6 lines>...
+        storage_options=self.options.get(""storage_options"", None),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File ""C:\Users\DELL\AppData\Roaming\Python\Python314\site-packages\pandas\io\common.py"", line 930, in get_handle
+    handle = open(
+        handle,
+    ...<3 lines>...
+        newline="""",
+    )
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\DELL\\Desktop\\Code More\\LEI-LLM-assistedEI\\generated_tasks\\agri-data\\data\\agri-data\\raw_data.csv'",1,2026-08-06T15:40:12.461903
+Evaluate Pest Pressure Level,1,"Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Evaluate Pest Pressure Level.py.tmp"", line 82, in <module>
+    main()
+    ~~~~^^
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Evaluate Pest Pressure Level.py.tmp"", line 78, in main
+    json.dump(result, json_file, indent=4)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""C:\Python314\Lib\json\__init__.py"", line 181, in dump
+    for chunk in iterable:
+                 ^^^^^^^^
+  File ""C:\Python314\Lib\json\encoder.py"", line 444, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File ""C:\Python314\Lib\json\encoder.py"", line 413, in _iterencode_dict
+    yield from chunks
+  File ""C:\Python314\Lib\json\encoder.py"", line 413, in _iterencode_dict
+    yield from chunks
+  File ""C:\Python314\Lib\json\encoder.py"", line 451, in _iterencode
+    newobj = _default(o)
+  File ""C:\Python314\Lib\json\encoder.py"", line 182, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type int64 is not JSON serializable
+when serializing dict item 'cleaned_rows'
+when serializing dict item 'result_summary'",1,2026-08-06T15:40:21.145593
+Evaluate Temperature-Humidity Index,0,"Validation failed (exit 0).
+Stdout:
+Processed 2200 rows, dropped 0 invalid rows.
+
+Stderr:
+
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: inclusionai/ling-3.0-flash:free: The result_generated_at field contains '2023-10-01', which is a date string but not a valid ISO-8601 timestamp (missing time component and timezone). It should be something like '2023-10-01T00:00:00Z' to satisfy the ISO-8601 timestamp requirement in the output schema.; google/gemma-4-26b-a4b-it:free: The result_summary field contains raw per-row calculations instead of an aggregated summary, violating the consistency requirement for an aggregation task.",1,2026-08-06T15:54:13.391646
+Evaluate Temperature-Humidity Index,1,"Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Evaluate Temperature-Humidity Index.py.tmp"", line 57, in <module>
+    main()
+    ^^^^
+NameError: name 'main' is not defined. Did you mean: 'min'?",1,2026-08-06T15:54:21.006153
+Evaluate Temperature-Humidity Index,1,"Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\agri-data\Evaluate Temperature-Humidity Index.py.tmp"", line 58, in <module>
+    main()
+    ^^^^
+NameError: name 'main' is not defined. Did you mean: 'min'?",1,2026-08-06T15:54:29.410926
+Monitor Soil Moisture Levels,0,"Validation failed (exit 0).
+Stdout:
+Results saved to C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\agri-data\monitor_soil_moisture_levels_result.json
+
+Stderr:
+
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: inclusionai/ling-3.0-flash:free: The code fails on multiple criteria: (1) Task Implementation — it merely reads and dumps raw soil moisture values without any monitoring logic (no statistics, threshold detection, or irrigation recommendations); (2) Output Schema — result_generated_at is hardcoded as '2023-10-01' (a date string, not; google/gemma-4-26b-a4b-it:free: The result_summary contains raw data rows (a list of floats) instead of aggregated values or summaries as required for a monitoring task.",1,2026-08-06T16:00:15.632352
+Monitor Soil Moisture Levels,0,Results saved to C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\agri-data\agri-data\monitor_soil_moisture_levels_result.json,2,2026-08-06T16:00:33.533476

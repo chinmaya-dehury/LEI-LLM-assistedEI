@@ -1,0 +1,13 @@
+metric,lei_mean,lei_std,autogen_mean,autogen_std,langgraph_mean,langgraph_std
+tasks_generated,9.0,0.0,6.0,0.0,0.0,0.0
+code_generated,9.0,0.0,6.0,0.0,0.0,0.0
+code_passed,7.0,0.0,0.0,0.0,0.0,0.0
+validator_passed,0.0,0.0,0.0,0.0,0.0,0.0
+elapsed_time_sec,978.65,0.0,58.69,0.0,3.18,0.0
+lei_time_up_to_codegen,38.56,0.0,58.34,0.0,3.18,0.0
+lei_time_val,939.57,0.0,0.35,0.0,0.0,0.0
+avg_cpu_percent,14.18,0.0,13.18,0.0,17.86,0.0
+avg_memory_mb,109.41,0.0,115.12,0.0,117.62,0.0
+prompt_tokens,104606.0,0.0,21175.0,0.0,2566.0,0.0
+completion_tokens,17457.0,0.0,4207.0,0.0,82.0,0.0
+total_tokens,122063.0,0.0,25382.0,0.0,2648.0,0.0

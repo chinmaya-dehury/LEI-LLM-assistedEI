@@ -1,43 +1,86 @@
 task_name,exit_code,error_message,count,last_timestamp
-Relative Humidity Monitoring,0,"Validation failed (exit 0).
+Relative_Humidity_Trend_Analysis,0,"Validation failed (exit 0).
 Stdout:
-Parsed 19859 rows, dropped 0 rows with missing/invalid data.
-Result saved to: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\meteo-data\relative_humidity_monitoring_result.json
+Result saved to C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\meteo-data\Relative_Humidity_Trend_Analysis_result.json
 
 Stderr:
 
 Semantic Error:
 Semantic validation failed (business rules):
-  • Code-description mismatch: The code fails to implement the core requirement of the task: ""identify any correlations with other environmental factors, such as temperature and precipitation."" The provided script only calculates basic descriptive statistics (min, max, average) for relative humidity and ignores the columns for `A",1,2026-07-30T13:41:31.698309
-Solar Radiation Profiling,0,"Validation failed (exit 0).
+  • Code-description mismatch: cohere/north-mini-code:free: Task implementation and result consistency fail: the code only extracts raw relative humidity values without performing any trend analysis, so result_summary is not a trend summary.; inclusionai/ling-3.0-flash:free: The code fails task implementation (criterion 1) and result consistency (criterion 3). It merely collects raw relative_humidity values into a flat list without performing any trend analysis (e.g., computing trend direction, rate of change, moving averages, or temporal groupings). The result_summary ; google/gemma-4-26b-a4b-it:free: The code fails the TASK IMPLEMENTATION and RESULT CONSISTENCY criteria; it returns a raw list of humidity values instead of performing trend analysis (e.g., calculating slopes, averages, or changes over time).",1,2026-08-06T15:27:08.003805
+Relative_Humidity_Trend_Analysis,0,Result saved to C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\meteo-data\meteo-data\Relative_Humidity_Trend_Analysis_result.json,2,2026-08-06T15:27:20.802265
+Soil_Moisture_Watermark_Analysis,0,"Validation failed (exit 0).
 Stdout:
-Solar radiation profiling complete.
+Results saved to C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\meteo-data\Soil_Moisture_Watermark_Analysis_result.json
 
 Stderr:
 
 Semantic Error:
 Semantic validation failed (business rules):
-  • Code-description mismatch: The code fails to implement the core requirements of the task description. While it calculates basic statistics (min, max, average) for the `Solar_Radiation` column, it completely ignores the requirements to ""estimate daily and seasonal solar exposure cycles"" and ""evaluate the impact of cloud cover",1,2026-07-30T13:41:32.438815
-Ambient Temperature Trend Analysis,0,"Validation failed (exit 0).
+  • Code-description mismatch: cohere/north-mini-code:free: Result consistency: result_summary contains raw soil moisture and watermark values rather than an evaluated summary of hydrological conditions.; inclusionai/ling-3.0-flash:free: The code fails task implementation (criterion 1) and result consistency (criterion 3). The task requires evaluating hydrological conditions by analyzing soil moisture and watermark tension, but the code merely collects raw per-row values without computing any statistics, thresholds, or aggregated me; google/gemma-4-26b-a4b-it:free: The code fails the RESULT CONSISTENCY criterion because it returns raw per-row data (soil_moisture and watermark) instead of performing an analysis or aggregation to evaluate hydrological conditions.",1,2026-08-06T15:27:21.227798
+Soil_Moisture_Watermark_Analysis,1,Data file not found. Exiting.,1,2026-08-06T15:27:30.275466
+Soil_Moisture_Watermark_Analysis,1,"Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\meteo-data\soil_moisture_watermark_analysis.py.tmp"", line 66, in <module>
+    main()
+    ^^^^
+NameError: name 'main' is not defined. Did you mean: 'min'?",1,2026-08-06T15:27:38.748527
+Precipitation_Event_Tracking,0,"Validation failed (exit 0).
 Stdout:
-Ambient temperature trend analysis complete.
+Processed 13799 precipitation events with 0 rows dropped.
 
 Stderr:
 
 Semantic Error:
 Semantic validation failed (business rules):
-  • Code-description mismatch: The code fails to implement the core requirements of the task description. While it calculates basic descriptive statistics (mean, min, max), it completely ignores the requirements to ""identify diurnal temperature patterns,"" ""detect anomalies,"" and ""track temperature fluctuations."" The code treats t",1,2026-07-30T13:41:32.569342
-Solar Radiation Profiling,0,,2,2026-07-30T13:41:38.881981
-Wind Vector Analysis,0,"Validation failed (exit 0).
+  • Code-description mismatch: cohere/north-mini-code:free: Output schema fails because result_generated_at is a file path rather than an ISO‑8601 timestamp; also task implementation only extracts raw precipitation events without profiling or computing correlation with atmospheric variables.; inclusionai/ling-3.0-flash:free: The output schema fails because 'result_generated_at' is set to str(Path(__file__).resolve()) which produces a file path string, not an ISO-8601 timestamp as required. Additionally, the task implementation is incomplete — it filters precipitation events but does not profile them (e.g., compute event; google/gemma-4-26b-a4b-it:free: The result_summary contains raw data rows (per-row precipitation events) instead of an aggregated profile or correlation summary as required by the task goal.",1,2026-08-06T15:28:26.702126
+Precipitation_Event_Tracking,0,Processed 13799 precipitation events with 6060 rows dropped.,2,2026-08-06T15:28:42.642830
+Wind_Vector_Analysis,0,"Validation failed (exit 0).
 Stdout:
-Wind vector analysis complete. Results saved to output/meteo-data/wind_vector_analysis_result.json
+Results saved to C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\meteo-data\wind_vector_analysis_result.json
+Cleaned rows: 19859, Missing rows: 0
 
 Stderr:
 
 Semantic Error:
 Semantic validation failed (business rules):
-  • Code-description mismatch: The code fails to handle the provided sample data correctly. In the sample data, the `Wind_Speed` column contains `NaN` values for every row. The code's `parse_float` function converts `NaN` to `float('nan')`, but the logic `if wind_speed is not None` evaluates to `True` for `NaN` values (since `NaN",1,2026-07-30T13:41:35.916290
-Ambient Temperature Trend Analysis,0,,2,2026-07-30T13:41:44.896972
-Relative Humidity Monitoring,0,Result saved to: C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\output\meteo-data\relative_humidity_monitoring_result.json,1,2026-07-30T13:41:39.927980
-Relative Humidity Monitoring,0,,1,2026-07-30T13:41:43.330793
-Wind Vector Analysis,0,,2,2026-07-30T13:41:47.541876
+  • Code-description mismatch: cohere/north-mini-code:free: The code fails TASK IMPLEMENTATION because it only computes wind vector components and does not detect drafts as required by the task description.; inclusionai/ling-3.0-flash:free: Result Consistency fails: the result_summary contains per-row raw wind vector components (x, y, speed, direction) rather than profiled wind patterns or draft detections. The task requires profiling wind patterns and detecting drafts, which implies aggregated or analyzed results (e.g., average vector; google/gemma-4-26b-a4b-it:free: The result_summary contains per-row vector calculations instead of aggregated patterns or draft detection as required by the task description.",1,2026-08-06T15:28:53.871411
+Wind_Vector_Analysis,1,"Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\meteo-data\wind_vector_analysis.py.tmp"", line 85, in <module>
+    main()
+    ^^^^
+NameError: name 'main' is not defined. Did you mean: 'min'?",1,2026-08-06T15:29:04.968621
+Wind_Vector_Analysis,0,Results saved to output\meteo-data\wind_vector_analysis_result.json,1,2026-08-06T15:29:15.807155
+Daily_Solar_Radiation_Average,1,"Validation failed (exit 1).
+Stdout:
+
+Stderr:
+Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\meteo-data\daily_solar_radiation_average.py"", line 89, in <module>
+    json.dump(result, f)
+    ~~~~~~~~~^^^^^^^^^^^
+  File ""C:\Python314\Lib\json\__init__.py"", line 181, in dump
+    for chunk in iterable:
+                 ^^^^^^^^
+  File ""C:\Python314\Lib\json\encoder.py"", line 444, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File ""C:\Python314\Lib\json\encoder.py"", line 413, in _iterencode_dict
+    yield from chunks
+  File ""C:\Python314\Lib\json\encoder.py"", line 381, in _iterencode_dict
+    raise TypeError(f'keys must be str, int, float, bool or None, '
+                    f'not {key.__class__.__name__}')
+TypeError: keys must be str, int, float, bool or None, not tuple
+when serializing dict item 'result_summary'
+
+Semantic Error:
+Semantic validation failed (business rules):
+  • Code-description mismatch: inclusionai/ling-3.0-flash:free: The result_generated_at field is set to '2023-10-01', which is a date string but not a valid ISO-8601 timestamp (missing time component, e.g., '2023-10-01T00:00:00Z'). This violates the output schema requirement that result_generated_at must be an ISO-8601 timestamp.",1,2026-08-06T15:33:10.566139
+Daily_Solar_Radiation_Average,1,"Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\meteo-data\daily_solar_radiation_average.py.tmp"", line 62, in <module>
+    daily_averages = {f'{year}-{month:02d}-{day:02d}': sum(values) / len(values) for (year, month, day), values in solar_radiation.items()}
+                               ^^^^^^^^^^^
+ValueError: Unknown format code 'd' for object of type 'str'",1,2026-08-06T15:33:20.714467
+Daily_Solar_Radiation_Average,1,"Traceback (most recent call last):
+  File ""C:\Users\DELL\Desktop\Code More\LEI-LLM-assistedEI\generated_tasks\meteo-data\daily_solar_radiation_average.py.tmp"", line 80, in <module>
+    main()
+    ^^^^
+NameError: name 'main' is not defined. Did you mean: 'min'?",1,2026-08-06T15:33:33.864970

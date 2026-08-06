@@ -1,0 +1,3 @@
+timestamp_ist,step,event_type,run_count,task_name,model_name,cpu_percent,memory_percent,system_memory_mb,process_memory_mb,bytes_sent,bytes_recv,packets_sent,packets_recv,cpu_temperature_celsius
+2026-08-06T12:19:11.599684+05:30,step3_validator,start,1,,cohere/north-mini-code:free,8.4,49.9,16180.33984375,86.65625,464478003,2818107269,994070,2578254,
+2026-08-06T12:24:30.378178+05:30,step3_validator,end,1,,"cohere/north-mini-code:free,inclusionai/ling-3.0-flash:free,google/gemma-4-26b-a4b-it:free",4.4,47.5,15412.78125,106.4296875,488689648,2821760054,1014234,2595576,

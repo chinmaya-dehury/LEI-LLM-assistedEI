@@ -132,6 +132,47 @@ def main():
         if p_value < alpha:
             print(f"\n[SIGNIFICANT] The difference between the frameworks is statistically significant (p < {alpha}).")
             print("Null hypothesis rejected: The frameworks do not perform equally.")
+            
+            print("\n" + "="*50)
+            print("         POST-HOC WILCOXON SIGNED-RANK TESTS         ")
+            print("="*50)
+            from scipy.stats import wilcoxon
+            
+            # We will use the Holm-Bonferroni method to correct the p-values since we are doing 2 comparisons against a control (LEI).
+            comparisons = []
+            
+            try:
+                w_ag, p_ag = wilcoxon(lei_scores, autogen_scores, zero_method='zsplit')
+                comparisons.append(("LEI vs AutoGen", w_ag, p_ag))
+            except Exception as e:
+                print(f"LEI vs AutoGen: test skipped ({e})")
+                
+            try:
+                w_lg, p_lg = wilcoxon(lei_scores, langgraph_scores, zero_method='zsplit')
+                comparisons.append(("LEI vs LangGraph", w_lg, p_lg))
+            except Exception as e:
+                print(f"LEI vs LangGraph: test skipped ({e})")
+                
+            # Apply Holm-Bonferroni Correction
+            # 1. Sort by raw p-value ascending
+            comparisons.sort(key=lambda x: x[2])
+            
+            m = len(comparisons)
+            for i, (name, w, raw_p) in enumerate(comparisons):
+                # Holm correction formula: adjusted_p = min(raw_p * (m - i), 1.0)
+                # Successive adjusted p-values must not decrease
+                adj_p = min(raw_p * (m - i), 1.0)
+                if i > 0 and adj_p < prev_adj_p:
+                    adj_p = prev_adj_p
+                prev_adj_p = adj_p
+                
+                print(f"{name:<16} | W: {w:<4.1f} | Raw p: {raw_p:.4f} | Holm-Adj p: {adj_p:.4f}")
+                if adj_p < alpha:
+                    print(f"  -> SIGNIFICANT: {name.split(' ')[0]} outperforms {name.split(' ')[2]}")
+                else:
+                    print(f"  -> NOT SIGNIFICANT after Holm correction")
+                    
+            print("="*50)
         else:
             print(f"\n[NOT SIGNIFICANT] The difference between the frameworks is NOT statistically significant (p >= {alpha}).")
             print("Failed to reject null hypothesis: The frameworks perform equally.")

@@ -1,38 +1,38 @@
 {
   "tasks": [
     {
-      "task_name": "Ambient Temperature Trend Analysis",
-      "description": "Analyze the ambient temperature measurements over time to identify diurnal temperature patterns, detect anomalies, and track temperature fluctuations.",
+      "task_name": "Ambient_Surface_Temperature_Correlation",
+      "description": "Analyze the correlation between ambient temperature and surface temperature to understand diurnal heating and cooling patterns.",
       "data_type": "meteo-data",
       "status": "code_generated"
     },
     {
-      "task_name": "Surface Temperature Correlation",
-      "description": "Examine the relationship between ambient temperature and surface temperature to understand the thermal dynamics of the local environment.",
+      "task_name": "Daily_Solar_Radiation_Average",
+      "description": "Calculate the daily average solar radiation to assess exposure cycles and potential cloud cover impact.",
       "data_type": "meteo-data",
       "status": "code_generated"
     },
     {
-      "task_name": "Solar Radiation Profiling",
-      "description": "Analyze the solar radiation data to estimate daily and seasonal solar exposure cycles, and evaluate the impact of cloud cover on radiation levels.",
+      "task_name": "Relative_Humidity_Trend_Analysis",
+      "description": "Track the trends in relative humidity over time to monitor microclimatic changes.",
       "data_type": "meteo-data",
       "status": "code_generated"
     },
     {
-      "task_name": "Relative Humidity Monitoring",
-      "description": "Track the relative humidity levels over time and identify any correlations with other environmental factors, such as temperature and precipitation.",
+      "task_name": "Soil_Moisture_Watermark_Analysis",
+      "description": "Monitor soil moisture levels and watermark tension to evaluate hydrological conditions in the alpine environment.",
       "data_type": "meteo-data",
       "status": "code_generated"
     },
     {
-      "task_name": "Soil Moisture Hydrology",
-      "description": "Examine the soil moisture and watermark data to understand the local hydrology, monitor soil drying trends, and identify potential water stress events.",
+      "task_name": "Wind_Vector_Analysis",
+      "description": "Calculate wind vector using wind speed and direction to profile wind patterns and detect drafts.",
       "data_type": "meteo-data",
       "status": "code_generated"
     },
     {
-      "task_name": "Wind Vector Analysis",
-      "description": "Calculate the wind speed and direction to profile the local wind patterns, detect wind gusts, and identify potential wind-related hazards.",
+      "task_name": "Precipitation_Event_Tracking",
+      "description": "Profile precipitation events using the rain meter data and correlate with atmospheric variables.",
       "data_type": "meteo-data",
       "status": "code_generated"
     }

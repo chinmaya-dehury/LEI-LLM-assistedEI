@@ -1,0 +1,2 @@
+step,model,run_count,task_name,script_start_time_ist,script_end_time_ist,script_duration_sec,status,return_code
+task_run,openai/gpt-4o-mini,1,Voltage and Temperature Correlation,2026-08-06T04:57:33.033828+00:00,2026-08-06T04:59:13.059699+00:00,100.02708789997268,success,0
