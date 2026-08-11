@@ -1,0 +1,177 @@
+script,dataset,median_cpu,peak_cpu,median_mem,peak_mem,exec_time
+Soil Fertility Status Check.py,agri-data,0.0,24.15,10.1484375,100.78125,0.1292444619757589
+Heat Stress Detection.py,agri-data,0.0,24.55,11.03125,12.765625,0.16305004799505696
+Low Photosynthesis Potential Flag.py,agri-data,0.0,29.825,11.0078125,11.484375,0.1990198010171298
+Water Availability Status Check.py,agri-data,0.0,24.575,11.171875,11.671875,0.22423290699953213
+Frost Risk and Temperature Validation.py,agri-data,0.0,24.275,11.34375,12.265625,0.21298092199140228
+Heat Stress Detection via THI.py,agri-data,0.0,24.5,11.09375,11.65625,0.2454831069917418
+Water Availability Warning.py,agri-data,24.025,24.4,10.75,11.65625,0.07271969798603095
+Frost Risk Assessment.py,agri-data,0.0,24.275,11.328125,102.078125,0.18586854101158679
+Soil Fertility Index Threshold Alert.py,agri-data,0.0,24.525,10.828125,11.671875,0.13812272300128825
+Water Usage Efficiency Monitor.py,agri-data,0.0,24.2,11.0078125,12.421875,0.22968706401297823
+Soil Moisture Deviation Monitor.py,agri-data,0.0,24.575,11.09375,12.15625,0.2346293099981267
+Soil Fertility Index Alert.py,agri-data,12.1,31.1,10.171875,11.59375,0.11391668097348884
+Wind Turbulence Index Calculator.py,meteo-data,6.3625,24.525,11.4765625,13.15625,0.5128800889942795
+Nutrient Balance Status Check.py,agri-data,16.625,24.425,10.875,11.671875,0.1495247099956032
+Nutrient Imbalance Detector.py,agri-data,0.0,24.4,11.671875,14.265625,0.2751836590177845
+Nutrient Balance Ratio Validator.py,agri-data,6.7375,24.425,11.109375,11.609375,0.17134443399845622
+Irrigation Necessity Trigger.py,agri-data,6.4625,24.125,11.734375,102.328125,0.17812767700525
+Soil Fertility Alert.py,agri-data,0.0,24.425,9.75,11.484375,0.1749182049825322
+Water Efficiency Tracker.py,agri-data,15.3,24.35,12.96875,102.328125,0.18368205899605528
+Heat Stress Threshold Alert.py,agri-data,18.7,23.675,11.03125,11.046875,0.11360575398430228
+Nutrient Balance Ratio Deviation Check.py,agri-data,21.012500000000003,24.525,10.03125,11.453125,0.12094514901400544
+Water Availability and Moisture Correlation.py,agri-data,4.6125,24.5,10.984375,11.6875,0.179812635993585
+Heat Stress Indicator.py,agri-data,0.0,24.525,10.53125,12.421875,0.19277937698643655
+Nutrient Imbalance Check.py,agri-data,13.075,24.275,10.90625,11.625,0.14842833002330735
+Frost Risk Monitor.py,agri-data,12.212499999999999,24.65,11.0078125,11.953125,0.18934599601197988
+EvaluateCropDensityImpact.py,agri-data,13.825,24.475,11.078125,12.453125,0.1888138989743311
+Evaluate Pest Pressure Levels.py,agri-data,5.8375,24.675,10.9921875,11.96875,0.20219805001397617
+Estimate Photosynthesis Potential.py,agri-data,10.1,24.375,10.984375,11.0625,0.17454144297516905
+Analyze Crop Density Impact.py,agri-data,0.0,24.25,11.140625,102.40625,0.18206597000244074
+Evaluate_Crop_Health_Classification.py,agri-data,8.15,24.525,11.328125,13.15625,0.18550142599269748
+Assess Organic Matter Content.py,agri-data,0.0,34.125,10.6015625,11.03125,0.16909517400199547
+Analyze Irrigation Frequency.py,agri-data,14.25,24.375,11.140625,11.75,0.19813755300128832
+AssessPestPressure.py,agri-data,10.75,24.575,10.953125,11.953125,0.183029534004163
+AnalyzeFertilizerUsage.py,agri-data,14.3,24.45,10.3125,12.28125,0.18468225200194865
+Monitor Soil Moisture Levels.py,agri-data,14.15,24.225,10.96875,102.4375,0.1714542310219258
+Analyze_Photosynthesis_Potential.py,agri-data,13.525,24.55,11.015625,102.4375,0.1887608620163519
+Evaluate Crop Growth Stage.py,agri-data,6.2625,24.425,11.109375,12.546875,0.19648692701593973
+MonitorIrrigationFrequency.py,agri-data,0.0,24.45,10.9375,11.890625,0.2016349539917428
+Assess Pest Pressure Levels.py,agri-data,10.575,24.45,9.828125,11.0625,0.18053771599079482
+Frost Risk Early Warning.py,agri-data,15.9625,24.45,10.953125,12.28125,0.162208132998785
+Soil Moisture Deficit Alert.py,agri-data,0.0,24.45,11.796875,13.625,0.19684341200627387
+Crop Suitability Score from NPK and Soil Moisture.py,agri-data,0.0,24.45,11.3828125,12.90625,0.20128339400980622
+Photosynthesis Potential Monitoring.py,agri-data,12.575,24.4,12.421875,14.21875,0.22142764201271348
+Sunlight Adequacy per Plant.py,agri-data,14.75,24.3,12.359375,13.015625,0.20051699900068343
+Water Usage Efficiency Monitoring.py,agri-data,7.9625,24.575,12.546875,102.453125,0.20231755197164603
+Pest Pressure Anomaly Detection.py,agri-data,14.025,24.425,11.234375,102.453125,0.19428024199442007
+Soil Fertility Index Snapshot.py,agri-data,6.3125,24.2,11.921875,102.453125,0.24141216499265283
+Nutrient Balance Ratio Checker.py,agri-data,0.0,24.6,11.3125,12.8125,0.20062349998624995
+Pest Pressure Growth-Stage Risk Flag.py,agri-data,0.0,24.525,12.0,13.375,0.20360985898878425
+Pest Pressure Risk Classification.py,agri-data,0.0,24.525,11.2890625,12.328125,0.19205577799584717
+Water Usage Efficiency Alert.py,agri-data,13.025,24.525,12.21875,12.859375,0.17378528899280354
+Frost Risk Flag.py,agri-data,0.0,24.525,11.140625,12.796875,0.18275984699721448
+Heat Stress Alert via Temperature-Humidity Index.py,agri-data,0.0,27.125,11.8125,102.453125,0.2269665600033477
+Water Usage Efficiency Trend Alert.py,agri-data,0.0,24.7,12.140625,102.453125,0.19089945399900898
+Frost Risk Alert.py,agri-data,0.0,24.425,12.265625,102.453125,0.2208973969973158
+Crop Suitability Scoring from NPK and Soil Moisture.py,agri-data,7.825,24.5,11.5390625,14.0625,0.20768691299599595
+Growth-Stage Specific Environmental Check.py,agri-data,8.1875,24.55,12.71875,15.109375,0.22545158400316723
+Pest Pressure Spike Detection.py,agri-data,0.0,36.475,11.9375,13.578125,0.22195047899731435
+Soil Fertility Index Monitor.py,agri-data,13.225,24.375,9.671875,11.125,0.14795677000074647
+Fertilizer Overuse Indicator.py,agri-data,21.1375,24.5,11.421875,14.625,0.16662183799780905
+Water Availability Index Trend.py,agri-data,6.2,24.35,11.1796875,12.3125,0.23321292802575044
+Temperature-NO2 Sensor Cross-Sensitivity Analysis.py,air-quality,0.0,24.65,11.40625,12.453125,0.2937883560080081
+Relative Humidity Impact on NMHC Readings.py,air-quality,0.0,24.5,11.28125,11.84375,0.27987614399171434
+Dry Heat Condition Logger.py,air-quality,0.0,24.6,11.15625,11.875,0.2564132760162465
+NO2_Threshold_Alert.py,air-quality,20.9,26.575,12.421875,14.171875,0.2873359290242661
+NMHC Cross-Sensitivity Ratio.py,air-quality,0.0,24.475,11.28125,12.046875,0.22957645199494436
+Dual Pollutant Threshold Alert.py,air-quality,0.0,24.6,11.734375,13.078125,0.3221193949866574
+Daily Peak NO2 Detection.py,air-quality,6.6375,47.55,11.625,12.234375,0.46628622501157224
+Hourly_CO_Average_Excluding_Invalid.py,air-quality,12.1125,24.625,12.6484375,15.390625,0.6372075449908152
+Temperature_Humidity_Correlation.py,air-quality,12.8,24.65,13.140625,15.390625,0.42733778001274914
+Humidity_Cross_Sensitivity_Index.py,air-quality,0.0,24.65,11.1953125,12.046875,0.21419287601020187
+Sensor_Response_to_Ground_Truth_Ratio.py,air-quality,17.925,24.6,12.421875,102.484375,0.23981055899639614
+Sensor_Drift_Detection_CO.py,air-quality,15.325,47.95,14.375,102.46875,0.8558854039874859
+NO2_Sensor_Drift_Monitor.py,air-quality,24.0375,35.3,13.515625,17.515625,0.4884638230141718
+NO2_Exceedance_Flagging.py,air-quality,0.0,47.025,12.3203125,14.0625,0.30817742401268333
+Simultaneous_Sensor_Failure_Detection.py,air-quality,20.4,24.65,11.078125,11.703125,0.2965681749919895
+Dual_Pollutant_Threshold_Alert.py,air-quality,6.875,24.575,11.5546875,12.578125,0.28967202399508096
+Humidity_Impact_Index.py,air-quality,0.0,24.4,11.875,14.25,0.25403034800547175
+Hourly CO Concentration Anomaly Detection.py,air-quality,11.925,24.425,11.484375,12.859375,0.21787500102072954
+Consecutive Missing Data Interval Tracking.py,air-quality,18.375,24.575,11.1171875,11.59375,0.24066978800692596
+Estimate_NO2_Concentration.py,air-quality,22.95,36.275,11.1484375,12.234375,0.1401760739972815
+Daily Pollutant Average Aggregation.py,air-quality,0.0,24.6,12.25,13.5,0.5593767279933672
+Analyze_Temperature_Impact_on_Sensors.py,air-quality,0.0,24.525,11.921875,13.4375,0.22465154001838528
+Estimate_CO_Concentration.py,air-quality,0.0,24.6,11.0859375,12.234375,0.236010433989577
+Estimate_NMHC_Concentration.py,air-quality,8.1125,39.95,11.046875,12.1875,0.22631077602272853
+Hourly_CO_Average_Calculation.py,air-quality,0.0,24.575,11.71875,12.421875,0.4719160329841543
+Identify_Environmental_Patterns.py,air-quality,0.0,24.625,12.6875,13.765625,0.34434832699480467
+Estimate_Benzene_Concentration.py,air-quality,7.825,24.5,11.0078125,11.328125,0.22582466099993326
+Analyze_Humidity_Impact.py,air-quality,7.4875,24.625,12.203125,102.515625,0.26053914401563816
+Analyze_Temperature_Impact.py,air-quality,9.0,24.45,11.953125,13.4375,0.215810926980339
+Detect_Sensor_Drift.py,air-quality,6.1875,24.65,11.390625,12.15625,0.28643068100791425
+Estimate_NOx_Concentration.py,air-quality,0.0,24.675,13.875,102.515625,0.3467446799913887
+Analyze_Humidity_Impact_on_Sensors.py,air-quality,12.8,24.6,13.328125,14.15625,0.41774099398753606
+NO2-to-NOx Ratio Tracker.py,air-quality,9.3375,24.625,12.3984375,13.390625,0.25746248799259774
+O3 Sensor Baseline Characterizer.py,air-quality,0.0,24.55,12.515625,13.890625,0.2756956629746128
+Benzene-to-NMHC Ratio Monitor.py,air-quality,0.0,24.675,11.15625,11.234375,0.23480607100646012
+Diurnal Baseline Profiler.py,air-quality,0.0,24.575,12.4375,12.953125,0.4402891320060007
+Humidity Cross-Sensitivity Alert.py,air-quality,16.4625,24.6,16.125,24.125,0.4079141500114929
+Benzene_Trend_Indicator.py,air-quality,16.85,24.6,13.125,102.515625,0.4518987500050571
+NO2 Sensor Drift Flag.py,air-quality,16.575,24.575,15.625,16.265625,1.199721301003592
+Roadside Air Quality Classifier.py,air-quality,0.0,24.625,11.09375,102.515625,0.26322837101179175
+Hourly Pollution Pattern Profiler.py,air-quality,0.0,30.95,14.34375,17.125,0.4858047820162028
+Diurnal Pollution Pattern Profiler.py,air-quality,8.4875,24.675,12.609375,12.953125,0.5077716749801766
+NOx_NO2_Ratio_Monitor.py,air-quality,0.0,24.575,12.40625,102.515625,0.24665974802337587
+CO_Sensor_Reference_Deviation_Tracker.py,air-quality,8.925,24.7,12.2890625,13.0,0.25803373398957774
+Short_Window_Cross_Sensitivity_Index.py,air-quality,23.325,24.7,11.5,14.921875,0.23975902202073485
+Missing Sensor Reading Flag.py,air-quality,15.55,24.65,12.53125,14.03125,0.47982893500011414
+CO Sensor Calibration Drift Tracker.py,air-quality,15.649999999999999,24.55,13.3203125,14.171875,0.49545562398270704
+Multi-Pollutant Peak Event Detector.py,air-quality,0.0,24.625,12.2421875,12.828125,0.28738307900493965
+NOx_Sensor_Drift_Monitor.py,air-quality,12.45,24.675,11.78125,12.609375,0.44485294897458516
+CO_Exceedance_Alert.py,air-quality,11.9875,24.625,12.515625,13.078125,0.4444672230165452
+NMHC Concentration Estimator.py,air-quality,0.0,24.625,12.390625,12.84375,0.48868613998638466
+Diurnal_Average_Tracker.py,air-quality,0.0,24.6,11.65625,12.171875,0.4697966079984326
+Sensor_Response_Range_Check.py,air-quality,0.0,24.625,11.90625,13.328125,0.3300213520124089
+Missing_Value_Monitor.py,air-quality,0.0,24.65,18.140625,30.640625,0.4623828959884122
+plot2.py,unknown,0.0,53.725,150.625,169.25,4.988484866014915
+Benzene_Hourly_Exceedance_Alert.py,air-quality,14.5,24.575,13.765625,102.53125,0.4695187720062677
+NOx Concentration Estimator.py,air-quality,15.125,24.675,12.390625,14.0625,0.89754552100203
+Low-Concentration Sensor Baseline Tracker.py,air-quality,0.0,28.475,15.828125,19.03125,0.7457044209877495
+Benzene Proxy from NMHC Sensor.py,air-quality,6.075,24.65,11.28125,11.875,0.311511526000686
+Sensor_Drift_Indicator.py,air-quality,0.0,24.65,13.1875,15.5,0.35218285699374974
+Absolute Humidity Compensation Indicator.py,air-quality,14.225,24.675,13.140625,15.59375,0.3704616800241638
+Benzene-NMHC Coherence Check.py,air-quality,0.0,24.675,12.75,13.671875,0.4003315480076708
+Daily_Average_Pollutant_Summary.py,air-quality,0.0,24.675,12.2265625,14.015625,0.5510494350164663
+Missing_Sensor_Data_Quality_Flag.py,air-quality,23.725,34.35,14.5,16.609375,0.734898291004356
+Invalid Reading and Outage Monitor.py,air-quality,0.0,24.675,13.796875,16.703125,0.5428217530134134
+Temperature_Humidity_Sensor_Cross_Sensitivity_Indicator.py,air-quality,20.7,24.675,18.03125,18.5625,1.087157166999532
+Missing Value Flagging.py,air-quality,6.3625,46.475,21.8203125,24.046875,1.614200099982554
+EpochSequenceGapAnalyzer.py,lab-data,18.1375,49.325,65.90625,105.953125,25.263979988987558
+Cross-Mote Spatial Temperature Variance.py,lab-data,15.8375,49.225,63.609375,100.3125,28.653090884006815
+LightTransitionCounter.py,lab-data,15.85,49.325,97.15625,144.609375,35.499248389998684
+Sensor Synchronization Gap Detection.py,lab-data,15.95,49.425,559.265625,916.390625,40.750607796013355
+Battery Voltage Health Monitoring.py,lab-data,0.0,49.35,481.125,787.78125,44.99729707397637
+LightIntensitySpikeDetector.py,lab-data,0.0,49.15,507.75,847.78125,46.09471912699519
+Light Level Anomaly Flagging.py,lab-data,16.875,49.275,11.59375,12.015625,58.05107214397867
+TemperatureHumidityCoherenceCheck.py,lab-data,18.1,49.25,303.09375,318.9375,60.04351951199351
+EpochGapAnalyzer.py,lab-data,15.475,49.1,56.546875,101.90625,35.28001383499941
+Temperature-Humidity Comfort Index Calculation.py,lab-data,14.675,49.275,454.703125,603.4375,59.15468698297627
+Mote Temperature Trend Analysis.py,lab-data,15.975,49.2,243.046875,336.15625,60.06784082800732
+Battery Voltage Decay Rate Estimation.py,lab-data,16.375,48.975,158.03125,301.484375,44.01840987498872
+Per-Mote Temperature Anomaly Detection.py,lab-data,16.2,49.225,239.09375,402.921875,60.06562115199631
+Sensor Synchronization Gap Analysis.py,lab-data,16.2125,49.175,289.4140625,545.734375,41.19272260100115
+Cross-Mote Calibration Comparison.py,lab-data,15.65,49.2,401.375,715.390625,60.06663764701807
+Per-Mote Temperature Drift Detection.py,lab-data,14.9375,48.95,247.7578125,386.234375,51.22212637698976
+HumidityVarianceTracker.py,lab-data,15.95,49.0,61.234375,103.21875,44.813530415005516
+Epoch Sequence Gap Detection.py,lab-data,16.05,48.9,60.296875,147.984375,39.188984282984165
+MoteVoltageHealthMonitor.py,lab-data,16.4,49.075,205.984375,371.09375,47.119470055011334
+Epoch Synchronization Check.py,lab-data,16.15,48.625,14.96875,20.0625,37.478117652004585
+Battery Voltage Health Indicator.py,lab-data,16.175,49.025,401.4765625,721.234375,50.6343949510192
+Comparative Mote Calibration.py,lab-data,21.4125,49.075,93.6484375,190.0,41.01044330498553
+Temperature-Humidity Correlation Snapshot.py,lab-data,18.924999999999997,49.175,198.8046875,384.78125,51.41345154601731
+Mote Activity Count.py,lab-data,17.6125,49.1,11.6875,11.6875,60.009217456012266
+Epoch Sequence Gap Detector.py,lab-data,21.7375,48.975,100.0703125,190.546875,43.9267245719966
+Cross-Mote Temperature Consistency Check.py,lab-data,23.5,49.1,157.84375,260.765625,46.64477016200544
+Stale Reading Detection.py,lab-data,22.375,49.275,12.390625,13.046875,47.17572648302303
+Per-Mote Temperature Rolling Average and Trend.py,lab-data,0.0,49.05,12.40625,12.40625,60.009258962993044
+Temperature-Humidity Comfort Index.py,lab-data,23.8,49.3,11.3125,11.8125,46.25495013600448
+Per-Mote Temperature Outlier Detection.py,lab-data,22.9,49.25,12.265625,12.296875,60.00279106802191
+Battery Voltage Trend and Low-Voltage Alert.py,lab-data,22.525,49.225,178.2109375,314.828125,52.54090260399971
+Cross-Mote Humidity Consistency Check.py,lab-data,22.3125,49.1,172.1484375,431.65625,54.21407017900492
+Light Level Anomaly Detection.py,lab-data,23.7,49.25,170.15625,314.6875,39.919099333987106
+Temperature Trend Change Detection.py,lab-data,0.0,46.7,16.546875,16.546875,60.0054460229876
+Mote Activity Status Summary.py,lab-data,21.7125,49.275,12.78125,107.0,60.01292652101256
+Voltage-Temperature Correlation Monitor.py,lab-data,21.95,49.175,12.625,13.21875,57.84559815298417
+Inter-Mote Temperature Consistency Check.py,lab-data,18.225,49.075,330.15625,654.625,60.1163967520115
+Humidity Spike Detector.py,lab-data,18.8,49.125,12.453125,12.546875,60.011285357992165
+Per-Mote Temperature Trend Monitor.py,lab-data,16.875,49.1,12.328125,12.65625,49.4609462240187
+Daily Temperature Extremes per Mote.py,lab-data,16.525,49.1,11.609375,12.96875,55.06282145399018
+Battery Voltage Health Monitor.py,lab-data,15.75,48.925,12.390625,12.390625,60.004690688016126
+Sensor Reading Staleness Monitor.py,lab-data,17.575,49.0,13.0625,107.1875,60.015023487008875
+Low Battery Voltage Warning.py,lab-data,15.975,48.85,12.25,12.953125,51.40385696501471
+Battery Voltage Trend Monitor.py,lab-data,18.9,49.2,12.796875,107.25,49.616970731003676
+Temperature Out-of-Range Alert.py,lab-data,24.05,49.15,12.328125,13.015625,37.56298826902639
+Epoch Sequence Gap Detection.py,lab-data,23.65,49.275,302.640625,826.421875,60.066827983013354
+Sensor Staleness Detector.py,lab-data,24.35,49.325,12.640625,12.640625,60.00718211001367
+Diurnal Light Pattern Detection.py,lab-data,24.375,49.375,11.890625,12.1875,60.00872501498088
