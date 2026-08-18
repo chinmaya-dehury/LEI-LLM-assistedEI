@@ -10,8 +10,8 @@ def calculate_rsys(p0, p1, p2, f, beta1, beta2):
     return numerator / denominator
 
 def main():
-    base_dir = r"C:\Users\DELL\Downloads\Result_LEI_multipleVal\validator"
-    out_csv = r"C:\Users\DELL\Downloads\Result_LEI_multipleVal\validator\validation_success_details.csv"
+    base_dir = r"C:\Users\DELL\Downloads\result-all-cloud-lei\validator"
+    out_csv = r"C:\Users\DELL\Downloads\result-all-cloud-lei\validator\validation_success_details.csv"
     
     # Beta configurations as requested
     beta_configs = {
